@@ -346,73 +346,56 @@ def page_generate() -> None:
     if not cust:
         return
 
-    # Big, unmistakable active-customer banner so writers cannot accidentally
-    # ship a brief styled with the wrong brand.
+    # Slim active-brand strip — calm, one line, still prevents wrong-brand mistakes.
+    _tag = f" · {cust.tagline}" if cust.tagline else ""
     st.markdown(
         f"""
-        <div style="
-            background: linear-gradient(90deg, {cust.primary_color}25 0%, {cust.accent_color}10 100%);
-            border-left: 6px solid {cust.primary_color};
-            padding: 14px 18px; border-radius: 6px; margin: 10px 0 18px 0;
-        ">
-          <div style="font-size: 12px; color: #555; letter-spacing: 1px;">ACTIVE BRAND</div>
-          <div style="font-size: 22px; font-weight: 700; color: {cust.accent_color};">{cust.name}</div>
-          <div style="font-size: 13px; color: #444; margin-top: 4px;">
-            Marketplace <b>{cust.marketplace}</b> &nbsp;·&nbsp; Overlay language <b>{cust.overlay_language.upper()}</b>
-            &nbsp;·&nbsp; Tagline <i>{cust.tagline or '—'}</i>
-          </div>
+        <div style="display:flex;align-items:center;gap:14px;background:#fff;
+             border:1px solid rgba(15,17,21,0.08);border-left:4px solid {cust.primary_color};
+             padding:11px 16px;border-radius:8px;margin:6px 0 20px 0;">
+          <span style="font-size:18px;font-weight:700;color:#0F1115;letter-spacing:-0.02em;">{cust.name}</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#6B7280;letter-spacing:0.03em;">
+            {cust.marketplace} · overlay {cust.overlay_language.upper()}{_tag}
+          </span>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    with st.expander("Brand details (colors, voice, photo rules)", expanded=False):
-        col1, col2 = st.columns(2)
-        with col1:
+    with st.expander("Brand details & Brand Memory", expanded=False):
+        tab_a, tab_b = st.tabs(["Brand details", "➕ Add to Brand Memory"])
+        with tab_a:
             st.write(f"**Voice:** {cust.voice or '—'}")
-            st.write(f"**Personality:** {', '.join(cust.personality) or '—'}")
-            st.write(f"**Fonts:** {', '.join(cust.fonts) or '—'}")
-        with col2:
+            st.write(f"**Personality:** {', '.join(cust.personality) or '—'} · **Fonts:** {', '.join(cust.fonts) or '—'}")
             st.markdown(
-                f"**Colors:** <span style='background:{cust.primary_color};color:white;padding:2px 8px;border-radius:3px;'>{cust.primary_color}</span> "
-                f"<span style='background:{cust.accent_color};color:white;padding:2px 8px;border-radius:3px;'>{cust.accent_color}</span>",
+                f"**Colours:** <span style='background:{cust.primary_color};color:#fff;padding:2px 8px;border-radius:3px;'>{cust.primary_color}</span> "
+                f"<span style='background:{cust.accent_color};color:#fff;padding:2px 8px;border-radius:3px;'>{cust.accent_color}</span>",
                 unsafe_allow_html=True,
             )
-            st.write(f"**Photo rules:** {cust.photo_rules[:200] or '—'}")
-            st.write(f"**No-gos:** {cust.no_gos[:200] or '—'}")
-
-    with st.expander("➕ Add product info / reference images to Brand Memory (feeds every future plan)", expanded=False):
-        st.caption(
-            "Anything you add here is saved to this brand's memory and informs EVERY future "
-            "generation — new product details, positioning, corrections, reference images."
-        )
-        existing = KN.get_team_info(cust.slug)
-        info = st.text_area("Extra product info / notes", value=existing, height=120,
-                            placeholder="e.g. New 500 ml size launching; hero color teal; certified organic since 2025; avoid the word 'detox'…",
-                            key="kn_info")
-        kn_imgs = st.file_uploader("Reference images (optional)", type=["png", "jpg", "jpeg", "webp"],
-                                   accept_multiple_files=True, key="kn_imgs")
-        if st.button("💾 Save to Brand Memory", key="kn_save"):
-            KN.save_team_info(cust.slug, info)
-            n = 0
-            for f in (kn_imgs or []):
-                KN.save_team_image(cust.slug, f.name, f.read()); n += 1
-            st.success(f"Saved — now part of {cust.name}'s memory for every future plan"
-                       + (f" (+{n} image(s))" if n else "") + ".")
-        cur = KN.list_team_images(cust.slug)
-        if cur:
-            st.caption("Reference images on file: " + ", ".join(cur))
+            st.caption(f"Photo rules — {cust.photo_rules[:220] or '—'}")
+            st.caption(f"No-gos — {cust.no_gos[:220] or '—'}")
+        with tab_b:
+            st.caption("Saved to this brand's memory — informs every future plan (new info, positioning, corrections, reference images).")
+            existing = KN.get_team_info(cust.slug)
+            info = st.text_area("Extra product info / notes", value=existing, height=110, key="kn_info",
+                                placeholder="e.g. new 500 ml size; hero colour teal; certified organic since 2025; avoid 'detox'…")
+            kn_imgs = st.file_uploader("Reference images (optional)", type=["png", "jpg", "jpeg", "webp"],
+                                       accept_multiple_files=True, key="kn_imgs")
+            if st.button("💾 Save to Brand Memory", key="kn_save"):
+                KN.save_team_info(cust.slug, info)
+                n = 0
+                for f in (kn_imgs or []):
+                    KN.save_team_image(cust.slug, f.name, f.read()); n += 1
+                st.success(f"Saved to {cust.name}'s memory" + (f" (+{n} image(s))" if n else "") + ".")
+            cur = KN.list_team_images(cust.slug)
+            if cur:
+                st.caption("Images on file: " + ", ".join(cur))
 
     st.divider()
-    st.subheader("Step 1 — Upload SEO Excel")
-    if not has_unsplash_key():
-        st.warning(
-            f"No `{UNSPLASH_KEY_ENV}` set. Moodboard tiles will fall back to placeholder boxes with the search prompt. "
-            "Get a free key at https://unsplash.com/developers and set the environment variable before launching Streamlit."
-        )
-
-    upload = st.file_uploader("Drop the customer's SEO analysis .xlsx here", type=["xlsx"])
+    st.markdown("#### 1 · Upload the SEO sheet")
+    upload = st.file_uploader("Drop the product's SEO analysis .xlsx", type=["xlsx"], key="seo_up")
     if not upload:
+        st.caption("SEO title + bullets come from the sheet — the tool writes the creative Image + A+ plan.")
         return
 
     # Save upload to a tmp working path so the parser (file-based) can read it
@@ -429,12 +412,7 @@ def page_generate() -> None:
             st.error(f"Excel parse failed: {exc}")
             return
 
-    ok, missing = brief.has_minimum_data()
-    if not ok:
-        st.warning(f"Missing recommended fields: {', '.join(missing)}. The brief will still build with placeholders.")
-
-    # SEO copy is the SEO team's job — take TITLE + BULLETS + BACKEND from the sheet (not AI).
-    # The app only generates the CREATIVE Image + A+ Premium plan.
+    # SEO copy comes from the sheet (not AI); the tool only writes the creative plan.
     seo_title = seo_bullets = seo_backend = None
     try:
         _seo = SEOL.load_seo(upload_path)
@@ -443,83 +421,60 @@ def page_generate() -> None:
             seo_bullets = SEOL.as_bullets_html(_seo) or None
             seo_backend = _seo.backend or None
     except Exception:
-        pass  # no filled SEO sheet -> AI will draft copy as a fallback
+        pass
     st.session_state["_seo"] = (seo_title, seo_bullets, seo_backend)
-    if seo_title:
-        st.info(
-            f"📋 **SEO copy taken from the sheet** (not AI-written): title + "
-            f"{len(seo_bullets or [])} bullets + backend. The app generates only the "
-            f"Image plan + A+ Premium modules."
-        )
 
-    # Brand-mismatch check: warn loud if the Excel mentions a different brand than
-    # the active customer. This is the #1 way writers ship the wrong-branded PDF.
+    # Brand mismatch is the one real risk → loud. Everything else stays a calm caption.
     excel_brand = (brief.brand or "").strip().lower()
     cust_brand = (cust.name or "").strip().lower()
     if excel_brand and cust_brand and excel_brand not in cust_brand and cust_brand not in excel_brand:
-        st.error(
-            f"⚠️ **Brand mismatch.** The Excel says brand **“{brief.brand}”**, "
-            f"but the active customer is **“{cust.name}”**. "
-            f"The brief will be styled with {cust.name}'s colors, voice, photo rules — "
-            f"but the product copy + ASIN will be for {brief.brand}. "
-            f"This is almost always a mistake. Switch the customer above, or upload the correct Excel."
-        )
-    elif excel_brand and cust_brand:
-        st.success(f"Brand match: Excel brand “{brief.brand}” aligns with active customer “{cust.name}”.")
+        st.error(f"⚠️ Brand mismatch — the sheet says **{brief.brand}**, active brand is **{cust.name}**. "
+                 f"The plan will be styled as {cust.name}. Switch the brand above if this is wrong.")
 
-    st.subheader("Step 2 — Review parsed data")
-    col1, col2, col3 = st.columns(3)
-    col1.metric("USPs", len(brief.usps))
-    col2.metric("Keywords", len(brief.all_keywords))
-    col3.metric("Q&A pairs", len(brief.rufus_qa))
+    ok, missing = brief.has_minimum_data()
+    _notes = []
+    if seo_title:
+        _notes.append(f"SEO copy from sheet ✓ ({len(seo_bullets or [])} bullets)")
+    if not ok:
+        _notes.append(f"missing: {', '.join(missing)} (placeholders used)")
+    st.caption(" · ".join(_notes) if _notes else "Sheet read.")
 
-    with st.expander("Product info"):
-        st.write(f"**Product:** {brief.product_name or '—'}")
-        st.write(f"**ASIN:** {brief.asin or '—'}")
-        st.write(f"**Brand from Excel:** {brief.brand or '—'}")
-        st.write(f"**Listing URL:** {brief.listing_url or '—'}")
-        st.write(f"**Main keywords:** {', '.join(brief.main_keywords) or '—'}")
-    with st.expander(f"USPs ({len(brief.usps)})"):
-        for u in brief.usps:
-            st.markdown(f"- {u}")
-    with st.expander(f"Reviews ({len(brief.good_reviews)} good / {len(brief.bad_reviews)} bad)"):
-        if brief.good_reviews:
-            st.markdown("**Good:**")
+    st.markdown("#### 2 · Review")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("USPs", len(brief.usps))
+    m2.metric("Keywords", len(brief.all_keywords))
+    m3.metric("Q&A", len(brief.rufus_qa))
+    with st.expander(f"Parsed data — {brief.product_name or 'product'}", expanded=False):
+        st.write(f"**Product:** {brief.product_name or '—'}  ·  **ASIN:** {brief.asin or '—'}")
+        if brief.listing_url:
+            st.write(f"**Listing:** {brief.listing_url}")
+        if brief.main_keywords:
+            st.write(f"**Main keywords:** {', '.join(brief.main_keywords)}")
+        if brief.usps:
+            st.markdown("**USPs**")
+            for u in brief.usps:
+                st.markdown(f"- {u}")
+        if brief.good_reviews or brief.bad_reviews:
+            st.markdown(f"**Reviews** — {len(brief.good_reviews)} good / {len(brief.bad_reviews)} bad")
             for r in brief.good_reviews:
                 st.markdown(f"+ {r}")
-        if brief.bad_reviews:
-            st.markdown("**Bad:**")
             for r in brief.bad_reviews:
                 st.markdown(f"– {r}")
-    with st.expander(f"RUFUS Q&A ({len(brief.rufus_qa)})"):
-        for qa in brief.rufus_qa:
-            st.markdown(f"**Q.** {qa['q']}")
-            st.markdown(f"**A.** {qa['a']}")
-            st.markdown("---")
-    with st.expander(f"Keywords ({len(brief.all_keywords)})"):
-        st.write(", ".join(brief.all_keywords))
+        if brief.rufus_qa:
+            st.markdown("**Q&A**")
+            for qa in brief.rufus_qa:
+                st.markdown(f"**Q.** {qa['q']}  \n**A.** {qa['a']}")
+        if brief.all_keywords:
+            st.caption("Keywords: " + ", ".join(brief.all_keywords))
 
     st.divider()
-    st.subheader("Step 3 — Generate the brief")
-    st.caption(
-        f"This will build a branded PDF for **{cust.name}** "
-        f"({cust.marketplace}, overlay {cust.overlay_language.upper()}) using the data parsed above."
-    )
-
-    # AI status note before generate
+    st.markdown("#### 3 · Generate")
     ai_ready = has_api_key() and sdk_available()
     if ai_ready:
-        st.success(
-            f"🧠 **AI creative enabled** — Claude writes the 7-image plan, 7 A+ modules, Q&A "
-            f"and argumentation (the CREATIVE). SEO title + bullets come from the sheet, not AI. "
-            f"~10 API calls per brief, ~$0.10 with prompt caching. Build takes ~1–3 minutes."
-        )
+        st.caption(f"AI writes the 7-image plan + 7 A+ modules + Q&A for {cust.name}, then an elite copywriting "
+                   f"pass. ~4–5 min · SEO copy stays from the sheet · every plan is compliance-scanned.")
     else:
-        st.warning(
-            f"⚠️ **AI copywriting disabled** — falling back to template strings. "
-            f"Set `{ANTHROPIC_KEY_ENV}=sk-ant-...` in your environment and restart Streamlit to enable "
-            f"Sonnet 4.6 copywriting."
-        )
+        st.warning("AI is disabled (no API key) — the plan will use template copy.")
 
     if st.button("Generate PDF", type="primary"):
         out_dir = BRIEFS_DIR / cust.slug
