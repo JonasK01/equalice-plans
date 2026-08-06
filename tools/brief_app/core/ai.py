@@ -388,6 +388,8 @@ class BriefAI:
             f"Overlay text (where allowed) MUST be in {LANGUAGE_NAMES.get(self.lang, 'English')} for marketplace {self.customer.marketplace}. "
             "Body fields (visual, why_it_works) stay English. "
             "For Image 1, overlay/overlay_sub MUST be empty strings (Amazon main-image policy bans overlay text). "
+            "Every overlay (Images 2-7) MUST be PUNCHY: at most 30 characters AND at most 5 words, one idea per tile "
+            "(e.g. 'GENTLE, NO CRAMPING.'). overlay_sub at most 90 characters. "
             "Return JSON."
         )
         result = self._structured_call(task, schema, max_tokens=6000)
