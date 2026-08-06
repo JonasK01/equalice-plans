@@ -66,11 +66,25 @@ st.markdown("""
   --orange:#FA7C04; --orange-dark:#D85F00; --orange-light:#FFF4E8;
   --ink:#0F1115; --cream:#FAF7F2; --g700:#3F4651; --g500:#6B7280; --border:rgba(15,17,21,0.08);
 }
-.stApp, .stApp *:not(.material-icons):not([class*="icon"]) {
+/* Geist on TEXT elements only — never on icon glyphs (bare span/* would break Material icons) */
+.stApp, .stApp p, .stApp li, .stApp label, .stApp a,
+.stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
+.stApp button, .stApp input, .stApp textarea, .stApp select,
+.stApp [data-testid="stMarkdownContainer"], .stApp [data-baseweb="tab"],
+.stApp [data-testid="stWidgetLabel"] {
   font-family:'Geist',-apple-system,BlinkMacSystemFont,system-ui,sans-serif !important;
-  letter-spacing:-0.005em;
+}
+/* protect Material icon glyphs (expander chevrons, radios, checks…) */
+.stApp [data-testid="stIconMaterial"],
+.stApp span.material-icons, .stApp span[class*="material-symbols"],
+.stApp .material-symbols-rounded, .stApp .material-symbols-outlined {
+  font-family:'Material Symbols Rounded','Material Symbols Outlined','Material Icons' !important;
 }
 .stApp { background:var(--cream); color:var(--ink); }
+/* inputs stay light + legible */
+.stTextInput input, .stTextArea textarea, [data-baseweb="input"] input {
+  background:#fff !important; color:var(--ink) !important; border:1px solid var(--border) !important;
+}
 [data-testid="stHeader"] { background:transparent; }
 .block-container { padding-top:2.5rem; max-width:1180px; }
 h1,h2,h3,h4 { color:var(--ink) !important; font-weight:700 !important; letter-spacing:-0.03em !important; }
