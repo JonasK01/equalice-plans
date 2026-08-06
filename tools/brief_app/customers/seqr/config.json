@@ -1,0 +1,36 @@
+{
+  "slug": "seqr",
+  "name": "SeQR",
+  "marketplace": "amazon.com",
+  "overlay_language": "en",
+  "primary_color": "#1F6FEB",
+  "accent_color": "#0B1F3A",
+  "text_color": "#0B1F3A",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#F2F4F8",
+  "voice": "Friendly, reassuring, practical. Lost-and-found, made effortless.",
+  "tagline": "Lost. Found. Reunited.",
+  "personality": [
+    "Modern",
+    "Friendly",
+    "Minimalist"
+  ],
+  "fonts": [
+    "Inter",
+    "SF Pro"
+  ],
+  "photo_rules": "Real travel + pet contexts: airports, suitcases, pet collars, keyrings, backpacks. Lifestyle hands. Tag visible and legible. Clean modern interiors.",
+  "no_gos": "Generic AirTag knockoff aesthetic. Stock pet-headshot grids. Stickers / scrapbook vibes. Anything that reads \"cheap Amazon gadget\".",
+  "moodboard_search_terms": [
+    "traveler suitcase airport luggage tag attached",
+    "dog wearing colorful tag on collar happy",
+    "keychain bag zipper smart tag clean lifestyle",
+    "lost wallet returned grateful traveler",
+    "pet owner attaching id tag dog collar close-up"
+  ],
+  "creative_freedom": 4,
+  "logo_path": null,
+  "notes": "Smart QR luggage tags + pet tags. Family of variants (color, size). US marketplace.",
+  "created_at": "2026-05-27T09:44:07",
+  "updated_at": "2026-05-27T09:44:07"
+}

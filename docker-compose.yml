@@ -1,0 +1,37 @@
+# One-command deploy for a Hetzner Cloud server (or any Docker host).
+#   docker compose up -d --build
+# Caddy sits in front and gets a free HTTPS certificate automatically for $APP_DOMAIN.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: tools/brief_app/Dockerfile
+    restart: unless-stopped
+    env_file: .env               # ANTHROPIC_API_KEY, APP_PASSWORD (+ optional UNSPLASH_ACCESS_KEY)
+    environment:
+      - BRIEF_APP_DATA=/data
+      - PORT=8501
+    volumes:
+      - app_data:/data           # brands + generated plans persist across redeploys
+    expose:
+      - "8501"                   # internal only; Caddy proxies to it
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - APP_DOMAIN=${APP_DOMAIN}   # e.g. plans.equalice-academy.com (read from .env)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data          # stores the TLS certificates
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  app_data:
+  caddy_data:
+  caddy_config:

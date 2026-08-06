@@ -1,0 +1,37 @@
+{
+  "slug": "norb",
+  "name": "Norb Lighting",
+  "marketplace": "amazon.com",
+  "overlay_language": "en",
+  "primary_color": "#D85E35",
+  "accent_color": "#4D7BBB",
+  "text_color": "#1F1F1F",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#F4EFE8",
+  "voice": "Clear, science-led, optimistic. It's light changing.",
+  "tagline": "It's light changing.",
+  "personality": [
+    "Modern",
+    "Scientific",
+    "Minimalist",
+    "Warm"
+  ],
+  "fonts": [
+    "Public Play",
+    "Lato"
+  ],
+  "photo_rules": "Real interior scenes. Bulb glow visible. Realistic spectrum/color rendering. Hands-on shots OK. Warm vs. cool spectrum should match each product. Clean, designed interiors.",
+  "no_gos": "Generic LED stock. Pure white clinical product shots without context. Plastic spectrum gimmicks. Garish gradient backgrounds. Anything that reads dollar-store bulb.",
+  "moodboard_search_terms": [
+    "warm interior light bulb glow living room evening",
+    "reading nook lamp warm light winter morning",
+    "full spectrum natural daylight indoor scene",
+    "modern interior lamp pendant edison bulb",
+    "science of light spectrum visible warm cool"
+  ],
+  "creative_freedom": 4,
+  "logo_path": null,
+  "notes": "LED bulb brand with full-spectrum and CRI 97 positioning. Family of SKUs: Everyday Sun, SOFT, RELIEF, SMILE, SLEEP, BUG LITE. FDA disclaimer mandatory on wellness bulbs.",
+  "created_at": "2026-05-27T09:44:07",
+  "updated_at": "2026-05-27T09:44:07"
+}

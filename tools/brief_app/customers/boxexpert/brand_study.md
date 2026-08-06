@@ -1,0 +1,80 @@
+# BOXEXPERT — Brand Study
+
+> Auto-generated from `config.json` by `make_brand_study.py`. Edit `config.json`, then regenerate — do not hand-edit this file.
+> **Read this before starting any image-plan or A+ job for this brand.**
+
+## At a glance
+
+| Field | Value |
+|---|---|
+| Slug | boxexpert |
+| Marketplace | amazon.de |
+| Overlay language | de |
+| Tagline | Professionelle Gehäuselösungen. |
+| Creative freedom (1-5) | 4 |
+
+## Colors
+
+| Role | HEX |
+|---|---|
+| Primary | `#1E6FC4` |
+| Accent | `#0E3D6B` |
+| Text | `#16202B` |
+| Background | `#FFFFFF` |
+| Mood background | `#EEF4FA` |
+
+## Fonts
+
+- Poppins
+- Inter
+
+## Personality
+
+- Ingenieurgetrieben
+- Verlässlich
+- Modern-industriell
+- Hanseatisch
+
+## Voice
+
+Deutsche Ingenieurskompetenz, hanseatisch nüchtern. Sachlich, präzise und selbstbewusst — ohne Werbe-Geschrei. Spricht Profis auf Augenhöhe an (Elektroinstallateure, Maschinenbau, Industrie) UND ambitionierte Heimwerker/DIY, ohne einen von beiden zu verlieren: erst die harte Zahl (IP65, IK08, 50 % leichter als Stahl), dann der konkrete Nutzen im Einsatz. Vertrauen entsteht durch Fakten, Zertifikate und Herkunft — nicht durch Superlative. Ruhig, verlässlich, lösungsorientiert: 'out of the box' oder individualisiert.
+
+## Photo rules
+
+MODERN-INDUSTRIELL, TECHNISCH PRÄZISE, HELL — nie billig-konsumig, nie dunkel-düster. Palette exakt wie Website/A+: BOXEXPERT-BLAU #1E6FC4 als Flächen- und Balkenfarbe, tiefes Navy #0E3D6B für Headlines, SILBER/CHROM-Grau und viel Weiss; das Produkt selbst in RAL 7035 Grau / RAL 9005 Schwarz. Bildsprache der Marke übernehmen: grosse geometrische Headlines, angeschnittene blaue Label-Balken über Bildern, Ghost-Nummern (01/02/03), freigestellte Gehäuse in leichter 3/4-Iso-Ansicht mit sauberem Schlagschatten, technische Detail-Makros.
+PFLICHT-BEWEISE aufs Bild: das Gehaeuse OFFEN mit sichtbarer Elektroinstallation (der Kasten wird wegen des Innenlebens gekauft), die verzinkte MONTAGEPLATTE, die eingeschaeumte PUR-Dichtung im Makro, die Dreikant-Schluesselverriegelung, die Befestigungslaschen + mitgelieferte Schrauben, und der Gewichts-Vergleich gegen Stahlblech (rund 50 % leichter). Spec-Badges als Icon-Set: IP65 · IK08 · -35 °C bis +65 °C · UL 94 HB · CE/RoHS · halogenfrei · UV-bestaendig. Immer eine GROESSEN-Referenz zeigen (Massangaben, Hand oder Zollstock) sowie die Groessen-Range und die Farb-/Deckel-Varianten.
+ANWENDUNGEN als echte Szenen, B2B UND DIY: Maschinenbau/Schaltanlagenbau, Werkstatt, Aussenbereich, PV/Solar, Wallbox und E-Auto-Laden, Pumpen-/Gartentechnik, IT und Netzwerk (ABS ist funkdurchlaessig - echtes Review-Argument fuer FritzBox/WLAN), CNC-Steuerungen. Overlays DEUTSCH, knackig (max. 5 Woerter), eine Aussage pro Bild.
+
+## No-gos (hard don'ts)
+
+'WASSERDICHT' IST FREIGEGEBEN (Kundenentscheidung, zugleich Haupt-Keyword 'verteilerkasten aussen wasserdicht') - immer zusammen mit dem technischen Beleg IP65 verwenden. Weiterhin NICHT bewerben: Untertauchen, Tauchwasserdichtheit oder Dauer-Ueberflutung - IP65 deckt Staubdichtheit und Strahlwasser ab. Keine Superlative wie beste/Nr. 1/garantiert/Wundermittel. Nicht 'verhindert' formulieren, sondern 'schuetzt vor'. Kein Billig-/Consumer-Look, keine Cartoon-Icons, keine dunklen oder unruhigen Szenen - die Marke verkauft technische Ruhe und Verlaesslichkeit. Produkt nie unrealistisch verfremden; RAL-Farben echt halten. Keine Preise, Rabatt-Stoerer oder URLs aufs Bild. Zubehoer nur zeigen, wenn es wirklich im Lieferumfang ist (Montageplatte, Laschen, Schrauben = ja).
+
+## Moodboard search terms
+
+- Schaltschrank Kunststoff IP65 Industrie Montage
+- Elektroinstallation Verteilerkasten offen Verdrahtung
+- Wallbox PV Solar Aussenbereich Gehaeuse Wand
+- Werkstatt Elektriker Werkzeug Schaltschrank montieren
+- Maschinenbau Steuerung Schaltanlagenbau modern
+- technisches Produktrendering Gehaeuse blau weiss industrial
+
+## Notes (product context, keywords, compliance)
+
+BOXEXPERT - professionelle Gehaeusetechnik aus Norderstedt (bei Hamburg), Oststrasse 56, 22844 Norderstedt. CEO: Jan Schwonbeck. Website boxexpert.de, Onlineshop, Gehaeusekonfigurator, Blog, Applikationen. Verkauft auf amazon.de.
+
+MARKEN-DNA / TRUST: Ausgelagerte Gehaeusesparte des Breull Ingenieurbueros. Wurzeln bis 1888 (Familie Breull, Hamburger Freihafen), 01.12.1946 Egon Breull Ingenieurbuero gegruendet, 1981 zweite Generation, spaeter BOXEXPERT als eigenstaendige Marke. HANSEATISCH: Ehrlichkeit, Verlaesslichkeit, Verantwortung, Treue. Mehrwerte: permanente Erreichbarkeit, planungssichere Kosten, Planung/Beratung/Bedarfsanalyse, Sondergehaeuse, Schnelligkeit. Versand bei Bestellung vor 14 Uhr am selben Tag. Internationale Zulassungen CE, UL, CSA. Trusted-Shops Kaeuferschutz 4,67 'Hervorragend'. Claim im Header: 'PROFESSIONELLE GEHAEUSELOESUNGEN'. Weitere Claims: 'Individualisierung der Gehaeuse fuer jeden Einsatzzweck', 'Gehaeuse out of the box oder passend individualisiert', 'All-in-one Gehaeuseloesungen'.
+
+PRODUKT 01 = Serie FLEET, Kunststoff-Schaltschrank, Amazon-ASIN B093C38XCH: 'BOXEXPERT Verteilerkasten aussen wasserdicht [ABS Kunststoff IP65 Gehaeuse] schwarz (Serie Fleet) 300x200x130mm'. Amazon: 4,5 Sterne bei 2.582 Bewertungen, ca. 25,77 EUR. Serien-Claim der Website: 'DAS ROBUSTE LEICHTGEWICHT'.
+
+TECHNIK FLEET: Abmessungen 240x180x130 bis 800x600x260 mm (Amazon-Variantenraster 300x200x130 bis 800x600x260). Farben RAL 7035 Grau, RAL 9005 Schwarz, RAL 3020 Rot, RAL 5021 Wasserblau; Deckel transparent oder geschlossen. Material: Deckel ABS/PC, Unterteil ABS, halogenfrei, UV-bestaendig. Schutzart IP65. Schlagfestigkeit IK08. Temperatur -35 bis +65 Grad C. Entflammbarkeit UL 94 HB. Zulassungen CE, RoHS. Rund 50 % Gewichtsersparnis gegenueber Stahlblech bei gleicher Gehaeusegroesse. Bestaendig gegen Alkali, Oele, Salze; ohne Beschichtung korrosionsbestaendig (kein Rost). Eingeschaeumte PUR-Dichtung (Polyurethan): verschleissarm, witterungs- und alterungsbestaendig. Schwenkbare Tuer, Dreikant-Schluesselverriegelung serienmaessig, optionales Sicherheitsschloss. LIEFERUMFANG: verzinkte Montageplatte, Domen im Gehaeuse, Befestigungslaschen fuer Wandmontage ohne Bearbeitung der Rueckwand, Schrauben. Konkretes Modell 300x200x130: Innenmass 258x151x116 mm, Gewicht 1,4 kg. Downloads je Modell: PDF, 2D-Zeichnung, 3D/STEP.
+
+POSITIONIERUNG laut Website: Stahlblech-Schaltschraenke sind teuer und schwer (Logistik + Handhabung); ausser bei EMV-kritischen Anwendungen ist Stahlblech verzichtbar - Fleet ist die kostenguenstige, leichte, korrosionsfreie Alternative.
+
+ZIELGRUPPE (doppelt): B2B/PROFI - Elektroinstallateure, Schaltanlagen- und Maschinenbau, Industrie, Betreiber; und DIY/PROSUMER - Werkstatt, Garten, Pool-/Pumpentechnik, PV/Solar, Wallbox und E-Auto-Laden, CNC, IT/Netzwerk.
+
+VoC POSITIV (echte Rezensionen): 'formstabil auch bei Hitze', 'Top Qualitaet', 'Verteilerkasten fuer draussen - alles so wie es sein soll', 'Top Preis-Leistung'; EN-Review: passt exakt fuer NEMA-23-Schrittmotortreiber und CNC-Steuerung, Montageplatte liess sich bohren und gewindeschneiden; ES-Review: Gehaeuse fuer Audi-Ladegeraet; 4-Sterne-Review nennt ABS 'funkdurchlaessig und tief genug' fuer IT-Technik, FritzBox, WLAN, DECT - starkes Zusatzargument.
+VoC EINWAENDE (auf Bild/A+ entkraeften): (1) mitgelieferte kleine Schrauben zu schwach - 2 von 8 beim Anziehen abgebrochen; (2) Kratzer in der transparenten Tuer bereits bei Lieferung. Also: Montage-/Lieferumfang ehrlich zeigen und Schutzfolie/Verpackung thematisieren, keine Schrauben-Qualitaet ueberversprechen.
+
+WETTBEWERB auf Amazon: EYPINS, CHENGPI, ELEKTRO-PLAST, RSE, CAMWAY, MOLLOM, QCAB - grosse Auswahl an guenstigen IP65/IP66-Kunststoffkaesten. BOXEXPERT differenziert ueber deutsche Gehaeusetechnik, Zulassungen, PUR-Dichtung, mitgelieferte verzinkte Montageplatte, Groessen-Range, Sondergehaeuse und Beratung.
+
+SPRACHREGELUNG 'WASSERDICHT': Vom Kunden freigegeben und bewusst beibehalten - es ist der Kernbegriff im Amazon-Titel und das staerkste Suchwort der Kategorie. Regel fuer die Copy: 'wasserdicht' als Kundenbegriff nach vorn, IP65 unmittelbar daneben als technischer Beleg ('wasserdicht nach IP65'). Untertauchen/Tauchwasser weiterhin nicht behaupten; der Hinweis auf dauerhaftes Untertauchen bleibt nur im Q&A stehen, weil er Retouren vermeidet.

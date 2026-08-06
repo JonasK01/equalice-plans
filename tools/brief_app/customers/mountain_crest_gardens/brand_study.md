@@ -1,0 +1,71 @@
+# Mountain Crest Gardens — Brand Study
+
+> Auto-generated from `config.json` by `make_brand_study.py`. Edit `config.json`, then regenerate — do not hand-edit this file.
+> **Read this before starting any image-plan or A+ job for this brand.**
+
+## At a glance
+
+| Field | Value |
+|---|---|
+| Slug | mountain_crest_gardens |
+| Marketplace | amazon.com |
+| Overlay language | en |
+| Tagline | Real plants. Real nursery. Real help. |
+| Creative freedom (1-5) | 3 |
+
+## Colors
+
+| Role | HEX |
+|---|---|
+| Primary | `#345C64` |
+| Accent | `#78A848` |
+| Text | `#414042` |
+| Background | `#FFFFFF` |
+| Mood background | `#ECEFF4` |
+
+## Fonts
+
+- Chronica Pro
+
+## Personality
+
+- Nursery-first
+- Knowledgeable
+- Trustworthy
+- Plainspoken
+
+## Voice
+
+Plainspoken confidence — experienced, helpful, factual. Nursery-first authority: lead with plant quality, selection, horticultural knowledge and fulfillment. No hype, no gimmicks (not a mall kiosk with a succulent hat).
+
+## Photo rules
+
+Real, true-to-life plant photography — accurate rosette forms and natural colors (never oversaturated/fake). Show the actual 2-inch nursery pots and the full pack laid out (a grid of the varieties). For VARIETY packs, show the diversity (each one different); for BULK packs, show the multiples (5 of each). Match the scene to the plant's real use: cold-hardy types in rock-garden/outdoor settings, tender types in bright indoor/decor settings, trailing types in hanging planters, cactus in desert decor. Hands or a coin for scale. Clean, nursery-grade, honest.
+
+## No-gos (hard don'ts)
+
+No hype / gimmick / mall-kiosk tone. No oversaturated or unrealistic plant colors. No superlatives in listing copy (avoid best/#1/ultimate). Never show or imply plants that are not actually in the pack. No generic stock imagery that doesn't match the real plants. Don't claim a tender plant is frost-hardy (or vice versa).
+
+## Moodboard search terms
+
+- sempervivum hens and chicks rosette rock garden
+- echeveria colorful succulent rosette arrangement
+- string of pearls trailing succulent hanging planter
+- assorted succulents 2 inch nursery pots grid
+- cactus variety small pots desert decor
+- succulents close up natural color macro
+
+## Notes (product context, keywords, compliance)
+
+Mountain Crest Gardens — family-owned, licensed California succulent nursery since 1995; 'The Ultimate Succulent Store'; 1,000+ varieties; 60,000+ 5-star reviews; quality guaranteed; free shipping $45+. Sells on amazon.com (US). Brand palette (from style guide): teal #345C64, greens #609030/#78A848/#90A860/#A8C078, terracotta-pot #C07848, light #ECEFF4, dark gray #414042. Font Chronica Pro. NOTE: avoid 'Ultimate/best/#1' inside scanned listing copy (use only as brand context). 
+
+*** PRODUCT DIFFERENTIATION MATRIX (the #1 job: make each pack's identity + difference crystal clear so buyers pick the RIGHT one). All plants ship fully rooted in 2-inch nursery pots. ***
+- 01 Sempervivum VARIETY PACK (B0FK6C91NH): 20 plants, 20 DIFFERENT varieties, NO repeats (one of each = sampler/collector). Sempervivum 'hens & chicks'. VERY cold-hardy to -20F, USDA Zone 5-10, OUTDOOR. Use: rock gardens, collecting, diverse displays.
+- 02 TRAILING & STRINGS PACK (B0FK6MXSS6): 12 plants, 6 varieties x2. TRAILING/cascading habit (stems to ~3 ft) - e.g. string-of-pearls, burro's tail. Tender; bright INDOOR light or partial outdoor shade. Use: HANGING planters, cascading decor.
+- 03 HARDY VARIETY PACK (B0FH7LHZTQ): 20 unique plants, hand-picked MIX (Sempervivum + Sedum + more; rosette/stemmed/trailing forms). Frost-tolerant to 0F, USDA Zone 7-10, OUTDOOR. Use: landscaping, rock gardens, frost-proof variety.
+- 04 ASSORTED SUCCULENTS BULK (B0FH5W3DB6): CHOOSE 25/50/100 plants; 10 different varieties x5. Mixed genera (Echeveria, Sedum, Sempervivum, Crassula...). Mixed hardiness; bright indoor or partial outdoor. Use: BIGGEST variety + SCALABLE quantity, bulk projects/events.
+- 05 SEMPERVIVUM BULK (B0FK6V3ZKC): 25 plants, 5 varieties x5 (MULTIPLES of each). Sempervivum. Cold-hardy to -20F, Zone 5+, OUTDOOR. Use: outdoor PROJECTS, landscaping, RESALE (needs several of each).
+- 06 ECHEVERIA BULK (B0FK75WBM9): 25 (or 50) plants, 5 varieties x5. ECHEVERIA - classic COLORFUL rosettes (pink/purple/blue/silver). Tender; bright indoor or partial outdoor, mild climates. Use: colorful arrangements, decor, gifts.
+- 07 CACTUS BULK (B0FK6S2YS9): 25 plants, 5 species/cultivars x5. TRUE CACTI (globular/columnar/clustered, spiny). Full sun or bright indoor; warm (Zone 10). Use: desert-themed decor, cactus-specific projects.
+
+KEY AXES TO DISAMBIGUATE ON EVERY PLAN: (a) VARIETY pack (one of each, max diversity, collecting) vs BULK pack (5 of each, quantity, projects/resale); (b) PLANT TYPE (Sempervivum vs Echeveria vs Trailing vs Cactus vs mixed); (c) HARDINESS - cold-hardy OUTDOOR (01/03/05) vs tender INDOOR/mild (02/04/06) vs warm cactus (07); (d) COUNT + pot size. Every plan must state its own identity clearly AND include a 'Which pack is right for you?' comparison vs the sibling packs.

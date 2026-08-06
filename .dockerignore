@@ -1,0 +1,29 @@
+# Build context = repo root. Keep it lean: the image only needs the app code +
+# each brand's config.json/logo (the app seeds & generates everything else at runtime).
+
+# virtualenvs / caches / vcs
+.venv/
+**/__pycache__/
+**/*.pyc
+.git/
+**/.DS_Store
+
+# disposable + huge sync artifacts
+.tmp/
+".tmp 2/"
+.tmp*/
+
+# generated & source artifacts NOT needed at runtime (app seeds from config.json + logo only)
+**/*.pdf
+**/*.xlsx
+**/*.xls
+tools/brief_app/customers/*/source/
+tools/brief_app/customers/*/products/
+tools/brief_app/customers/*/legacy/
+tools/brief_app/customers/*/brand_study.md
+
+# NEVER bake secrets into the image
+.env
+.env.*
+credentials.json
+token.json

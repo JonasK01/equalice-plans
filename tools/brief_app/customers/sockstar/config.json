@@ -1,0 +1,30 @@
+{
+  "slug": "sockstar",
+  "name": "Sockstar",
+  "marketplace": "amazon.de",
+  "overlay_language": "de",
+  "primary_color": "#0059A1",
+  "accent_color": "#45BEDA",
+  "text_color": "#1C2A33",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#EAF6FB",
+  "voice": "Freundlich, einfach und alltagsnah — der sympathische Ordnungs-Held für den Waschtag. Familienfreundlich, leicht verständlich, nie kompliziert oder technisch. Löst ein echtes Alltagsproblem mit einem Augenzwinkern ('Nie wieder Socken verlieren'), bleibt dabei aber hochwertig und premium 'Made in Germany'. Warm, aufgeräumt, hilfsbereit.",
+  "tagline": "Nie wieder Socken verlieren.",
+  "personality": ["Freundlich", "Einfach", "Familienfreundlich", "Hochwertig"],
+  "fonts": ["Arial", "Inter"],
+  "photo_rules": "HELL, CLEAN, FREUNDLICH, AUFGERÄUMT — viel Weiss/Luft, das Marken-Blau (#0059A1 kräftig + #45BEDA hell) als frische Akzente, weiche Formen, gut lesbare Typo (Arial-nah). Themen: FAMILIE, ORDNUNG, ALLTAGSERLEICHTERUNG rund um die Wäsche. HERO das Sockstar-Clip-Produkt sauber freigestellt und im Einsatz. PFLICHT-STORY: die Reise 'Wäschekorb → Waschmaschine → Trockner → Schublade' — Sockenpaare bleiben durchgehend zusammen. Zeige den 1-Sekunden-Clip-Handgriff (clippen, waschen, trocknen, paarweise verstauen), den freundlichen Vorher/Nachher-Kontrast (Chaos einzelner Socken vs. aufgeräumte Paare), die verschiedenen Farben je Familienmitglied, und die Premium-Gift-Box (20 Stück, Black & White Edition). Beweise: 'Made in Germany', 'hitzebeständig bis 90 °C', 'für hunderte Waschgänge', 'waschmaschinen- & trocknergeeignet', 'wiederverwendbar/nachhaltig'. Overlays DEUTSCH, kurz & klar (max. 5 Wörter), eine einfache Aussage pro Bild.",
+  "no_gos": "KUNDEN-NO-GOS (aus Onboarding, strikt): KEINE dunklen, schweren oder düsteren Designs; keine zu verspielten oder schwer lesbaren Schriftarten; keine unruhigen, überladenen Layouts mit zu vielen Grafikelementen; keine billig wirkenden/generischen Stockfotos; KEINE technischen oder futuristischen Bildwelten (passt nicht zu Wäsche/Haushalt); keine aggressiven Farben oder Neonfarben; keine komplizierte oder zu technische Kommunikation. Immer modern, freundlich, hochwertig, leicht verständlich, hell und aufgeräumt — als Premium 'Made in Germany' wahrnehmbar. Zusätzlich: keine Superlative (beste/Nr. 1/garantiert), keine Preise/Rabatte/URLs aufs Bild.",
+  "moodboard_search_terms": [
+    "sock clips laundry pairs together bright clean",
+    "tidy laundry room folded socks drawer organised family",
+    "washing machine socks fresh bright friendly home",
+    "family laundry day helpful simple home hack",
+    "black white socks paired neat minimalist bright",
+    "made in germany household helper premium clean"
+  ],
+  "creative_freedom": 4,
+  "logo_path": null,
+  "new_brand": true,
+  "brand_statement": "Von Sockstar: nie wieder einzelne Socken oder lästiges Sortieren — der waschbare Sockenclip, Made in Germany, der Ordnung in jeden Waschtag bringt.",
+  "notes": "Sockstar (SOCKSTAR) — deutsche Haushalts-/Ordnungsmarke, Sockenclips. Von Dolphin Innovations (wie TRU VIRTU). Verkauft auf amazon.de. Onboarding-Broschüre (Sockstar.pdf) liefert Marke: Logo in Arial, Farben #45BEDA (Hellblau) + #0059A1 (Blau). KEIN sauberes Logo-File erhalten -> Logo + finale HEX/Font anfragen, dann logo.* seeden.\n\nMARKEN-WERTE (Onboarding): Ordnung & Einfachheit, Zeitersparnis, Familienfreundlichkeit, hochwertige & langlebige Qualität, Nachhaltigkeit (wiederverwendbar), Made in Germany. STIL: modern, freundlich, hochwertig, leicht verständlich, hell, aufgeräumt. Photoshop des Produkts ins Bild OK, wenn es echt aussieht; keine billigen Stockfotos.\n\nPRODUKT 03 = Premium Sock Clips Gift Box Black & White Edition (20 Stück), ASIN B000QGFBQG. Waschbarer Sockenclip, der Sockenpaare vom Wäschekorb über Waschmaschine & Trockner bis zur Schublade zusammenhält. Made in Germany aus robustem Premium-Kunststoff (hunderte Waschgänge), hitzebeständig bis 90 °C, waschmaschinen- & trocknergeeignet, wiederverwendbar. Verschiedene Farben -> jedes Familienmitglied eigene Clips. SEO-Sheet ist GEFÜLLT (Titel 196 Zeichen + 5 Bullets) -> via seo_loader übernehmen.\n\nZIELGRUPPE: Familien, Paare, Singles, ordnungsliebende Haushalte; Kinder-, Sport- & Business-Socken. VoC-EINWÄNDE (entkräften): (1) Preis manchen zu hoch -> Value: nie Socken verlieren, Zeit sparen, hunderte Waschgänge, Made in Germany; (2) Haltbarkeit -> 90 °C, hunderte Waschgänge, robuster dt. Kunststoff; (3) Nutzen haushaltsabhängig -> zeigen für wen es ideal ist; (4) 'zusätzlicher Handgriff' -> als 1-Sekunden-Clip / einfache Routine framen.\n\nHOUSE RULES: new_brand=true -> 7 Module, Modul 7 = 'From the Brand' (kein Comparison); brand_statement gesetzt."
+}

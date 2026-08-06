@@ -1,0 +1,34 @@
+# ── Secrets — NEVER commit ──────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+credentials.json
+token.json
+
+# ── virtualenv / caches / os ────────────────────────────────────────────
+.venv/
+**/__pycache__/
+**/*.pyc
+**/.DS_Store
+
+# ── disposable / huge sync artifacts ────────────────────────────────────
+.tmp/
+.tmp 2/
+.tmp*/
+*.zip
+
+# ── heavy design/source/generated files NOT needed to deploy ────────────
+# (the hosted app seeds from each brand's config.json + logo.* and generates
+#  plans at runtime; keep the repo lean and under GitHub's 100MB/file limit)
+*.pdf
+*.ai
+*.psd
+*.eps
+tools/brief_app/customers/*/source/
+tools/brief_app/customers/*/products/*/assets/
+tools/brief_app/customers/*/products/*/legacy/
+tools/brief_app/**/assets/cache/
+briefs/
+
+# Keep (small, needed): customers/*/config.json, logo.*, brand_study.md,
+# products/*/run.py, products/*/listing.xlsx, and all app code under tools/brief_app/core.

@@ -1,0 +1,30 @@
+{
+  "slug": "numotizine",
+  "name": "NUMOTIZINE",
+  "marketplace": "amazon.com",
+  "overlay_language": "en",
+  "primary_color": "#283778",
+  "accent_color": "#FFED39",
+  "text_color": "#1B2340",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#EEF1F8",
+  "voice": "Professional, warm, trustworthy, confident and EDUCATIONAL. A 100+ year OTC heritage brand (Hobart Laboratories, since 1905) that builds trust by teaching, not hard-selling. Reassuring and dependable — the classic muscle rub families have relied on for generations. Avoid overly salesy language and unrealistic claims.",
+  "tagline": "Trusted pain relief since 1905.",
+  "personality": ["Trustworthy", "Heritage", "Professional", "Warm"],
+  "fonts": ["Montserrat", "Lato"],
+  "photo_rules": "PROFESSIONAL, WARM, TRUSTWORTHY, EDUCATIONAL — clean and calm (NOT cluttered, NOT overly clinical), navy #283778 + bright yellow #FFED39 + white, bold easy-to-read Montserrat headings. HERO the real 8 oz NUMOTIZINE jar — per brand rule always show the front of the jar, the lid, and the texture of the thick traditional ointment. Communicate: 1.25% menthol topical analgesic, the classic COOLING muscle-rub sensation, a thick paste that spreads smoothly and STAYS where applied, easy water removal. Show honest application areas — sore muscles, joints, shoulders, back, arms, legs (and the traditional chest-rub menthol-vapor use). TRUST badges to feature: 'Trusted Since 1905 / 100+ Years', 'Made in the USA', 'Own FDA-Registered Facility', 'Five-Generation Family-Owned', 'Ages 12+'. People: real, relatable active and older adults with everyday aches — warm and dignified, never clinical or gimmicky. English overlays, PUNCHY (<=5 words), one clear idea per image.",
+  "no_gos": "OTC-COMPLIANCE FIRST (this is an FDA OTC topical analgesic). Use ONLY approved OTC menthol claims: 'temporarily relieves minor aches and pains of muscles and joints' (associated with arthritis, simple backache, strains, sprains, bruises). NEVER: cures/heals/treats disease, permanent or deep-tissue healing, 'strongest/#1/best', guaranteed or unrealistic relief, prevents/reverses arthritis. Ages 12+ (not for young children unless label says so). LOGO RULES (brand guide): never place the logo on a black background; do not stretch, recolor, add effects to, or remove the ® from the logo. STYLE no-gos (onboarding): no cluttered/overly-busy layouts, no bright neon colors, no cartoon-style illustrations, nothing cheap or gimmicky, not overly clinical, no overly salesy language. No prices/URLs on-image.",
+  "moodboard_search_terms": [
+    "menthol muscle rub ointment jar clean product photography",
+    "older active adult applying pain relief cream shoulder warm",
+    "sore muscles joints back relief lifestyle natural light",
+    "heritage american family brand trusted since 1900s",
+    "topical analgesic thick ointment texture macro clean",
+    "made in usa fda registered facility trust badge navy yellow"
+  ],
+  "creative_freedom": 3,
+  "logo_path": "customers/numotizine/logo.png",
+  "new_brand": true,
+  "brand_statement": "From NUMOTIZINE: the classic menthol muscle rub families have trusted since 1905 — made in the USA in our own FDA-registered facility, by five generations of the same family.",
+  "notes": "NUMOTIZINE Pain Relief Ointment — OTC topical analgesic by Hobart Laboratories, Inc., Bemidji, Minnesota; family-owned since 1905 (five generations). Sells on amazon.com (US). REAL LOGO + Brand Guide supplied -> logo.png seeded. Colours sampled from logo: navy #283778 + yellow #FFED39. Fonts: Montserrat / Lato / Open Sans, bold headings.\n\nPRODUCT 01 = NUMOTIZINE Pain Relief Ointment (ASIN B000GCPX7M). 1.25% MENTHOL topical analgesic; thick, traditional paste-like consistency that stays where applied; cooling sensory effect; releases menthol vapors (traditional chest-rub use); for muscles, joints, shoulders, back, arms, legs; removable with water; 8 oz jar; Made in USA. SEO-Sheet is FILLED (title 191 chars + 5 bullets) -> take via seo_loader.\n\nBRAND VOICE (guide): Professional, Warm, Trustworthy, Confident, Educational; avoid overly salesy language + unrealistic claims. STRENGTHS to focus: 100+ years trusted quality, Made in USA, own FDA-registered facility, heritage, easy to understand, FDA OTC compliant. Mission: dependable, high-quality relief; educate while building trust. Brand-guide logo rules + onboarding style no-gos captured in no_gos.\n\nTARGET: adults & ages 12+ with occasional muscle/joint discomfort; active individuals with post-exercise soreness; older adults with joint/arthritis discomfort; users of traditional chest rubs.\n\nVoC OBJECTIONS (address honestly, within OTC limits): (1) relief inconsistent/brief -> frame as TEMPORARY relief of MINOR aches; thick paste stays put for targeted comfort; (2) strong menthol odor -> frame as the classic, honest cooling menthol experience (traditional strong rub); (3) greasy/sticky -> thick paste stays where applied + easy water removal; (4) sensation too intense -> note 1.25% menthol cooling, apply to targeted area, patch-test.\n\nHOUSE RULES: new_brand=true -> 7 modules, Module 7 = 'From the Brand' (no Comparison); brand_statement set."
+}

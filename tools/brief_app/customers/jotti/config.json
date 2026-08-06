@@ -1,0 +1,37 @@
+{
+  "slug": "jotti",
+  "name": "Jotti",
+  "marketplace": "amazon.de",
+  "overlay_language": "de",
+  "primary_color": "#8B5A2B",
+  "accent_color": "#2F2A26",
+  "text_color": "#1A1614",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#EFE6D9",
+  "voice": "Handwerklich, ehrlich, traditionell. Made for leather lovers.",
+  "tagline": "Traditionelle Lederpflege.",
+  "personality": [
+    "Heritage",
+    "Premium",
+    "Warm",
+    "Minimalist"
+  ],
+  "fonts": [
+    "Inter",
+    "Garamond"
+  ],
+  "photo_rules": "Real leather (saddles, boots, bags, jackets). Aged wood, brass, linen. Warm side-light. Hands working leather. No synthetic leather, no neon brands in frame.",
+  "no_gos": "Synthetic leather. Bright modern fashion shots. Plastic dispensers. Hipster-flat-lay aesthetic. Anything that reads supermarket polish.",
+  "moodboard_search_terms": [
+    "leather workshop hands polishing saddle warm light",
+    "vintage leather boots brush polish wood table",
+    "horse saddle leather oiling hands close-up",
+    "aged leather jacket conditioning bristle brush",
+    "luxury bag leather balm tin wood surface warm"
+  ],
+  "creative_freedom": 3,
+  "logo_path": null,
+  "notes": "Lederbalsam in mehreren Varianten (braun, farblos, 200 ml, 500 ml). Marketplace amazon.de — Overlays auf Deutsch.",
+  "created_at": "2026-05-27T09:44:07",
+  "updated_at": "2026-05-27T09:44:07"
+}

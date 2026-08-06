@@ -1,0 +1,30 @@
+{
+  "slug": "waschii",
+  "name": "Waschii",
+  "marketplace": "amazon.com",
+  "overlay_language": "en",
+  "primary_color": "#1E2A32",
+  "accent_color": "#14B8A6",
+  "text_color": "#17242B",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#EAF4F2",
+  "voice": "Freedom to travel light. Fresh clothes anywhere — no power, no plumbing, no laundromat. Smart, minimalist, adventurous and quietly reassuring. Speaks to one-bag travelers, vanlifers, backpackers and digital nomads who refuse to carry a week of dirty laundry. Practical over hype: shows the moment (a hostel with no sink, a campsite, a sleeper train) and how Waschii solves it.",
+  "tagline": "Wash anywhere. Travel lighter.",
+  "personality": ["Adventurous", "Minimalist", "Practical", "Reassuring"],
+  "fonts": ["Montserrat", "Inter"],
+  "photo_rules": "REAL, sunlit, wanderlust travel photography — NOT sterile studio. Palette: deep charcoal/slate #1E2A32 (the dark solar-heat panel + premium ink) + FRESH AQUA/TEAL #14B8A6 accent (water, clean, fresh) + warm SAND neutral (the TPU exterior) on off-white. Show the PRODUCT-IN-USE moment that proves the promise: hands rolling the top closure and agitating the bag on a van bench / campsite table / hostel bunk; water being poured in; a fresh tee hung to dry on a paracord line by a van door. PROVE the specifics on-image: '140 g / 4.9 oz' on a luggage scale; folds to palm/pocket size; LEAKPROOF held upside-down with zero drip; the DARK SOLAR PANEL warming water in the sun; 'what fits' laid out (≈2 shirts + 3 underwear + socks); the wash → rinse → hang 3-step routine; roll-top + triple-welded seams close-up; food-grade TPU. English overlays only (USA), PUNCHY (<=5 words). One callout, one prop, one idea per image — clean at mobile thumbnail.",
+  "no_gos": "Do NOT imply an electric/motorized machine — Waschii is MANUAL (you are the agitation). Do not claim it fully replaces a laundromat or a real washing machine; it refreshes small essential loads. NEVER name or knock the competitor 'Scrubba' (it dominates the keyword field — we out-show, not out-name). No 'best / #1 / guaranteed / miracle'. No prices or URLs on-image. Keep it premium, not cheap/gimmicky. Product must stay accurate to the real bag (roll-top TPU with dark solar panel) — no invented packaging or garbled text.",
+  "moodboard_search_terms": [
+    "vanlife laundry campervan door drying line",
+    "backpacker hand wash clothes hostel minimalist",
+    "portable wash bag camping travel gear flatlay",
+    "one bag travel packing minimalist digital nomad",
+    "sleeper train cabin small space travel essentials",
+    "off grid campsite wash clothes sunlight"
+  ],
+  "creative_freedom": 4,
+  "logo_path": null,
+  "notes": "Waschii (pronounced 'washy') — a Scrubba-style POCKET-SIZED MANUAL travel clothes washer / portable washing bag. Sells on amazon.com (US), ASIN B0CQ71ZVJF, product 01. Client contact folder = 'Eric Williamson'; BRAND name = Waschii.\n\nPRODUCT FACTS (from listing + Pack Hacker review + brand site): 6.7 L capacity for small must-wash loads (roughly 2 shirts + 3 underwear + socks — refresh core garments between laundromat visits). Weighs only 140 g (4.9 oz); folds to pocket/palm size. MANUAL — no electricity, plumbing or sink required (you become the washing machine: add detergent, ~4-5 L water, roll the top closed, agitate by hand ~2-3 min, rinse, hang). Valve-free LEAKPROOF body with silicone gasket + triple-welded seams. Flexible fully-waterproof FOOD-GRADE TPU — glassy smooth interior (rinses clean) + textured 'sandy' exterior (grip during agitation). Smart agitation via water flow + hand motion (no rigid scrub board). DARK REAR SOLAR PANEL absorbs sunlight to gently warm the wash water (eco, no power). Gentle process for delicates, merino, activewear, baby clothes. Costs well under $50.\n\nUSE CASES: campsites, hostels (no sink), cabins, boats, sleeper trains, cruises, RVs/vanlife, airports, off-grid.\n\nTARGET GROUP: minimalist / one-bag travelers, backpackers, thru-hikers, digital nomads, campers, vanlife & RV users, hostel guests, cruise & train travelers, sailors, parents washing baby essentials, compact emergency-kit builders.\n\nPROBLEMS SOLVED: no access to washer/sink/plumbing/power; expensive or inconvenient laundromats; little luggage space; need to refresh underwear/essentials fast; dirty-laundry odor buildup; bulky electric mini washers; leaky wash bags; limited water & detergent; fear of damaging delicates.\n\nTOP KEYWORDS: portable washing bag (perceived main), travel wash bag, camping wash bag, travel laundry bag, portable washing machine, travel washing bag, wash bag travel, camping clothes washer, portable laundry, manual clothes washer. COMPETITOR = Scrubba (huge branded-KW volume 'scrubba wash bag' etc.) — do NOT use their name in our copy.\n\nVoC / positioning to earn the click: 'wash wherever you go', 'pack fewer clothes, travel lighter', 'fresh essentials = comfort + normality on the road', leakproof peace of mind, solar-warm water off-grid.\n\nBRAND IDENTITY NOTE: NO official brand guide / logo file was supplied — colors + fonts are DERIVED from the product (charcoal solar panel + aqua water + sand TPU) and the travel-gear category. ACTION: Jonas to drop the real Waschii logo so we seed logo.* and lock exact HEX/fonts.",
+  "created_at": "",
+  "updated_at": ""
+}

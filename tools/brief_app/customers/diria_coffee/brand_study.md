@@ -1,0 +1,72 @@
+# CAFÉ DIRIÁ — Brand Study
+
+> Auto-generated from `config.json` by `make_brand_study.py`. Edit `config.json`, then regenerate — do not hand-edit this file.
+> **Read this before starting any image-plan or A+ job for this brand.**
+
+## At a glance
+
+| Field | Value |
+|---|---|
+| Slug | diria_coffee |
+| Marketplace | amazon.com |
+| Overlay language | en |
+| Tagline | Single-origin Costa Rican coffee. With you since 1962. |
+| Creative freedom (1-5) | 4 |
+
+## Colors
+
+| Role | HEX |
+|---|---|
+| Primary | `#2E1C12` |
+| Accent | `#C57B3C` |
+| Text | `#241A12` |
+| Background | `#FFFFFF` |
+| Mood background | `#F4ECE0` |
+
+## Fonts
+
+- Fraunces
+- Inter
+
+## Personality
+
+- Artisanal
+- Rooted
+- Warm
+- Specialty
+
+## Voice
+
+Warm, artisanal and story-driven — a specialty single-origin Costa Rican coffee from a farmer cooperative (Coopepilangosta) that has grown coffee in the Nicoya Blue Zone since 1962. Proud of origin, craft and the land: leads with provenance (Nicoya Peninsula Blue Zone, 700–1,000 m, shade-grown) and the signature Matambú process, then the sensory reward. Educational but welcoming — invites the buyer to slow down for a more distinctive daily ritual. Never hypey, never health-claimy.
+
+## Photo rules
+
+WARM, ARTISANAL, SPECIALTY — rich espresso brown #2E1C12 + warm ochre/terracotta #C57B3C on a cream #F4ECE0 base, natural daylight, real texture. HERO the real 12 oz (340 g) Diriá bag (show the front label + a clean shot of the whole beans OR ground grounds spilling, plus a brewed cup). Communicate: single-origin Costa Rican coffee from the Nicoya Peninsula (a recognized Blue Zone), 700–1,000 m altitude, 100% Arábica, shade-grown in agroforestry, and the signature MATAMBÚ process (anaerobic pre-fermentation in the cherry → sun-drying → alcoholic/barrel fermentation → second sun-drying). Make the COMPLEX cup vivid — tasting notes cardamom liqueur, cocoa, cherry, blueberry, Carao honey; citric acidity, creamy body, fruity aroma; a bold, layered cup (body 5/5, low softness), which answers the 'too mild/weak' review objection. Show freshness cues (roast/expiry date on bag, resealable pack, 'grind or measure only what you need'). BADGES to feature: 'Single Origin', 'Nicoya Blue Zone Origin', 'Costa Rica 100% Arábica', 'Shade-Grown / Agroforestry', 'Cooperative since 1962', '192 producer families', '12 oz (340 g)'. Heritage cue: the Chorotega/Matambú Indigenous inspiration and Guanacaste landscape — respectful, authentic, never a cartoon or costume cliché. People: real coffee lovers in warm, calm home/ritual moments. English overlays, PUNCHY (<=5 words), one idea per image.
+
+## No-gos (hard don'ts)
+
+FOOD/COFFEE COMPLIANCE — no health or disease claims. 'Blue Zone' may ONLY be used as ORIGIN/provenance (the Nicoya Peninsula is a recognized Blue Zone region) — NEVER imply the coffee promotes longevity, health, weight loss, lowers cholesterol, 'anti-aging', or any wellness outcome. No 'best/#1/world's finest' blank superlatives — stay factual (single origin, specific altitude, cooperative, named process). Do NOT claim USDA/EU Organic certification unless proven (the Amazon SKU is the Matambú process, not the 'Orgánico' line). 'Alcoholic/barrel fermentation' is a PROCESS description — do not imply the coffee contains alcohol or is boozy to drink. No caffeine/energy medical claims. Keep tasting notes as tasting notes (flavor descriptors), not ingredients. No prices/discounts/URLs on-image. Respect the Indigenous heritage authentically (no stereotype imagery).
+
+## Moodboard search terms
+
+- specialty single origin coffee bag beans cup warm daylight
+- costa rica nicoya peninsula coffee farm shade grown agroforestry
+- coffee cherries anaerobic natural process sun drying beds
+- coffee tasting notes cocoa cherry blueberry flat lay warm
+- artisan coffee cooperative farmers highland costa rica
+- cozy morning coffee ritual pour over cream brown palette
+
+## Notes (product context, keywords, compliance)
+
+CAFÉ DIRIÁ = brand of Coopepilangosta R.L., a Costa Rican coffee cooperative founded 1962 in Pilangosta, Hojancha, Guanacaste. 100% of coffee grown in the Nicoya Peninsula (Hojancha, Nicoya, Santa Cruz) — one of the world's five Blue Zones (Nat Geo 2012). 100% Arábica 'Costa Rica 95', 700–1,000 m, shade-grown agroforestry; sustainability via NAMA Café program (fewer fertilizers, efficient water/energy, carbon audits). Supports 192 local producer families. Sells on amazon.com (US), English. NO clean logo/HEX supplied -> palette derived: espresso brown + warm ochre on cream. Fonts Fraunces/Inter (specialty-artisan). Source: 'Catálogo Café Diriá español.pdf' (13 pp) + filled SEO workbook.
+
+PRODUCT = Diria Costa Rica Coffee 'Proceso Matambú', 12 oz (340 g). TWO Amazon VARIANTS built (client rule: SEO sheet has multiple variant tabs -> plan for all):
+  • 01 Whole Bean  -> SEO sheet 'SEO_Costa Rica Coffee Diria Pro' (bullet 5 'FRESH GRIND, YOUR WAY')
+  • 02 Ground      -> SEO sheet 'Tabellenblatt10' (bullet 5 'READY FOR YOUR ROUTINE')
+ASINs not in the sheet yet -> filenames use WHOLE-BEAN / GROUND placeholders; fill ASIN when live.
+
+MATAMBÚ PROCESS (signature, Chorotega/Matambú Indigenous-inspired): anaerobic pre-fermentation while still in the cherry -> first sun-drying -> alcoholic fermentation in barrels -> second sun-drying. Sensory (catalog): body 5/5, aroma 4/5, acidity 3/5, softness only 2/5 (i.e. BOLD, not mild). SEO tasting notes: cardamom liqueur, cocoa, cherry, blueberry, Carao honey; citric acidity, creamy body, fruity aroma.
+
+CTR/PRICE (Improvement sheet): main image must be eye-catching; price ~$23 feels high -> justify premium via single origin, Blue Zone, cooperative, hand-crafted specialty process. REVIEW OBJECTIONS (category): 'too weak/mild', 'notes hard to detect', 'stale/old roast', 'too acidic/sour', 'damaged/failed seal', 'price high'. Counter: Matambú is a BOLD complex cup (body 5/5); make tasting notes vivid; show freshness/roast-date + resealable bag; premium justified by origin+craft.
+
+HOUSE RULES: new_brand=true -> 7 A+ modules, NO Comparison, Q&A = finale (Module 7), Module 6 = benefits/values banner ending with a smart Q&A bridge. Copywriting pass applied.

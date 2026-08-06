@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/python -m py_compile tools/meta_comments.py)",
+      "Bash(.venv/bin/python tools/meta_comments.py --all-accounts --ad-status all --no-facebook --no-organic --no-analyze)"
+    ]
+  }
+}

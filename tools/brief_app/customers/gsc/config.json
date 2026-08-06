@@ -1,0 +1,37 @@
+{
+  "slug": "gsc",
+  "name": "Go Science Crazy",
+  "marketplace": "amazon.com",
+  "overlay_language": "en",
+  "primary_color": "#FF6B35",
+  "accent_color": "#2E294E",
+  "text_color": "#1A1A1A",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#FFF6E6",
+  "voice": "Curious, kid-energy, classroom-friendly.",
+  "tagline": "Real science. Real curiosity.",
+  "personality": [
+    "Playful",
+    "Scientific",
+    "Bold",
+    "Creative/Original"
+  ],
+  "fonts": [
+    "Inter",
+    "Open Sans"
+  ],
+  "photo_rules": "Real classroom and home-lab settings. Kid hands using the kit. Bright daylight. Clear product geometry visible. Excited but believable expressions if faces are shown.",
+  "no_gos": "Fake-lab green-tube cliché. Adults in lab coats faking experiments. Over-staged stock kid photos. Cluttered backgrounds.",
+  "moodboard_search_terms": [
+    "classroom science experiment kids hands measuring",
+    "home science kit hands measuring photogate ramp",
+    "dissection biology kit specimen tools classroom",
+    "curious child stopwatch physics experiment",
+    "science fair project kids hands working measuring tools"
+  ],
+  "creative_freedom": 4,
+  "logo_path": null,
+  "notes": "STEM education kits: Photogate, Dissection Kit, etc. US marketplace. Image plan focus per Jonas guidance — tight 9-10 page briefs.",
+  "created_at": "2026-05-27T09:44:07",
+  "updated_at": "2026-05-27T09:44:07"
+}

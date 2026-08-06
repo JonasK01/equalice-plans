@@ -1,0 +1,69 @@
+# Van Well — Brand Study
+
+> Auto-generated from `config.json` by `make_brand_study.py`. Edit `config.json`, then regenerate — do not hand-edit this file.
+> **Read this before starting any image-plan or A+ job for this brand.**
+
+## At a glance
+
+| Field | Value |
+|---|---|
+| Slug | van_well |
+| Marketplace | amazon.de |
+| Overlay language | de |
+| Tagline | Trends in Glas und Porzellan. |
+| Creative freedom (1-5) | 3 |
+
+## Colors
+
+| Role | HEX |
+|---|---|
+| Primary | `#1C2E4A` |
+| Accent | `#B8912E` |
+| Text | `#1C2330` |
+| Background | `#FFFFFF` |
+| Mood background | `#EEF1F5` |
+
+## Fonts
+
+- Montserrat
+- Open Sans
+
+## Personality
+
+- Hochwertig
+- Traditionell
+- Preis-Leistung
+- Gastro & Zuhause
+
+## Voice
+
+Deutsch, hochwertig aber zugänglich. Qualität + Preis-Leistung, Tradition und Vertrauen. Spricht Gastronomen UND qualitätsbewusste Privatkunden an. Selbstbewusst, klar, kein Hype.
+
+## Photo rules
+
+MATCH THE ESTABLISHED VAN WELL STYLE (see the screenshots of the existing catalog): navy-blue (#1C2E4A) overlay bars with WHITE bold sans headlines; the VAN WELL crown wordmark top-right on lifestyle images; feature/benefit ICON BADGES sitting in a navy bar (e.g. Spülmaschinengeeignet · Mikrowellenfest · Robustes Porzellan · verstärkter Boden · Eichstrich). Real, warm GASTRO + FAMILY lifestyle (people enjoying food/drinks at wood tables, tiled kitchens, restaurant scenes) alongside clean studio product shots on white. Trust cues: '60+ Jahre Qualität' badge; the brand-trust close image 'Mehr als 10.000 Restaurants vertrauen auf VAN WELL'. Clean, premium, appetizing. No clutter, no cheap look.
+
+## No-gos (hard don'ts)
+
+No cheap/discount look. No hype/superlatives (beste/#1/garantiert). Don't stray from the navy + white + crown identity. No cold/sterile styling — keep it warm and appetizing. Don't overclaim durability given real 'arrived broken/scratched' reviews — lead on quality + emphasize secure packaging.
+
+## Moodboard search terms
+
+- family eating pizza pasta warm kitchen table
+- restaurant gastronomy porcelain plate food
+- beer glasses willibecher 0.5l table cheers
+- white porcelain plate studio clean
+- beer garden oktoberfest glasses toast
+- stacked plates dishwasher kitchen
+
+## Notes (product context, keywords, compliance)
+
+VAN WELL (Van Well Design) — German brand, amazon.de. 'Die Marke VAN WELL steht für qualitativ hochwertige und stilvolle Porzellan- und Glasprodukte mit einem ausgezeichneten Preis-Leistungs-Verhältnis... ob Gastronom oder qualitätsbewusster Privatkunde.' TRADITIONSMARKE seit über 60 JAHREN. Trust proof: '60+ Jahre Qualität', 'Mehr als 10.000 Restaurants vertrauen auf VAN WELL'. Identity: navy #1C2E4A + white + crown wordmark. 
+
+*** STRUCTURE MANDATE: match the EXISTING VAN WELL image-plan + A+ structure (from the catalog screenshots). Especially keep the BRAND IMAGE as Image 7 (role=close): the trust close 'Mehr als 10.000 Restaurants vertrauen auf VAN WELL' + '60+ Jahre' + crown logo — consistent across products. A+ sequence like the existing one: (1) lifestyle hero banner with headline + 60+ Jahre badge; (2) size/design specs with icons; (3) use-cases 'Perfekt für ...' with the icon-badge row; (4) variant/design selector (if the product has designs); (5) brand-trust close '10.000 Restaurants'. Use the navy bars + white bold headlines + icon badges throughout. *** 
+
+PRODUCT 04 — PIZZATELLER (6-teilig, Ø 30,5 cm, XL Porzellan): robuste, stapelbare XL-Porzellanteller für Pizza, Pasta & Antipasti; Ø 30,5 cm (ideal für Pizzen bis 28 cm), flacher breiter Rand 1,3 cm (hält Belag sicher); spülmaschinengeeignet, mikrowellenfest, robustes Porzellan; italienisches Charme-Design (Pizzabäcker-Illustration) mit mehreren Design-Varianten. VoC PRAISE: hochwertiges/edles Porzellan, schöne schlichte Optik, gute (große) Größe, sehr gutes Preis-Leistung. OBJECTIONS to defuse honestly: gemischte Kratzfestigkeit + Stabilität/Gewicht-Bedenken + teils ZERBROCHEN angekommen -> lead on quality/robustes Porzellan AND emphasize SECURE/bruchsichere Verpackung; honest, no over-durability claim. KW: pizzateller, pizzateller groß, pizza teller, pizzateller 30 cm, teller porzellan, pastateller tief, servierteller groß. 
+
+PRODUCT 05 — WILLIBECHER 0,5 L 12er SET (Biergläser): 12 klassische Willibecher-Biergläser, 0,5 L Fassungsvermögen, deutlich sichtbarer EICHSTRICH (geeicht - wichtig für Gastro/fairer Ausschank), DICKWANDIGES robustes Glas, VERSTÄRKTER Glasboden, spülmaschinengeeignet, stapelbar. Use: Gastronomie, Biergarten, Oktoberfest, Zuhause, Partys. VoC: none in listing. Angle: der Gastro-Klassiker - robust, geeicht, 12er-Vorteilsset, für Kneipe & Zuhause. KW: biergläser 0,5, willibecher 0,5l, biergläser, bierglas 0,5, gläser set, willibecher, pint glas, gläser 0,5 liter. 
+
+Compliance: German copy; no '$', no URL/.com, no 'beste/#1/garantiert' superlatives; honest (no over-durability claim).

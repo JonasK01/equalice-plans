@@ -1,0 +1,28 @@
+{
+  "slug": "_TEMPLATE",
+  "name": "Brand Name",
+  "marketplace": "amazon.com",
+  "overlay_language": "en",
+  "primary_color": "#222222",
+  "accent_color": "#888888",
+  "text_color": "#000000",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#F5F1EA",
+  "voice": "One or two sentences: tone, personality, what the brand sounds like.",
+  "tagline": "",
+  "personality": ["Modern", "Premium"],
+  "fonts": ["Inter"],
+  "photo_rules": "What photos are allowed/required: lighting, props, model rules, badges, backgrounds.",
+  "no_gos": "Hard don'ts. Things that must NEVER appear in any image for this brand.",
+  "moodboard_search_terms": [
+    "search term 1",
+    "search term 2"
+  ],
+  "creative_freedom": 4,
+  "logo_path": "customers/_TEMPLATE/logo.png",
+  "new_brand": true,
+  "brand_statement": "From <Brand>: <one punchy, on-brand promise — the 'From the Brand' close before checkout>.",
+  "notes": "Product context, ASIN(s), compliance constraints, KW focus, anything the designer/agent must know.",
+  "created_at": "",
+  "updated_at": ""
+}
