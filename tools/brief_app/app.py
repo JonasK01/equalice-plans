@@ -12,6 +12,7 @@ import os
 import re
 import sys
 import time
+import base64
 from datetime import datetime
 from pathlib import Path
 
@@ -32,6 +33,8 @@ from tools.brief_app.core.pdf_builder import build_brief
 from tools.brief_app.core import seo_loader as SEOL
 from tools.brief_app.core.unsplash import has_unsplash_key, UNSPLASH_KEY_ENV
 from tools.brief_app.core.ai import BriefAI, has_api_key, sdk_available, ANTHROPIC_KEY_ENV, MODEL as AI_MODEL
+from tools.brief_app.core import comments as CM
+from tools.brief_app.core import knowledge as KN
 
 
 st.set_page_config(
@@ -195,6 +198,56 @@ def _customer_form(existing: Customer | None) -> Customer | None:
     return saved
 
 
+# ---------- shared UI helpers ----------
+
+def _render_pdf_inline(pdf_path: Path, height: int = 900) -> None:
+    """Embed the generated PDF in the page so reviewers see it without downloading."""
+    try:
+        data = Path(pdf_path).read_bytes()
+    except Exception:
+        st.info("PDF not available.")
+        return
+    b64 = base64.b64encode(data).decode()
+    st.markdown(
+        f'<iframe src="data:application/pdf;base64,{b64}" width="100%" height="{height}" '
+        f'style="border:1px solid #ddd;border-radius:8px;"></iframe>',
+        unsafe_allow_html=True,
+    )
+
+
+def _reviewer_name() -> str:
+    return (st.session_state.get("reviewer") or "").strip() or "anon"
+
+
+def _comment_thread_ui(slug: str, pdf_name: str, key_prefix: str) -> None:
+    """Review status + comment thread for a plan (persisted in /data, shared across the team)."""
+    status = CM.get_status(slug, pdf_name)
+    new_status = st.selectbox(
+        "Review status", CM.STATUSES,
+        index=CM.STATUSES.index(status) if status in CM.STATUSES else 0,
+        key=f"{key_prefix}_status",
+    )
+    if new_status != status:
+        CM.set_status(slug, pdf_name, new_status)
+        st.rerun()
+
+    for c in CM.list_comments(slug, pdf_name):
+        when = datetime.fromtimestamp(c.get("ts", 0)).strftime("%Y-%m-%d %H:%M")
+        st.markdown(f"**{c.get('author','anon')}** · _{when}_")
+        st.markdown(f"> {c.get('text','')}")
+    else:
+        pass
+
+    txt = st.text_area("Add a comment", key=f"{key_prefix}_new",
+                       placeholder="e.g. Overlay 3 too long; make image 5 warmer; add the award badge…")
+    if st.button("Post comment", key=f"{key_prefix}_post"):
+        if txt.strip():
+            CM.add_comment(slug, pdf_name, _reviewer_name(), txt)
+            st.rerun()
+        else:
+            st.warning("Write something first.")
+
+
 # ---------- pages ----------
 
 def page_generate() -> None:
@@ -242,6 +295,28 @@ def page_generate() -> None:
             )
             st.write(f"**Photo rules:** {cust.photo_rules[:200] or '—'}")
             st.write(f"**No-gos:** {cust.no_gos[:200] or '—'}")
+
+    with st.expander("➕ Add product info / reference images to Brand Memory (feeds every future plan)", expanded=False):
+        st.caption(
+            "Anything you add here is saved to this brand's memory and informs EVERY future "
+            "generation — new product details, positioning, corrections, reference images."
+        )
+        existing = KN.get_team_info(cust.slug)
+        info = st.text_area("Extra product info / notes", value=existing, height=120,
+                            placeholder="e.g. New 500 ml size launching; hero color teal; certified organic since 2025; avoid the word 'detox'…",
+                            key="kn_info")
+        kn_imgs = st.file_uploader("Reference images (optional)", type=["png", "jpg", "jpeg", "webp"],
+                                   accept_multiple_files=True, key="kn_imgs")
+        if st.button("💾 Save to Brand Memory", key="kn_save"):
+            KN.save_team_info(cust.slug, info)
+            n = 0
+            for f in (kn_imgs or []):
+                KN.save_team_image(cust.slug, f.name, f.read()); n += 1
+            st.success(f"Saved — now part of {cust.name}'s memory for every future plan"
+                       + (f" (+{n} image(s))" if n else "") + ".")
+        cur = KN.list_team_images(cust.slug)
+        if cur:
+            st.caption("Reference images on file: " + ", ".join(cur))
 
     st.divider()
     st.subheader("Step 1 — Upload SEO Excel")
@@ -447,14 +522,23 @@ def page_generate() -> None:
             else:
                 st.success("✅ COPY LENGTHS: punchy (overlays ≤30ch/≤5 words).")
 
-        with pdf_path.open("rb") as f:
-            st.download_button(
-                f"⬇️  Download {cust.name} Image + A+ Plan PDF",
-                data=f.read(),
-                file_name=pdf_path.name,
-                mime="application/pdf",
-                type="primary",
-            )
+        # Persist as the "last plan" so the preview + comment thread survive Streamlit reruns.
+        st.session_state["last_plan"] = {"slug": cust.slug, "name": pdf_path.name}
+
+    # Persistent review area — renders on every rerun (e.g. after posting a comment).
+    last = st.session_state.get("last_plan")
+    if last and last.get("slug") == cust.slug:
+        p = BRIEFS_DIR / last["slug"] / last["name"]
+        if p.exists():
+            st.divider()
+            st.subheader("📄 Generated plan — preview & review")
+            st.caption(f"`{last['name']}`  ·  status: **{CM.get_status(last['slug'], last['name'])}**")
+            _render_pdf_inline(p)
+            with p.open("rb") as f:
+                st.download_button("⬇️  Download PDF", data=f.read(), file_name=p.name,
+                                   mime="application/pdf", type="primary", key="dl_last")
+            st.markdown("#### 💬 Comments")
+            _comment_thread_ui(last["slug"], last["name"], key_prefix="gen")
 
 
 def page_customers() -> None:
@@ -497,26 +581,40 @@ def page_customers() -> None:
             st.rerun()
 
 
+_STATUS_ICON = {"open": "🟡", "approved": "🟢", "changes requested": "🔴"}
+
+
 def page_archive() -> None:
-    st.title("Brief archive")
+    st.title("Plans & Review")
     customers = list_customers()
     if not customers:
         st.info("No customers yet.")
         return
-    for c in customers:
-        folder = BRIEFS_DIR / c.slug
-        pdfs = sorted(folder.glob("*.pdf"), reverse=True) if folder.exists() else []
-        if not pdfs:
-            continue
-        st.subheader(f"{c.name} · {len(pdfs)} brief{'s' if len(pdfs)!=1 else ''}")
-        for p in pdfs:
-            cols = st.columns([6, 1])
-            cols[0].write(p.name)
+
+    with_plans = [(c, CM.list_plans(c.slug)) for c in customers]
+    with_plans = [(c, pl) for c, pl in with_plans if pl]
+    if not with_plans:
+        st.info("No plans generated yet. Create one on the **Generate** page.")
+        return
+
+    labels = {c.slug: f"{c.name}  ({len(pl)} plan{'s' if len(pl) != 1 else ''})" for c, pl in with_plans}
+    pick = st.selectbox("Brand", [c.slug for c, _ in with_plans],
+                        format_func=lambda s: labels.get(s, s), key="arch_brand")
+    cust, plans = next((c, pl) for c, pl in with_plans if c.slug == pick)
+
+    for plan in plans:
+        icon = _STATUS_ICON.get(plan["status"], "🟡")
+        when = datetime.fromtimestamp(plan["mtime"]).strftime("%Y-%m-%d %H:%M")
+        header = (f"{icon}  {plan['name']}   ·   {when}   ·   {plan['size_kb']} KB"
+                  f"   ·   💬 {plan['comment_count']}")
+        with st.expander(header, expanded=False):
+            p = Path(plan["path"])
+            _render_pdf_inline(p, height=800)
             with p.open("rb") as f:
-                cols[1].download_button(
-                    "Download", data=f.read(), file_name=p.name,
-                    mime="application/pdf", key=str(p),
-                )
+                st.download_button("⬇️  Download PDF", data=f.read(), file_name=p.name,
+                                   mime="application/pdf", key=f"dl_{plan['name']}")
+            st.markdown("#### 💬 Comments")
+            _comment_thread_ui(cust.slug, plan["name"], key_prefix=f"arch_{plan['name']}")
 
 
 # ---------- access gate (for hosted deployments) ----------
@@ -544,8 +642,8 @@ def _password_gate() -> bool:
 
 PAGES = {
     "Generate Image + A+ plan": page_generate,
+    "Plans & Review": page_archive,
     "Customers": page_customers,
-    "Plan archive": page_archive,
 }
 
 if not _password_gate():
@@ -554,6 +652,8 @@ if not _password_gate():
 with st.sidebar:
     st.markdown("## EQUALICE\n### Brief Generator")
     page = st.radio("Section", options=list(PAGES.keys()), label_visibility="collapsed")
+    st.divider()
+    st.text_input("Your name (for comments)", key="reviewer", placeholder="e.g. Jonas")
     st.divider()
     st.caption(f"AI ({AI_MODEL}): {'✓ ready' if (has_api_key() and sdk_available()) else '✗ disabled — set ' + ANTHROPIC_KEY_ENV}")
     st.caption(f"Unsplash key: {'✓ set' if has_unsplash_key() else '✗ missing'}")

@@ -506,10 +506,18 @@ class BriefBuilder:
              lambda: _set("_ai_backend", self.ai.generate_backend_keywords)),
         ]
         base = 10
-        span = 60
+        span = 55
         for i, (label, _pct, fn) in enumerate(steps):
             self.progress_cb(base + (span * i // len(steps)), label)
             fn()
+
+        # Quality-over-speed: an elite second copywriting pass over the on-image overlays and
+        # A+ headlines (the most visible marketing surface), informed by the full Brand Memory.
+        self.progress_cb(68, "Elevating copy to top marketing quality…")
+        try:
+            self._ai_images, self._ai_modules = self.ai.elevate_copy(self._ai_images, self._ai_modules)
+        except Exception:
+            pass
 
         self.progress_cb(75, "Scanning copy for compliance issues…")
         scan_text = (self._ai_title or "") + "\n" + "\n".join(self._ai_bullets or [])

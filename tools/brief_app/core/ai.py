@@ -477,6 +477,103 @@ class BriefAI:
             return None
         return [AIQA(**qa) for qa in result["qa"]]
 
+    def elevate_copy(self, images, modules):
+        """Second-pass ELITE copywriting refinement (quality over speed).
+
+        Rewrites the highest-visibility marketing surface — on-image overlays + sublines and
+        A+ module headlines — to the top bar: dream-outcome-first, voice-of-customer language,
+        power words + specifics, punchy and on-brand, informed by the full Brand Memory in the
+        cached system prompt. Stays compliant (the build still runs the compliance + copy-length
+        scans afterwards as the safety net). Returns (images, modules); unchanged on any failure.
+        """
+        if not self.client or not (images or modules):
+            return images, modules
+
+        img_in = [
+            {"i": i, "role": im.role, "overlay": im.overlay or "", "overlay_sub": im.overlay_sub or ""}
+            for i, im in enumerate(images or [])
+            if (im.role or "") != "hero"          # never add overlay text to the Amazon main image
+        ]
+        mod_in = [
+            {"i": i, "role": m.role, "headline": m.headline or ""}
+            for i, m in enumerate(modules or [])
+        ]
+        if not img_in and not mod_in:
+            return images, modules
+
+        schema = {
+            "type": "object",
+            "properties": {
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "i": {"type": "integer"},
+                            "overlay": {"type": "string", "description": "Refined on-image headline. ≤30 chars AND ≤5 words."},
+                            "overlay_sub": {"type": "string", "description": "Refined subline. ≤90 chars."},
+                        },
+                        "required": ["i", "overlay", "overlay_sub"],
+                        "additionalProperties": False,
+                    },
+                },
+                "modules": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "i": {"type": "integer"},
+                            "headline": {"type": "string", "description": "Refined A+ headline. ≤38 chars."},
+                        },
+                        "required": ["i", "headline"],
+                        "additionalProperties": False,
+                    },
+                },
+            },
+            "required": ["images", "modules"],
+            "additionalProperties": False,
+        }
+
+        import json as _json
+        lang = LANGUAGE_NAMES.get(self.lang, "English")
+        task = (
+            "You are an ELITE Amazon conversion copywriter and brand voice specialist. Below is a "
+            "drafted image + A+ plan. Rewrite ONLY the marketing copy to the highest possible bar — "
+            "this is the quality pass, take the care it deserves:\n"
+            "- Lead with the buyer's dream outcome; use real voice-of-customer language.\n"
+            "- Power words + concrete specifics, not vague fluff. Punchy and smooth, varied rhythm.\n"
+            "- Stay 100% in this brand's voice and honour every no-go and the Brand Memory context.\n"
+            "- Keep it fully Amazon-compliant (no medical/curative claims, no superlatives like "
+            "'best/#1', no competitor names, no prices/URLs).\n"
+            f"- Overlays + sublines MUST be in {lang}. Overlay ≤30 chars AND ≤5 words; subline ≤90 chars; "
+            "A+ headline ≤38 chars.\n"
+            "- Return the SAME items by their 'i' index (do not add, drop, or reorder). Improve the text; "
+            "if a line is already excellent, you may keep it.\n\n"
+            "IMAGES (overlays to elevate):\n" + _json.dumps(img_in, ensure_ascii=False) + "\n\n"
+            "A+ MODULE HEADLINES to elevate:\n" + _json.dumps(mod_in, ensure_ascii=False) + "\n\n"
+            "Return JSON matching the schema."
+        )
+        result = self._structured_call(task, schema, max_tokens=3000)
+        if not result:
+            return images, modules
+
+        for r in result.get("images", []) or []:
+            i = r.get("i")
+            if isinstance(i, int) and 0 <= i < len(images) and (images[i].role or "") != "hero":
+                ov = (r.get("overlay") or "").strip()
+                sub = (r.get("overlay_sub") or "").strip()
+                if ov:
+                    images[i].overlay = ov
+                if sub:
+                    images[i].overlay_sub = sub
+        for r in result.get("modules", []) or []:
+            i = r.get("i")
+            if isinstance(i, int) and 0 <= i < len(modules):
+                hl = (r.get("headline") or "").strip()
+                if hl:
+                    modules[i].headline = hl
+        return images, modules
+
     def generate_argumentation(self, role: str, text: str) -> Optional[AIArgumentation]:
         """Generate CTR/CVR/Keywords/Reviews rationale for one specific copy element."""
         schema = {
