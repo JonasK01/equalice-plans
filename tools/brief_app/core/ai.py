@@ -311,8 +311,7 @@ class BriefAI:
             "properties": {
                 "bullets": {
                     "type": "array",
-                    "minItems": 5,
-                    "maxItems": 5,
+                    "minItems": 1,
                     "items": {
                         "type": "object",
                         "properties": {
@@ -348,8 +347,7 @@ class BriefAI:
             "properties": {
                 "images": {
                     "type": "array",
-                    "minItems": 7,
-                    "maxItems": 7,
+                    "minItems": 1,
                     "items": {
                         "type": "object",
                         "properties": {
@@ -403,8 +401,7 @@ class BriefAI:
             "properties": {
                 "modules": {
                     "type": "array",
-                    "minItems": 7,
-                    "maxItems": 7,
+                    "minItems": 1,
                     "items": {
                         "type": "object",
                         "properties": {
@@ -450,8 +447,7 @@ class BriefAI:
             "properties": {
                 "qa": {
                     "type": "array",
-                    "minItems": 5,
-                    "maxItems": 8,
+                    "minItems": 1,
                     "items": {
                         "type": "object",
                         "properties": {
