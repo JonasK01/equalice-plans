@@ -13,6 +13,7 @@ import re
 import sys
 import time
 import base64
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -294,6 +295,103 @@ def _reviewer_name() -> str:
     return (st.session_state.get("reviewer") or "").strip() or "anon"
 
 
+def _meta_path(slug: str, pdf_name: str) -> Path:
+    return BRIEFS_DIR / slug / (pdf_name + ".meta.json")
+
+
+def _save_plan_meta(slug: str, pdf_name: str, data: dict) -> None:
+    try:
+        _meta_path(slug, pdf_name).write_text(json.dumps(data), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _load_plan_meta(slug: str, pdf_name: str) -> dict:
+    p = _meta_path(slug, pdf_name)
+    if p.exists():
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", source_upload: str = "") -> Path:
+    """Build a plan (optionally applying reviewer feedback), show progress + QA, persist the
+    source-sheet path so the plan can later be regenerated with feedback. Returns the PDF path."""
+    ai_ready = has_api_key() and sdk_available()
+    try:
+        brief.all_keywords = SEOL.scrub_keywords(brief.all_keywords)
+        brief.main_keywords = SEOL.scrub_keywords(brief.main_keywords)
+    except Exception:
+        pass
+
+    progress = st.progress(0, text="Starting…")
+
+    def _progress(pct: int, msg: str) -> None:
+        try:
+            progress.progress(min(max(pct, 0), 100), text=msg)
+        except Exception:
+            pass
+
+    ai_instance = BriefAI(cust, brief, feedback=feedback) if ai_ready else None
+    if ai_instance and not ai_instance.enabled:
+        st.error(f"AI init failed: {ai_instance.status_message}. Falling back to templates.")
+        ai_instance = None
+
+    seo_title, seo_bullets, seo_backend = seo
+    _res: dict = {}
+    try:
+        t0 = time.perf_counter()
+        pdf_path = build_brief(
+            cust, brief, out_path, ai=ai_instance, progress_cb=_progress,
+            seo_title=seo_title, seo_bullets=seo_bullets, seo_backend=seo_backend, result_out=_res,
+        )
+        elapsed = time.perf_counter() - t0
+    except Exception as exc:
+        progress.empty()
+        st.error(f"PDF build failed: {exc}")
+        raise
+    progress.empty()
+
+    kb = pdf_path.stat().st_size // 1024
+    if ai_instance:
+        u = ai_instance.last_usage
+        cost = (u["input"] / 1e6) * 3.0 + (u["cached"] / 1e6) * 0.30 + (u["output"] / 1e6) * 15.0
+        st.success(f"✅ Built `{pdf_path.name}` · {kb} KB · {elapsed:.0f}s · ${cost:.2f}"
+                   + (" · feedback applied" if feedback else ""))
+        if ai_instance.errors:
+            with st.expander(f"⚠️ {len(ai_instance.errors)} AI call(s) used template fallback", expanded=False):
+                for e in ai_instance.errors:
+                    st.code(e)
+    else:
+        st.success(f"✅ Built `{pdf_path.name}` · {kb} KB · {elapsed:.0f}s (template mode)")
+
+    comp = _res.get("compliance") or []
+    blocking = _res.get("compliance_blocking")
+    copy_warn = _res.get("copy_warnings") or []
+    c1, c2 = st.columns(2)
+    with c1:
+        if blocking:
+            st.error(f"⛔ Compliance: {sum(1 for c in comp if getattr(c,'severity','')=='high')} blocking — fix before publishing.")
+        elif comp:
+            st.warning(f"⚠️ Compliance: {len(comp)} note(s), none blocking.")
+        else:
+            st.success("✅ Compliance passed.")
+        for c in comp:
+            st.caption(f"• [{getattr(c,'severity','?')}] {getattr(c,'issue','')}")
+    with c2:
+        if copy_warn:
+            st.warning(f"⚠️ Copy length: {len(copy_warn)} over limit.")
+            for w in copy_warn[:8]:
+                st.caption(f"• {w}")
+        else:
+            st.success("✅ Copy lengths punchy.")
+
+    _save_plan_meta(cust.slug, pdf_path.name, {"upload": str(source_upload), "product": brief.product_name or ""})
+    return pdf_path
+
+
 def _comment_thread_ui(slug: str, pdf_name: str, key_prefix: str) -> None:
     """Review status + comment thread for a plan (persisted in /data, shared across the team)."""
     status = CM.get_status(slug, pdf_name)
@@ -331,6 +429,32 @@ def _comment_thread_ui(slug: str, pdf_name: str, key_prefix: str) -> None:
     if _lc:
         n = _lc.count("\n- ")
         st.caption(f"🧠 {n} brand learning(s) from past reviews are being applied to new plans.")
+
+    # Work the feedback in — build a new version of THIS plan that applies the comments.
+    _cs = CM.list_comments(slug, pdf_name)
+    _up = _load_plan_meta(slug, pdf_name).get("upload", "")
+    if _cs and _up and Path(_up).exists():
+        st.markdown("---")
+        st.caption("Apply the comments above to a fresh version of this plan (~4–5 min).")
+        if st.button("🔄 New version applying the comments", key=f"{key_prefix}_regen", type="primary"):
+            cust = load_customer(slug)
+            brief = parse_excel(_up)
+            seo_t = seo_b = seo_bk = None
+            try:
+                _s = SEOL.load_seo(_up)
+                if _s.title:
+                    seo_t, seo_b, seo_bk = _s.title, (SEOL.as_bullets_html(_s) or None), (_s.backend or None)
+            except Exception:
+                pass
+            fb = "Apply these reviewer corrections to this new version:\n" + "\n".join(f"- {c['text']}" for c in _cs)
+            stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            base = pdf_name[:-4] if pdf_name.endswith(".pdf") else pdf_name
+            out_path = BRIEFS_DIR / slug / f"{base}__rev-{stamp}.pdf"
+            newpdf = _build_and_report(cust, brief, out_path, (seo_t, seo_b, seo_bk), feedback=fb, source_upload=_up)
+            st.session_state["last_plan"] = {"slug": slug, "name": newpdf.name}
+            st.success("New version created — open it under **Plans & Review**.")
+    elif _cs:
+        st.caption("🔄 Tip: plans generated from the **Generate** page can be regenerated with the comments in one click.")
 
 
 # ---------- pages ----------
@@ -483,84 +607,8 @@ def page_generate() -> None:
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         out_path = out_dir / f"{cust.slug}__{slug_name}__{stamp}.pdf"
 
-        progress = st.progress(0, text="Starting…")
-
-        def _progress(pct: int, msg: str) -> None:
-            try:
-                progress.progress(min(max(pct, 0), 100), text=msg)
-            except Exception:
-                pass
-
-        ai_instance = BriefAI(cust, brief) if ai_ready else None
-        if ai_instance and not ai_instance.enabled:
-            st.error(f"AI init failed: {ai_instance.status_message}. Falling back to templates.")
-            ai_instance = None
-
-        _seo_title, _seo_bullets, _seo_backend = st.session_state.get("_seo", (None, None, None))
-        _res: dict = {}
-        try:
-            t0 = time.perf_counter()
-            pdf_path = build_brief(
-                cust, brief, out_path, ai=ai_instance, progress_cb=_progress,
-                seo_title=_seo_title, seo_bullets=_seo_bullets, seo_backend=_seo_backend,
-                result_out=_res,
-            )
-            elapsed = time.perf_counter() - t0
-        except Exception as exc:
-            progress.empty()
-            st.error(f"PDF build failed: {exc}")
-            raise
-
-        # Surface AI usage stats if applicable
-        if ai_instance:
-            usage = ai_instance.last_usage
-            cache_hit_pct = (
-                round(100 * usage["cached"] / max(1, usage["input"] + usage["cached"]))
-                if (usage["input"] + usage["cached"]) > 0 else 0
-            )
-            cost_input = (usage["input"] / 1_000_000) * 3.0 + (usage["cached"] / 1_000_000) * 0.30
-            cost_output = (usage["output"] / 1_000_000) * 15.0
-            st.success(
-                f"✅ Brief built for **{cust.name}** — `{pdf_path.name}` "
-                f"({pdf_path.stat().st_size // 1024} KB)"
-            )
-            cols = st.columns(4)
-            cols[0].metric("Time", f"{elapsed:.1f} s")
-            cols[1].metric("Input tokens", f"{usage['input'] + usage['cached']:,}", f"{cache_hit_pct}% cached")
-            cols[2].metric("Output tokens", f"{usage['output']:,}")
-            cols[3].metric("Cost", f"${cost_input + cost_output:.3f}")
-
-            if ai_instance.errors:
-                with st.expander(f"⚠️ {len(ai_instance.errors)} AI call(s) fell back to template", expanded=False):
-                    for err in ai_instance.errors:
-                        st.code(err)
-        else:
-            st.success(
-                f"✅ Brief built for **{cust.name}** — `{pdf_path.name}` "
-                f"({pdf_path.stat().st_size // 1024} KB) in {elapsed:.1f}s (template mode)"
-            )
-
-        # Auto-QA results (run on every build): compliance + on-image copy lengths.
-        comp = _res.get("compliance") or []
-        blocking = _res.get("compliance_blocking")
-        copy_warn = _res.get("copy_warnings") or []
-        cc1, cc2 = st.columns(2)
-        with cc1:
-            if blocking:
-                st.error(f"⛔ COMPLIANCE: {len([c for c in comp if getattr(c,'severity','')=='high'])} blocking issue(s) — fix before publishing.")
-            elif comp:
-                st.warning(f"⚠️ COMPLIANCE: {len(comp)} low note(s), none blocking.")
-            else:
-                st.success("✅ COMPLIANCE: passed — no issues.")
-            for c in comp:
-                st.caption(f"• [{getattr(c,'severity','?')}] {getattr(c,'issue','')}")
-        with cc2:
-            if copy_warn:
-                st.warning(f"⚠️ COPY LENGTHS: {len(copy_warn)} item(s) over the punchy limit.")
-                for w in copy_warn[:8]:
-                    st.caption(f"• {w}")
-            else:
-                st.success("✅ COPY LENGTHS: punchy (overlays ≤30ch/≤5 words).")
+        _seo = st.session_state.get("_seo", (None, None, None))
+        pdf_path = _build_and_report(cust, brief, out_path, _seo, source_upload=str(upload_path))
 
         # Persist as the "last plan" so the preview + comment thread survive Streamlit reruns.
         st.session_state["last_plan"] = {"slug": cust.slug, "name": pdf_path.name}

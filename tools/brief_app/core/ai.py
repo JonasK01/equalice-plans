@@ -130,10 +130,17 @@ def _safe_brand_memory(customer: Customer) -> str:
         return ""
 
 
-def build_system_prompt(customer: Customer, brief: ParsedBrief) -> str:
+def build_system_prompt(customer: Customer, brief: ParsedBrief, feedback: str = "") -> str:
     overlay_lang = LANGUAGE_NAMES.get(customer.overlay_language, "English")
     brand_memory = _safe_brand_memory(customer)
-    return f"""You are a senior Amazon listing copywriter writing for the brand {customer.name}.
+    fb = (feedback or "").strip()
+    fb_block = (
+        "\n\n# REVISION — REVIEWER FEEDBACK YOU MUST APPLY (HIGHEST PRIORITY, overrides defaults)\n"
+        "This is a new version of an existing plan. Concretely fix every point below:\n"
+        f"{fb}\n"
+        if fb else ""
+    )
+    return f"""You are a senior Amazon listing copywriter writing for the brand {customer.name}.{fb_block}
 
 # BRAND DNA
 - Brand: {customer.name}
@@ -205,10 +212,11 @@ You will receive specific generation requests. Always return JSON matching the s
 # ---------- BriefAI class ----------
 
 class BriefAI:
-    def __init__(self, customer: Customer, brief: ParsedBrief, model: str = MODEL):
+    def __init__(self, customer: Customer, brief: ParsedBrief, model: str = MODEL, feedback: str = ""):
         self.customer = customer
         self.brief = brief
         self.model = model
+        self.feedback = (feedback or "").strip()
         self.lang = customer.overlay_language or "en"
         self.api_key = os.environ.get(ANTHROPIC_KEY_ENV, "").strip()
         self.client: Optional["anthropic.Anthropic"] = None
@@ -224,7 +232,7 @@ class BriefAI:
                 log.warning("AI client init failed: %s", exc)
                 self.client = None
 
-        self._system_prompt = build_system_prompt(customer, brief)
+        self._system_prompt = build_system_prompt(customer, brief, self.feedback)
 
     @property
     def enabled(self) -> bool:
@@ -391,8 +399,11 @@ class BriefAI:
             f"Overlay text (where allowed) MUST be in {LANGUAGE_NAMES.get(self.lang, 'English')} for marketplace {self.customer.marketplace}. "
             "Body fields (visual, why_it_works) stay English. "
             "For Image 1, overlay/overlay_sub MUST be empty strings (Amazon main-image policy bans overlay text). "
-            "Every overlay (Images 2-7) MUST be PUNCHY: at most 30 characters AND at most 5 words, one idea per tile "
-            "(e.g. 'GENTLE, NO CRAMPING.'). overlay_sub at most 90 characters. "
+            "In Image 1's 'visual' field, propose 2-3 distinct MAIN-IMAGE OPTIONS to A/B test — label them "
+            "Option A / Option B / Option C — each a different composition/props/angle that could win the click. "
+            "Every overlay (Images 2-7) MUST be PUNCHY (≤30 chars AND ≤5 words, one idea) AND marketing-strong: "
+            "lead with the dream outcome, use power words and specifics, never generic (e.g. 'GENTLE, NO CRAMPING.'). "
+            "overlay_sub ≤90 chars. "
             "Return JSON."
         )
         result = self._structured_call(task, schema, max_tokens=6000)
