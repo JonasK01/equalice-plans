@@ -240,12 +240,22 @@ def _comment_thread_ui(slug: str, pdf_name: str, key_prefix: str) -> None:
 
     txt = st.text_area("Add a comment", key=f"{key_prefix}_new",
                        placeholder="e.g. Overlay 3 too long; make image 5 warmer; add the award badge…")
+    learn = st.checkbox(
+        "📚 Also save as a brand learning — the AI applies it to every future plan for this brand",
+        key=f"{key_prefix}_learn",
+    )
     if st.button("Post comment", key=f"{key_prefix}_post"):
         if txt.strip():
             CM.add_comment(slug, pdf_name, _reviewer_name(), txt)
+            if learn:
+                KN.add_review_learning(slug, txt, _reviewer_name())
             st.rerun()
         else:
             st.warning("Write something first.")
+    _lc = KN.get_review_learnings(slug)
+    if _lc:
+        n = _lc.count("\n- ")
+        st.caption(f"🧠 {n} brand learning(s) from past reviews are being applied to new plans.")
 
 
 # ---------- pages ----------

@@ -74,6 +74,25 @@ def save_team_image(slug: str, filename: str, data: bytes) -> str:
     return safe
 
 
+# ---------- the learning loop: team review corrections feed future plans ----------
+
+def get_review_learnings(slug: str) -> str:
+    f = TEAM_KNOWLEDGE_DIR / (slug or "") / "review_learnings.md"
+    return _read(f, 6000) if f.exists() else ""
+
+
+def add_review_learning(slug: str, text: str, author: str = "") -> None:
+    """Persist a team correction so EVERY future plan for this brand applies it."""
+    text = " ".join((text or "").split()).strip()
+    if not text:
+        return
+    f = team_knowledge_dir(slug) / "review_learnings.md"
+    head = "# Review learnings (team corrections — apply to every future plan)\n"
+    prior = f.read_text(encoding="utf-8") if f.exists() else head
+    who = f"  — {author}" if author else ""
+    f.write_text(prior.rstrip() + f"\n- {text}{who}\n", encoding="utf-8")
+
+
 def _team_knowledge(slug: str) -> str:
     parts = []
     info = get_team_info(slug)
@@ -110,6 +129,11 @@ def build_brand_memory(slug: str) -> str:
     team = _team_knowledge(slug)
     if team:
         parts.append("## Team-added knowledge (latest info + notes the team uploaded — treat as current)\n" + team)
+
+    learnings = get_review_learnings(slug)
+    if learnings:
+        parts.append("## Review learnings — corrections the team made in past reviews. "
+                     "APPLY THESE and never repeat these mistakes.\n" + learnings)
 
     if not parts:
         return ""

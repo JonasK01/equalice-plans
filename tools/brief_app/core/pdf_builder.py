@@ -494,22 +494,33 @@ class BriefBuilder:
             if getattr(self, attr) is None:
                 setattr(self, attr, gen())
 
-        steps = [
-            ("Using SEO title…" if self._ai_title else "Generating title…", 10,
-             lambda: _set("_ai_title", self.ai.generate_title)),
-            ("Using SEO bullets…" if self._ai_bullets else "Writing 5 bullets…", 20,
-             lambda: _set("_ai_bullets", self.ai.generate_bullets)),
-            ("Designing 7 listing images…", 30, lambda: _set("_ai_images", self.ai.generate_image_plan)),
-            ("Designing 7 A+ modules…", 45, lambda: _set("_ai_modules", self.ai.generate_aplus_modules)),
-            ("Drafting Q&A in brand voice…", 55, lambda: _set("_ai_qa", self.ai.generate_qa)),
-            ("Using SEO backend…" if self._ai_backend else "Optimizing backend keywords…", 62,
-             lambda: _set("_ai_backend", self.ai.generate_backend_keywords)),
-        ]
-        base = 10
-        span = 55
-        for i, (label, _pct, fn) in enumerate(steps):
-            self.progress_cb(base + (span * i // len(steps)), label)
-            fn()
+        # Primer: run ONE generation first so it writes the prompt cache; every later call
+        # then reads that cache at ~10% cost. The image plan is the anchor.
+        self.progress_cb(20, "Designing 7 listing images…")
+        _set("_ai_images", self.ai.generate_image_plan)
+
+        # The remaining generations are independent of each other → run them CONCURRENTLY
+        # (they all hit the warm cache). SEO-sourced fields (title/bullets/backend) are skipped
+        # when already filled. Cuts wall-clock roughly in half without losing cache savings.
+        import concurrent.futures as _cf
+        parallel = {
+            "_ai_title": self.ai.generate_title,
+            "_ai_bullets": self.ai.generate_bullets,
+            "_ai_modules": self.ai.generate_aplus_modules,
+            "_ai_qa": self.ai.generate_qa,
+            "_ai_backend": self.ai.generate_backend_keywords,
+        }
+        pending = {a: g for a, g in parallel.items() if getattr(self, a) is None}
+        self.progress_cb(40, "Writing bullets · A+ modules · Q&A · backend (in parallel)…")
+        if pending:
+            with _cf.ThreadPoolExecutor(max_workers=len(pending)) as ex:
+                futs = {ex.submit(g): a for a, g in pending.items()}
+                for f in _cf.as_completed(futs):
+                    attr = futs[f]
+                    try:
+                        setattr(self, attr, f.result())
+                    except Exception:
+                        pass  # leave None → render falls back to template for that section
 
         # Quality-over-speed: an elite second copywriting pass over the on-image overlays and
         # A+ headlines (the most visible marketing surface), informed by the full Brand Memory.

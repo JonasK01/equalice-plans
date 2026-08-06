@@ -214,6 +214,8 @@ class BriefAI:
         self.client: Optional["anthropic.Anthropic"] = None
         self.last_usage: dict[str, int] = {"input": 0, "cached": 0, "output": 0}
         self.errors: list[str] = []
+        import threading
+        self._usage_lock = threading.Lock()
 
         if _SDK_AVAILABLE and self.api_key:
             try:
@@ -264,11 +266,12 @@ class BriefAI:
                 messages=[{"role": "user", "content": task}],
                 output_config={"format": {"type": "json_schema", "schema": schema}},
             )
-            # Tally usage
+            # Tally usage (thread-safe — the pipeline runs generations in parallel)
             u = response.usage
-            self.last_usage["input"] += u.input_tokens
-            self.last_usage["cached"] += u.cache_read_input_tokens or 0
-            self.last_usage["output"] += u.output_tokens
+            with self._usage_lock:
+                self.last_usage["input"] += u.input_tokens
+                self.last_usage["cached"] += u.cache_read_input_tokens or 0
+                self.last_usage["output"] += u.output_tokens
             # Structured outputs guarantee first content block is text containing JSON
             text = next((b.text for b in response.content if b.type == "text"), "")
             return json.loads(text)
