@@ -43,6 +43,67 @@ st.set_page_config(
     layout="wide",
 )
 
+# ---------- EQUALICE brand skin ----------
+EQ_LOGO_SVG = """
+<svg width="176" height="50" viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(20, 30)">
+    <circle cx="65" cy="65" r="56" fill="none" stroke="#0F1115" stroke-width="5"/>
+    <path d="M 9 65 A 56 17 0 0 1 121 65" fill="none" stroke="#0F1115" stroke-width="5"/>
+    <rect x="41" y="29" width="12" height="56" rx="1.5" fill="#FA7C04"/>
+    <rect x="59" y="14" width="12" height="72" rx="1.5" fill="#FA7C04"/>
+    <rect x="77" y="22" width="12" height="64" rx="1.5" fill="#FA7C04"/>
+    <path d="M 9 65 A 56 17 0 0 0 121 65" fill="none" stroke="#0F1115" stroke-width="5"/>
+  </g>
+  <line x1="155" y1="65" x2="155" y2="140" stroke="#0F1115" stroke-width="3"/>
+  <text x="170" y="125" font-family="Geist, system-ui, sans-serif" font-size="64" font-weight="600" letter-spacing="-2" fill="#0F1115">EQUALICE</text>
+</svg>
+"""
+
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500&display=swap');
+:root{
+  --orange:#FA7C04; --orange-dark:#D85F00; --orange-light:#FFF4E8;
+  --ink:#0F1115; --cream:#FAF7F2; --g700:#3F4651; --g500:#6B7280; --border:rgba(15,17,21,0.08);
+}
+.stApp, .stApp *:not(.material-icons):not([class*="icon"]) {
+  font-family:'Geist',-apple-system,BlinkMacSystemFont,system-ui,sans-serif !important;
+  letter-spacing:-0.005em;
+}
+.stApp { background:var(--cream); color:var(--ink); }
+[data-testid="stHeader"] { background:transparent; }
+.block-container { padding-top:2.5rem; max-width:1180px; }
+h1,h2,h3,h4 { color:var(--ink) !important; font-weight:700 !important; letter-spacing:-0.03em !important; }
+h1 { letter-spacing:-0.045em !important; }
+a, a:visited { color:var(--orange); }
+/* buttons */
+.stButton>button, .stDownloadButton>button, [data-testid="stBaseButton-secondary"] {
+  border-radius:6px; font-weight:600; border:1px solid var(--border); letter-spacing:-0.01em;
+}
+.stButton>button[kind="primary"], .stDownloadButton>button[kind="primary"],
+[data-testid="stBaseButton-primary"] {
+  background:var(--orange) !important; color:#fff !important; border-color:var(--orange) !important;
+}
+.stButton>button[kind="primary"]:hover, [data-testid="stBaseButton-primary"]:hover {
+  background:var(--orange-dark) !important; border-color:var(--orange-dark) !important;
+}
+/* sidebar */
+[data-testid="stSidebar"] { background:#fff; border-right:1px solid var(--border); }
+[data-testid="stSidebar"] .block-container { padding-top:1.5rem; }
+/* inputs, expanders, cards */
+[data-testid="stExpander"] { border:1px solid var(--border) !important; border-radius:8px; background:#fff; }
+.stTextInput input, .stTextArea textarea, [data-baseweb="select"]>div { border-radius:6px !important; }
+[data-testid="stFileUploaderDropzone"] { border-radius:8px; border:1px dashed var(--border); }
+/* progress + accents */
+.stProgress > div > div > div > div { background:var(--orange) !important; }
+[data-testid="stMetricValue"] { color:var(--ink); font-weight:700; }
+code, [data-testid="stCaptionContainer"] { font-family:'Geist Mono',monospace !important; }
+/* alert tints on brand */
+[data-testid="stNotificationContentSuccess"] { }
+hr { border-color:var(--border); }
+</style>
+""", unsafe_allow_html=True)
+
 
 # ---------- helpers ----------
 
@@ -637,7 +698,9 @@ def _password_gate() -> bool:
         return True
     if st.session_state.get("_authed"):
         return True
-    st.title("EQUALICE · Image + A+ Plan Generator")
+    st.markdown(EQ_LOGO_SVG, unsafe_allow_html=True)
+    st.markdown("### Image + A+ Plan Generator")
+    st.caption("Team access — enter the password to continue.")
     pw = st.text_input("Team password", type="password")
     if st.button("Enter", type="primary"):
         if pw == required:
@@ -660,7 +723,12 @@ if not _password_gate():
     st.stop()
 
 with st.sidebar:
-    st.markdown("## EQUALICE\n### Brief Generator")
+    st.markdown(EQ_LOGO_SVG, unsafe_allow_html=True)
+    st.markdown(
+        "<div style='font-family:Geist Mono,monospace;font-size:10px;letter-spacing:0.16em;"
+        "text-transform:uppercase;color:#6B7280;margin:6px 0 2px 2px;'>Image + A+ Plan Generator</div>",
+        unsafe_allow_html=True,
+    )
     page = st.radio("Section", options=list(PAGES.keys()), label_visibility="collapsed")
     st.divider()
     st.text_input("Your name (for comments)", key="reviewer", placeholder="e.g. Jonas")
