@@ -121,8 +121,18 @@ def _trim(s: str, n: int = 400) -> str:
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
+def _safe_brand_memory(customer: Customer) -> str:
+    """Full brand history (study + every product's verified notes). Never breaks generation."""
+    try:
+        from .knowledge import build_brand_memory
+        return build_brand_memory(getattr(customer, "slug", "") or "")
+    except Exception:
+        return ""
+
+
 def build_system_prompt(customer: Customer, brief: ParsedBrief) -> str:
     overlay_lang = LANGUAGE_NAMES.get(customer.overlay_language, "English")
+    brand_memory = _safe_brand_memory(customer)
     return f"""You are a senior Amazon listing copywriter writing for the brand {customer.name}.
 
 # BRAND DNA
@@ -133,6 +143,12 @@ def build_system_prompt(customer: Customer, brief: ParsedBrief) -> str:
 - Photography rules: {_trim(customer.photo_rules, 600)}
 - No-gos (NEVER include in any visual or copy): {_trim(customer.no_gos, 600)}
 - Creative freedom: {customer.creative_freedom}/5
+
+# BRAND MEMORY — everything we have created and verified for this brand before
+Use this to stay consistent with past work, reuse proven angles, respect the established
+compliance wording (e.g. approved NPN/claim phrasing), and never repeat past mistakes.
+Do NOT copy it verbatim — let it inform a fresh, product-specific plan.
+{brand_memory or '(No prior brand history on file yet — this is an early plan for the brand.)'}
 
 # PRODUCT BEING BRIEFED
 - Product: {_trim(brief.product_name, 300)}

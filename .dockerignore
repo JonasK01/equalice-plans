@@ -1,5 +1,5 @@
-# Build context = repo root. Keep it lean: the image only needs the app code +
-# each brand's config.json/logo (the app seeds & generates everything else at runtime).
+# Build context = repo root. Keep the image lean, but DO ship the brand knowledge
+# (brand_study.md + each product's SOURCE_NOTES.md + run.py) so Brand Memory works.
 
 # virtualenvs / caches / vcs
 .venv/
@@ -13,14 +13,20 @@
 ".tmp 2/"
 .tmp*/
 
-# generated & source artifacts NOT needed at runtime (app seeds from config.json + logo only)
+# heavy binaries not needed at runtime
+*.zip
+*.ai
+*.psd
+*.eps
 **/*.pdf
 **/*.xlsx
 **/*.xls
+
+# raw client source + design assets (big; not needed by the app)
 tools/brief_app/customers/*/source/
-tools/brief_app/customers/*/products/
+tools/brief_app/customers/*/products/*/assets/
+tools/brief_app/customers/*/products/*/legacy/
 tools/brief_app/customers/*/legacy/
-tools/brief_app/customers/*/brand_study.md
 
 # NEVER bake secrets into the image
 .env
