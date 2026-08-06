@@ -11,6 +11,13 @@ services:
     environment:
       - BRIEF_APP_DATA=/data
       - PORT=8501
+      # Force a consistent LIGHT theme in EQUALICE colours (otherwise Streamlit follows the
+      # viewer's OS dark-mode and widgets render dark on the cream page). '#' quoted for YAML.
+      - "STREAMLIT_THEME_BASE=light"
+      - "STREAMLIT_THEME_PRIMARY_COLOR=#FA7C04"
+      - "STREAMLIT_THEME_BACKGROUND_COLOR=#FAF7F2"
+      - "STREAMLIT_THEME_SECONDARY_BACKGROUND_COLOR=#FFFFFF"
+      - "STREAMLIT_THEME_TEXT_COLOR=#0F1115"
     volumes:
       - app_data:/data           # brands + generated plans persist across redeploys
     expose:

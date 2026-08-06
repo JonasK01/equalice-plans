@@ -20,6 +20,9 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # Copy app code. tools/ is the package root.
 COPY tools/ /app/tools/
 
+# Streamlit reads .streamlit/config.toml from the working dir (/app) → force light EQUALICE theme.
+COPY tools/brief_app/.streamlit /app/.streamlit
+
 # Persistent data lives on a mounted volume at /data
 RUN mkdir -p /data/customers /data/briefs /data/assets/cache
 
