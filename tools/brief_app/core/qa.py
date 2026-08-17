@@ -117,15 +117,19 @@ def lint_copy(title: str, bullets, images, modules, qa=None) -> list[str]:
             warns.append(f'Module {i} headline {len(h)}ch (max {MAX_MODULE_HEADLINE_CHARS}): "{h}"')
         if _DASHES.search(h):
             warns.append(f'Module {i} headline uses a dash — rewrite without it: "{h}"')
-        # Body length. Two things are deliberately excluded from the measurement:
-        #   - the Q&A bridge line, appended by a house rule after the copy is written, so
-        #     module 6 is not failed for a sentence its author never wrote;
-        #   - the Q&A module itself, whose body IS the question-and-answer block. That copy
-        #     is governed by the Q&A rules above and is checked there, so measuring it as a
-        #     banner paragraph would report every plan twice for the same text.
+        # Body length applies to BANNERS only — they are the modules that turn into
+        # paragraphs, and they are what the review team was reading when it said "way too
+        # much copy". Two roles are structurally different and are excluded:
+        #   - a+_carousel, whose body is a list of tile labels. Five scannable tiles are not
+        #     a wall of text, and measuring them as one paragraph fails every carousel ever
+        #     written.
+        #   - a+_qa, whose body IS the question-and-answer block, already governed by the
+        #     Q&A rules above. Measuring it here would report every plan twice for one text.
+        # The bridge sentence is stripped as well: a house rule appends it after the copy is
+        # written, so counting it would fail module 6 for a line its author never wrote.
         role = str(getattr(mo, "role", "") or "")
         body = _plain(_re.sub(r"<i>.*?</i>", "", str(getattr(mo, "body", "") or ""), flags=_re.S))
-        if role != "a+_qa" and len(body) > MAX_MODULE_BODY_CHARS:
+        if role == "a+_banner" and len(body) > MAX_MODULE_BODY_CHARS:
             warns.append(f'Module {i} body {len(body)}ch (max {MAX_MODULE_BODY_CHARS}) — '
                          f'A+ copy is support text, not a paragraph')
         vis = _plain(getattr(mo, "visual", ""))

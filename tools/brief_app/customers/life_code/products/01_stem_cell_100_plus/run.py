@@ -23,38 +23,22 @@ from tools.brief_app.core.customers import load_customer
 from tools.brief_app.core.excel_parser import parse_excel
 from tools.brief_app.core.pdf_builder import BriefBuilder
 from tools.brief_app.core.ai import AIImagePlanItem, AIModule, AIQA
+from tools.brief_app.core.seo_loader import load_seo, as_bullets_html
 
 PLAN_NO = "01"
 ASIN = "B00OADCBUU"
 EXCEL = HERE / "listing.xlsx"
 
 
-TITLE = ('Life Code Stem Cell 100+ — Stem Cell & Telomere Pathway Support · Healthy Aging '
-         'Supplement · Astragalus, Rhodiola, Pine Bark OPCs + D3, B12 & Folate · 60 Vegetarian '
-         'Capsules · Made in USA')
-
-BULLETS = [
-    "<b>STEM CELL &amp; TELOMERE PATHWAY SUPPORT</b> — Stem Cell 100+ is formulated to support "
-    "stem cell and telomere-related pathways as part of a healthy-aging routine. Our upgraded "
-    "SC100+ proprietary blend is designed to be more comprehensive than the original Stem Cell 100.",
-
-    "<b>MULTI-PATHWAY BOTANICAL BLEND</b> — A researched, plant-based blend including Astragalus "
-    "Membranaceus, Rhodiola Rosea, Pine Bark OPCs, L-Theanine, He Shou Wu, Genistein, Rubus "
-    "Chingii and Drynaria — designed to support multiple aging-related pathways: cellular health, "
-    "vascular circulation, neural function and autophagy.",
-
-    "<b>PLUS D3, B12 &amp; FOLATE</b> — Includes Vitamin D3, Vitamin B12 and active Folate "
-    "(5-MTHF) as additional nutritional ingredients that support everyday wellness and normal "
-    "cellular function — a thoughtful, complete daily formula.",
-
-    "<b>60 VEGETARIAN CAPSULES · SIMPLE DAILY USE</b> — 100% vegetarian capsules with no "
-    "animal-based capsule ingredients. Suggested use is just 2 capsules daily — an easy addition "
-    "to your longevity routine.",
-
-    "<b>MADE IN THE USA · GMP · LAB-TESTED</b> — Manufactured in the USA to GMP standards and "
-    "laboratory tested for quality you can trust. Backed by Life Code's longevity-science approach "
-    "and a 90-day money-back guarantee.",
-]
+# Title and bullets are NOT defined here. They come from listing.xlsx, which is the SEO
+# axis for this plan and the only approved source for on-listing copy.
+#
+# They used to be hand-written constants at this spot, and had drifted from the sheet: that
+# version put Vitamin D3, B12, active Folate (5-MTHF), Genistein, Rubus Chingii and Drynaria
+# into the title and bullets. None of them appear in the SEO sheet or in anything the client
+# has supplied. On a dietary supplement listing that is not a wording difference, it is an
+# ingredient claim, so the constants are deleted rather than kept as a fallback — a fallback
+# is just a slower way to ship the same error.
 
 
 IMAGES = [
@@ -71,13 +55,13 @@ IMAGES = [
             "cell + telomere/chromosome motif behind it (abstract, elegant, non-medical). Badge "
             "(navy): 'STEM CELL & TELOMERE SUPPORT'.\n"
             "OPTION B — BOTANICAL BLEND (owns 'real ingredients'): bottle with Astragalus root, "
-            "Rhodiola and pine bark arranged beside it. Badge: '10+ RESEARCHED BOTANICALS'.\n"
+            "Rhodiola and pine bark arranged beside it. Badge: 'STANDARDISED BOTANICALS'.\n"
             "OPTION C — TRUST STACK (defuses 'is it legit?'): bottle + small badge row (Made in "
             "USA · GMP · Vegetarian · Lab-Tested). Badge: 'MADE IN USA · GMP'.\n\n"
             "Across all 3: bottle ~70%, callout ~6%, same lighting + colour temperature."
         ),
         overlay="(one callout per option)",
-        overlay_sub="3 hero options shipped — A/B test, keep the winner.",
+        overlay_sub="Three hero options shipped. A/B test them and keep the winner.",
         props=["A: bottle + abstract cell/telomere motif", "B: bottle + Astragalus/Rhodiola/pine bark", "C: bottle + trust-badge row"],
         lighting="Soft, premium studio light (5000K), gentle reflection under the bottle. Same across all 3.",
         why_it_works=(
@@ -86,92 +70,118 @@ IMAGES = [
         ),
     ),
     AIImagePlanItem(
-        name="Image 2 — Hook: designed to support the pathways of healthy aging",
+        name="Image 2 — Hook: more stem cells is the wrong goal",
         role="hook",
-        background="Soft light-blue #EEF2F8 with navy headline (clean science look)",
-        purpose="State the compliant core promise in one frame — multi-pathway support.",
+        background="Split frame. Left half cool grey #E8EAED, right half brand navy #14294D.",
+        purpose="Lead with the argument only this brand can make, instead of a category platitude.",
+        layout="myth_vs_fact",
+        graphics=[
+            "vertical divider down the exact centre, 2 px, white",
+            "LEFT band label chip 'THE USUAL PITCH' in grey #6B7280 caps 12 px, top-left",
+            "left side: a row of stem-cell dots depleting left to right, last three faded out, "
+            "struck through with a single thin red #C8202F rule",
+            "RIGHT band label chip 'OUR APPROACH' in white on navy, top-right",
+            "right side: the same dots held steady inside a softly glowing ring labelled "
+            "'the micro-environment', bottle standing beside it",
+        ],
         visual=(
-            "Centre: the bottle. Around it, four clean stylised icons on soft navy discs, each a "
-            "supported pathway (verbatim-safe from the listing): 'Cellular health', 'Vascular "
-            "circulation', 'Neural function', 'Autophagy'. Thin connecting lines from each to the "
-            "bottle, like an elegant science infographic. Small caption: 'Formulated to support "
-            "stem cell & telomere-related pathways.'"
+            "Two stacked bands, the wrong belief on the left struck through, the correction on the "
+            "right. Bottle sits on the navy half at one third height."
         ),
-        overlay="SUPPORT FOR HEALTHY AGING.",
-        overlay_sub="Designed to support cellular health, circulation, neural function & autophagy.",
-        props=["bottle", "4 pathway icons on navy discs", "thin connector lines"],
-        lighting="Even, clean, editorial. Clarity over drama.",
+        overlay="MORE ISN'T THE GOAL.",
+        overlay_sub="You have a limited number of stem cells. This formula supports the ones you have.",
+        props=["bottle", "depleting stem-cell dot row", "glowing niche ring"],
+        lighting="Even, editorial, no drama. The graphic carries the frame, not the light.",
         why_it_works=(
-            "Reviewers say it's hard to connect ingredients to benefits. Naming the four supported "
-            "pathways — in the listing's own hedged language — educates and differentiates while "
-            "staying fully compliant."
+            "The client's own page makes a contrarian argument no competitor makes: spending stem "
+            "cells faster is not a win, because each divides a limited number of times. That is a "
+            "checkable claim a shopper can weigh, and it reframes every 'boosts stem cells' rival "
+            "as the naive option. It is the strongest asset on the page and the first plan omitted it."
         ),
-        cvr="Directly answers the 'how does this actually help me?' hesitation.",
+        cvr="Turns the category's loudest claim into a reason to doubt the competitor instead.",
     ),
     AIImagePlanItem(
-        name="Image 3 — Inside the SC100+ blend",
+        name="Image 3 — The published lifespan study",
         role="educate",
-        background="White with a navy footer band",
-        purpose="Defend the premium: show the researched botanical blend and what each area supports.",
+        background="Clean white, thin navy rule top and bottom. Journal-page restraint.",
+        purpose="Show the peer-reviewed research rather than saying 'backed by science'.",
+        layout="stat_block",
+        graphics=[
+            "hero figure '+123%' set very large in navy #14294D, centred in the top two thirds",
+            "caption directly beneath in 30 px grey: 'median lifespan, Drosophila fruit flies'",
+            "small paired bar chart bottom-left: treated 89 days vs control 48 days, navy vs grey",
+            "citation line bottom-centre in 30 px: 'PLoS One 2015, 10:e0119068'",
+            "bottle small at bottom-right, no badge on it",
+        ],
         visual=(
-            "Clean ingredient grid. Real photos of the key botanicals with short, honest labels:\n"
-            "  • ASTRAGALUS MEMBRANACEUS — traditional longevity botanical\n"
-            "  • RHODIOLA ROSEA — adaptogen\n"
-            "  • PINE BARK OPCs — antioxidant support\n"
-            "  • L-THEANINE — calm focus\n"
-            "  • HE SHOU WU · GENISTEIN · RUBUS CHINGII · DRYNARIA — traditional botanicals\n\n"
-            "Footer band: 'Plus Vitamin D3, B12 & active Folate (5-MTHF).' Keep claims to "
-            "'support' language only."
+            "One number carries the frame, the chart and the citation support it underneath. "
+            "Restrained and journal-like, never infomercial."
         ),
-        overlay="10+ RESEARCHED BOTANICALS.",
-        overlay_sub="Astragalus, Rhodiola, Pine Bark OPCs, He Shou Wu & more — plus D3, B12 & Folate.",
-        props=["botanical ingredient grid (real photos)", "D3/B12/Folate footer band"],
-        lighting="Bright, clean flat-lay light; ingredients appetising and premium.",
+        overlay="PUBLISHED IN PLOS ONE.",
+        overlay_sub="A peer reviewed lifespan study in fruit flies. Not a human result.",
+        props=["bottle", "paired bar chart", "citation line"],
+        lighting="Flat, even, white. This tile is a document, not a product shot.",
         why_it_works=(
-            "Buyers value researched, named ingredients. Making the blend transparent justifies "
-            "the price and separates this from vague 'stem cell' products with hidden formulas."
+            "A peer-reviewed lifespan study is close to unheard of in this category, and naming the "
+            "journal makes it checkable. The subline states the species and the limit in the same "
+            "breath as the number, which is both the compliant way to run it and the reason an "
+            "informed longevity buyer will trust the rest of the page."
         ),
+        ctr="A real citation stands out in a grid of unsourced claims.",
     ),
     AIImagePlanItem(
         name="Image 4 — 100+ vs 100: the upgraded formula",
         role="desire",
         background="Soft light-blue #EEF2F8, clean comparison",
         purpose="Position 100+ as the more comprehensive choice within the range.",
+        layout="comparison_columns",
+        graphics=[
+            "two equal columns, thin grey divider, bottle standing at the top of each",
+            "LEFT header 'STEM CELL 100', RIGHT header 'STEM CELL 100+' with a red #C8202F plus mark",
+            "four criterion rows down both columns: SC100 blend, Rhodiola Rosea, Tulsi, pace",
+            "shared botanicals shown as grey ticks on both sides, the two Plus-only rows as "
+            "red ticks on the right and grey dashes on the left",
+        ],
         visual=(
-            "Side-by-side of the two bottles (Stem Cell 100 and Stem Cell 100+), with a clean "
-            "'what's added' panel for 100+: more botanicals in the blend, added D3/B12/Folate, "
-            "designed to be more comprehensive. A soft red '+' accent marks the upgraded pick. "
-            "Honest framing — both are good; 100+ is the fuller formula."
+            "Two columns, same criteria down both sides, the difference carried by the tick colour "
+            "rather than by any extra copy."
         ),
-        overlay="THE UPGRADED FORMULA.",
-        overlay_sub="Stem Cell 100+ builds on Stem Cell 100 with a broader blend plus D3, B12 & Folate.",
-        props=["Stem Cell 100 + 100+ bottles side by side", "'what's added' panel", "red + accent"],
+        overlay="TWO FORMULAS. ONE CHOICE.",
+        overlay_sub="Plus adds Rhodiola Rosea and Tulsi, and is the faster acting version.",
+        props=["Stem Cell 100 + 100+ bottles side by side", "four-row criteria table", "red + accent"],
         lighting="Even, clean; true label colours on both bottles.",
         why_it_works=(
-            "Shoppers comparing the two need a clear reason to choose 100+. Showing the delta "
-            "(broader blend + added vitamins) makes the premium choice obvious and lifts AOV."
+            "Shoppers comparing the two need one clear reason to choose Plus. Naming the two "
+            "botanicals that actually differ is checkable against the label, which is worth more "
+            "to this buyer than a vague 'more comprehensive'."
         ),
     ),
     AIImagePlanItem(
-        name="Image 5 — Trust: made in USA, GMP, lab-tested, vegetarian",
+        name="Image 5 — Who formulated this",
         role="trust",
-        background="White with soft navy panels behind each badge",
-        purpose="Stack the quality signals that make a supplement buyer click 'add to cart'.",
+        background="Soft light-blue #EEF2F8, one white card stack, generous margins.",
+        purpose="Put a named scientist behind the bottle. The listing's biggest unused asset.",
+        layout="why_us",
+        graphics=[
+            "three white reason cards stacked with 24 px gaps, each with a navy #14294D left rule",
+            "card 1: 'Co-founded by Dr. Bryant Villeponteau, Ph.D.' with a small portrait at 120 px "
+            "(CLIENT TO SUPPLY, see SOURCE_NOTES)",
+            "card 2: 'Formula published in a peer reviewed journal' with the PLoS One citation small beneath",
+            "card 3: 'Made in the USA, GMP facility, laboratory tested' with three 40 px line icons in a row",
+            "bottle bottom-right at 25% height, no badge",
+        ],
         visual=(
-            "Centre bottle, four trust badges in the corners:\n"
-            "  • MADE IN THE USA (small flag)\n"
-            "  • GMP MANUFACTURED (facility icon)\n"
-            "  • LABORATORY TESTED (flask/check icon)\n"
-            "  • 100% VEGETARIAN CAPSULES (leaf icon)\n\n"
-            "Thin strip: '90-day money-back guarantee · no animal-based capsule ingredients.'"
+            "A stack of three proof cards, not a badge wall. Each card carries one checkable fact "
+            "rather than an adjective."
         ),
-        overlay="MADE IN USA. LAB-TESTED.",
-        overlay_sub="GMP manufactured · 100% vegetarian capsules · 90-day money-back guarantee.",
-        props=["bottle", "4 trust badges", "90-day guarantee strip"],
-        lighting="Studio-even; badges legible at thumbnail size.",
+        overlay="BUILT BY A SCIENTIST.",
+        overlay_sub="Co-founded by Dr. Bryant Villeponteau, Ph.D.",
+        props=["bottle", "three reason cards", "founder portrait (to be supplied)"],
+        lighting="Even, calm, premium. Portrait lit softly, never corporate-stock.",
         why_it_works=(
-            "Supplement trust gaps are quality and legitimacy. Stacking USA + GMP + lab-tested + "
-            "vegetarian + guarantee answers every doubt before purchase."
+            "Almost nothing in this category can put a named researcher on the pack, and the "
+            "listing already carries the credential. Three checkable facts beat four generic "
+            "badges: 'lab-tested' is on every bottle in the grid, a named scientist is not."
         ),
     ),
     AIImagePlanItem(
@@ -179,6 +189,13 @@ IMAGES = [
         role="desire",
         background="Warm, bright lifestyle — an active, healthy mature adult's morning",
         purpose="Set honest expectations (consistency) and show the easy daily habit.",
+        layout="hand_in_frame",
+        graphics=[
+            "two capsules held in an open palm in the lower left third, shot at true scale beside "
+            "a water glass so the capsule size reads honestly",
+            "small navy routine strip along the top third: '2 capsules daily · 60 per bottle'",
+            "one grey honesty line under the strip: 'A long term routine, not an overnight change.'",
+        ],
         visual=(
             "Lifestyle: a vibrant, healthy adult in their 60s at a bright kitchen counter, taking "
             "their 2 capsules with water alongside breakfast — active, happy, everyday (NOT "
@@ -186,7 +203,7 @@ IMAGES = [
             "a consistent routine'. Honest note: 'A long-term routine, not an overnight fix.'"
         ),
         overlay="2 CAPSULES A DAY.",
-        overlay_sub="60 vegetarian capsules — an easy daily step in your longevity routine.",
+        overlay_sub="60 vegetarian capsules. One easy step in a long term routine.",
         props=["healthy 60s adult at kitchen counter", "bottle + 2 capsules + water", "routine panel"],
         lighting="Warm natural morning light. Aspirational, real, vibrant — never clinical.",
         why_it_works=(
@@ -200,14 +217,20 @@ IMAGES = [
         role="close",
         background="Clean navy brand panel with white space",
         purpose="Close on credibility — a science-led longevity brand.",
+        layout="brand_close",
+        graphics=[
+            "Life Code wordmark centred in the top third on navy #14294D",
+            "bottle centred beneath it at 45% frame height",
+            "lower band split into three equal cells by hairline white rules, one quiet fact each",
+        ],
         visual=(
             "Bottle with the Life Code wordmark and a calm, premium science motif. Lower band, "
             "three quiet trust points: 'Longevity-science formulas', 'Made in the USA · GMP · "
             "lab-tested', '90-day money-back guarantee'. Tone: credible, disciplined, premium — "
             "no hype."
         ),
-        overlay="LONGEVITY, BACKED BY SCIENCE.",
-        overlay_sub="Life Code — researched longevity formulas, made in the USA.",
+        overlay="SCIENCE YOU CAN CHECK.",
+        overlay_sub="Named botanicals, a named formulator, published research. Made in the USA.",
         props=["bottle + Life Code wordmark", "science motif", "3 trust points band"],
         lighting="Premium, even, navy-and-white. Calm and credible.",
         why_it_works=(
@@ -222,127 +245,120 @@ MODULES = [
     AIModule(
         name="Module 1 — Brand banner",
         role="a+_banner",
-        headline="SUPPORT FOR HEALTHY-AGING PATHWAYS.",
+        headline="SUPPORT FOR HEALTHY AGING.",
         body=(
-            "Life Code Stem Cell 100+ is formulated to support stem cell and telomere-related "
-            "pathways, with a researched botanical blend designed to support cellular health, "
-            "circulation, neural function and autophagy. Made in the USA, GMP, laboratory tested."
+            "Stem Cell 100+ supports stem cell and telomere related pathways. Made in the USA, "
+            "GMP, laboratory tested."
         ),
-        visual="Wide clean banner: bottle right, navy headline left on white, an elegant abstract cell/telomere motif. Life Code wordmark upper-left.",
-        alt="Life Code Stem Cell 100+ banner: formulated to support stem cell and telomere-related pathways, made in the USA.",
+        visual=("DESKTOP 1464x600, white. LEFT 55%: navy headline, one support line, Life Code "
+                "wordmark above. RIGHT 45%: bottle on a soft #EEF2F8 field with an abstract cell "
+                "and telomere motif behind it. MOBILE 600x450: bottle top, headline beneath."),
+        alt="Life Code Stem Cell 100+ brand banner: support for stem cell and telomere related pathways.",
     ),
     AIModule(
         name="Module 2 — Carousel (5 tiles): Why Stem Cell 100+",
         role="a+_carousel",
         headline="WHY STEM CELL 100+",
         body=(
-            "Tile 1: <b>PATHWAY SUPPORT</b> — Supports stem cell &amp; telomere-related pathways.<br/>"
-            "Tile 2: <b>MULTI-PATHWAY BLEND</b> — Cellular health, circulation, neural, autophagy.<br/>"
-            "Tile 3: <b>10+ BOTANICALS</b> — Astragalus, Rhodiola, Pine Bark OPCs &amp; more.<br/>"
-            "Tile 4: <b>PLUS D3, B12 &amp; FOLATE</b> — Added nutritional support.<br/>"
-            "Tile 5: <b>MADE IN USA</b> — GMP, lab-tested, 100% vegetarian capsules."
+            "Tile 1: <b>PATHWAY SUPPORT</b> Stem cell and telomere related pathways.<br/>"
+            "Tile 2: <b>THE NICHE</b> Supports the environment around your stem cells.<br/>"
+            "Tile 3: <b>SC100+ BLEND</b> Astragalus, Rhodiola Rosea, Tulsi, Pine Bark OPCs.<br/>"
+            "Tile 4: <b>PEER REVIEWED</b> Formula published in PLoS One.<br/>"
+            "Tile 5: <b>MADE IN USA</b> GMP, lab tested, vegetarian capsules."
         ),
-        visual="5 square tiles, navy accent corner each, one disciplined red highlight. Clean science icons.",
-        alt="Five A+ tiles: pathway support, multi-pathway blend, botanicals, added vitamins, made in USA.",
+        visual=("Five square tiles, navy accent corner on each, one disciplined red highlight on "
+                "tile 4. Line icons only, no stock photography. MOBILE: same five, one per swipe."),
+        alt="Five A+ tiles: pathway support, the stem cell niche, the SC100+ blend, peer reviewed, made in USA.",
     ),
     AIModule(
-        name="Module 3 — Banner: Inside the SC100+ blend",
+        name="Module 3 — Banner: why not simply more stem cells",
         role="a+_banner",
-        headline="A RESEARCHED, MULTI-PATHWAY BLEND.",
+        headline="MORE IS NOT THE GOAL.",
         body=(
-            "The SC100+ proprietary blend brings together Astragalus Membranaceus, Rhodiola Rosea, "
-            "Pine Bark OPCs, L-Theanine, He Shou Wu, Genistein and more — plus Vitamin D3, B12 and "
-            "active Folate. Designed to support multiple aging-related pathways as part of a daily "
-            "healthy-aging routine."
+            "Each stem cell divides a limited number of times. This formula supports the ones you "
+            "already have, and the environment around them."
         ),
-        visual="Banner with a clean botanical ingredient row (real photos + labels) and the D3/B12/Folate add-ons. Navy/white, one red accent.",
-        alt="A+ banner showing the SC100+ botanical blend plus D3, B12 and Folate.",
+        visual=("DESKTOP 1464x600. LEFT 50% grey #E8EAED: dot row depleting to the right, thin red "
+                "strike-through, chip 'THE USUAL PITCH'. RIGHT 50% navy #14294D: same dots steady "
+                "inside a glowing ring labelled 'micro-environment', bottle beside it. MOBILE "
+                "600x450: stack left over right, chips stay inside the safe area."),
+        alt="A+ banner contrasting the usual boost-your-stem-cell-count pitch with supporting the cells you have.",
     ),
     AIModule(
-        name="Module 4 — Banner: Quality & trust",
-        role="a+_banner",
-        headline="MADE IN THE USA. TESTED FOR QUALITY.",
-        body=(
-            "Manufactured in the USA to GMP standards and laboratory tested. 100% vegetarian "
-            "capsules with no animal-based capsule ingredients. Backed by Life Code's "
-            "longevity-science approach and a 90-day money-back guarantee."
-        ),
-        visual="Banner with four trust badges (Made in USA · GMP · Lab-Tested · Vegetarian) around the bottle, and a 90-day guarantee seal. Navy/white.",
-        alt="A+ banner with Life Code quality badges: made in USA, GMP, lab-tested, vegetarian, 90-day guarantee.",
-    ),
-    AIModule(
-        name="Module 5 — Carousel (5 tiles): The Life Code longevity range",
+        name="Module 4 — Carousel (5 tiles): The Life Code longevity range",
         role="a+_carousel",
         headline="THE LIFE CODE RANGE",
         body=(
-            "Tile 1: <b>STEM CELL 100+</b> — Upgraded stem cell &amp; telomere pathway support (this product).<br/>"
-            "Tile 2: <b>STEM CELL 100</b> — The original stem cell &amp; telomere support formula.<br/>"
-            "Tile 3: <b>TELOMAX</b> — Telomere-focused botanical support.<br/>"
-            "Tile 4: <b>LONGEVITY COMBO</b> — Stem Cell 100+ paired with TeloMax.<br/>"
-            "Tile 5: <b>90-DAY GUARANTEE</b> — Try the Life Code approach with confidence."
+            "Tile 1: <b>STEM CELL 100+</b> The faster acting formula (this product).<br/>"
+            "Tile 2: <b>STEM CELL 100</b> The original SC100 formula.<br/>"
+            "Tile 3: <b>TELOMAX</b> Telomere focused botanical support.<br/>"
+            "Tile 4: <b>LONGEVITY COMBO</b> Stem Cell 100+ paired with TeloMax.<br/>"
+            "Tile 5: <b>90 DAY GUARANTEE</b> Try the Life Code approach with confidence."
         ),
-        visual="5 tiles: bottles of the range in consistent navy/white styling. This product gently highlighted.",
-        alt="Five A+ tiles of the Life Code longevity range: Stem Cell 100+, Stem Cell 100, TeloMax, Longevity Combo, guarantee.",
+        visual=("Five tiles, the range shot in one consistent navy and white style, this product "
+                "gently highlighted with a red rule. MOBILE: one bottle per swipe, name beneath."),
+        alt="Five A+ tiles of the Life Code range: Stem Cell 100+, Stem Cell 100, TeloMax, the combo, the guarantee.",
     ),
     AIModule(
-        name="Module 6 — Premium Q&A",
+        name="Module 5 — Banner: the published lifespan study",
+        role="a+_banner",
+        headline="PUBLISHED IN PLOS ONE.",
+        body=(
+            "Median lifespan more than doubled in a peer reviewed fruit fly study. That is an "
+            "animal result, not a human one."
+        ),
+        visual=("DESKTOP 1464x600, white. CENTRE-LEFT: '+123%' very large navy #14294D, caption "
+                "beneath 'median lifespan, Drosophila fruit flies'. RIGHT: paired bars, treated 89 "
+                "days navy vs control 48 days grey. FOOT: 'PLoS One 2015, 10:e0119068'. MOBILE "
+                "600x450: figure on top, bars beneath, citation stays legible."),
+        alt="A+ banner showing the peer-reviewed Drosophila lifespan result and its citation.",
+    ),
+    AIModule(
+        name="Module 6 — Banner: who formulated this",
+        role="a+_banner",
+        headline="BUILT BY A SCIENTIST.",
+        body=(
+            "Life Code was co-founded by Dr. Bryant Villeponteau, Ph.D. Made in the USA, GMP, "
+            "laboratory tested."
+        ),
+        visual=("DESKTOP 1464x600, soft #EEF2F8. LEFT 40%: founder portrait in a white card, name "
+                "and Ph.D. beneath (CLIENT TO SUPPLY). RIGHT 60%: two stacked white proof cards "
+                "with navy left rules, 'peer reviewed formula' and 'USA, GMP, lab tested', bottle "
+                "small bottom-right. MOBILE 600x450: portrait card on top, cards beneath."),
+        alt="A+ banner introducing Life Code co-founder Dr. Bryant Villeponteau, Ph.D.",
+    ),
+    AIModule(
+        name="Module 7 — Premium Q&A",
         role="a+_qa",
         headline="QUESTIONS BEFORE YOU BUY",
-        body=(
-            "<b>Q.</b> What does Stem Cell 100+ do?<br/>"
-            "<b>A.</b> It is formulated to support stem cell and telomere-related pathways and to "
-            "support multiple aging-related pathways — cellular health, circulation, neural "
-            "function and autophagy — as part of a healthy-aging routine.<br/><br/>"
-            "<b>Q.</b> What's inside?<br/>"
-            "<b>A.</b> A researched botanical blend (Astragalus, Rhodiola, Pine Bark OPCs, "
-            "L-Theanine, He Shou Wu and more) plus Vitamin D3, B12 and active Folate.<br/><br/>"
-            "<b>Q.</b> How do I take it?<br/>"
-            "<b>A.</b> 2 vegetarian capsules daily. One bottle contains 60 capsules — about a "
-            "30-day supply. Designed for consistent, long-term daily use.<br/><br/>"
-            "<b>Q.</b> How is 100+ different from Stem Cell 100?<br/>"
-            "<b>A.</b> Stem Cell 100+ is the upgraded formula — a broader botanical blend with "
-            "added Vitamin D3, B12 and Folate.<br/><br/>"
-            "<b>Q.</b> Where is it made?<br/>"
-            "<b>A.</b> Made in the USA to GMP standards and laboratory tested. Backed by a 90-day "
-            "money-back guarantee."
-        ),
-        visual="Vertical Q/A table, navy divider lines, small navy Q. and red A. labels.",
+        body="",   # rendered from the QA list below
+        visual="Vertical Q and A table, navy divider lines, small navy Q. and red A. labels.",
         alt="Premium Q&A module for Life Code Stem Cell 100+.",
-    ),
-    AIModule(
-        name="Module 7 — Premium Comparison Chart",
-        role="a+_comparison",
-        headline="CHOOSE YOUR LONGEVITY SUPPORT",
-        body=(
-            "Four columns: <b>Life Code Stem Cell 100+</b> · Stem Cell 100 · Single-herb "
-            "supplement · Basic multivitamin.<br/><br/>"
-            "Rows: Supports stem cell &amp; telomere-related pathways · Multi-pathway botanical "
-            "blend · 10+ researched botanicals · Added D3, B12 &amp; Folate · 100% vegetarian "
-            "capsules · Made in USA / GMP / lab-tested · 90-day guarantee.<br/><br/>"
-            "Highlight the Stem Cell 100+ column with a soft navy tint and a 'MOST COMPREHENSIVE' "
-            "ribbon. Comparison columns use category descriptors only — no competitor brands."
-        ),
-        visual="Standard Amazon Premium Comparison Chart, 4 columns, navy header, Stem Cell 100+ column highlighted.",
-        alt="Premium comparison chart for Life Code Stem Cell 100+ vs Stem Cell 100, single-herb supplement and basic multivitamin.",
     ),
 ]
 
 
+# House standard: exactly 5 pairs, question ≤80 chars, answer ≤120.
+#
+# Rewritten from seven. Two answers previously listed Genistein, Rubus Chingii, Drynaria,
+# Vitamin D3, B12 and Folate as being in this product. No source the client supplied confirms
+# any of them for the Plus formula, so they are out until the client sends the full label.
+# On a supplement listing an unverified ingredient is not a copy problem, it is a liability.
 QA = [
     AIQA(q="What is Stem Cell 100+ designed to do?",
-         a="It is formulated to support stem cell and telomere-related pathways, and designed to support multiple aging-related pathways including cellular health, vascular circulation, neural function and autophagy, as part of a healthy-aging routine."),
+         a="It supports stem cell and telomere related pathways as part of a healthy aging "
+           "routine."),
     AIQA(q="What are the main ingredients?",
-         a="An SC100+ proprietary botanical blend including Astragalus Membranaceus, Rhodiola Rosea, Pine Bark OPCs, L-Theanine, He Shou Wu, Genistein, Rubus Chingii and Drynaria, plus Vitamin D3, Vitamin B12 and active Folate (5-MTHF)."),
+         a="The SC100+ botanical blend: Astragalus, Rhodiola Rosea, Tulsi, Pine Bark OPCs, "
+           "He Shou Wu, L-Theanine."),
     AIQA(q="How do I take it, and how long does a bottle last?",
-         a="Suggested use is 2 vegetarian capsules daily. Each bottle contains 60 capsules, about a 30-day supply. It is designed for consistent, long-term daily use."),
+         a="Two vegetarian capsules daily. 60 capsules per bottle, about a 30 day supply."),
     AIQA(q="How is Stem Cell 100+ different from Stem Cell 100?",
-         a="Stem Cell 100+ is the upgraded, more comprehensive formula, with a broader botanical blend and added Vitamin D3, B12 and Folate compared with the original Stem Cell 100."),
-    AIQA(q="Is it vegetarian?",
-         a="Yes. Stem Cell 100+ uses 100% vegetarian capsules with no animal-based capsule ingredients."),
-    AIQA(q="Where is it made and is it tested?",
-         a="It is manufactured in the USA to GMP standards and laboratory tested for quality. Life Code also offers a 90-day money-back guarantee."),
+         a="Plus adds Rhodiola Rosea and Tulsi to the SC100 blend and is the faster acting "
+           "version."),
     AIQA(q="When will I notice a difference?",
-         a="Stem Cell 100+ is a daily longevity-support routine rather than an overnight product. Results vary from person to person, and consistent long-term use is recommended."),
+         a="It is a long term daily routine, not an overnight product. Results vary from "
+           "person to person."),
 ]
 
 
@@ -360,9 +376,15 @@ def main() -> None:
     OUT = HERE / f"{PLAN_NO}_{ASIN}_Image Plan.pdf"
     print(f"  Produkt: {brief.product_name}  ASIN: {ASIN}  Marktplatz: {cust.marketplace}")
 
+    # Title and bullets come 1:1 from the SEO sheet, which is the axis for this plan.
+    # They used to be hand-written constants in this file, and had drifted: that version
+    # claimed Vitamin D3, B12, Folate, Genistein, Rubus Chingii and Drynaria for this
+    # product. None of those appear in the SEO sheet or in any source the client supplied.
+    # On a supplement listing that is not a copy difference, it is an ingredient claim.
+    seo = load_seo(EXCEL)
     builder = BriefBuilder(cust, brief, OUT, ai=None)
-    builder._ai_title = TITLE
-    builder._ai_bullets = BULLETS
+    builder._ai_title = seo.title
+    builder._ai_bullets = as_bullets_html(seo)
     builder._ai_images = IMAGES
     builder._ai_modules = MODULES
     builder._ai_qa = QA
