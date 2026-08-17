@@ -24,7 +24,9 @@ if str(ROOT_REPO) not in sys.path:
 
 import streamlit as st
 
-from tools.brief_app.core.config import BRIEFS_DIR, MARKETPLACES, PERSONALITY_OPTIONS
+from tools.brief_app.core.config import (
+    BRIEFS_DIR, MARKETPLACES, OVERLAY_LANGUAGES, PERSONALITY_OPTIONS,
+)
 from tools.brief_app.core.customers import (
     Customer, list_customers, load_customer, save_customer, delete_customer,
     save_logo, slugify,
@@ -37,6 +39,7 @@ from tools.brief_app.core.unsplash import has_unsplash_key, UNSPLASH_KEY_ENV
 from tools.brief_app.core.ai import BriefAI, has_api_key, sdk_available, ANTHROPIC_KEY_ENV, MODEL as AI_MODEL
 from tools.brief_app.core import comments as CM
 from tools.brief_app.core import knowledge as KN
+from tools.brief_app.core.i18n import LANGUAGES, get_ui_language, set_ui_language, t as T
 
 
 st.set_page_config(
@@ -167,6 +170,20 @@ def _customer_form(existing: Customer | None) -> Customer | None:
                 format_func=lambda k: MARKETPLACES[k]["label"],
                 index=mp_index,
             )
+            # The marketplace language is only the default. It used to be forced, which made
+            # English overlays impossible on a non-.com marketplace — wrong for brands whose
+            # packaging and creative are English even when they sell on amazon.de.
+            _ov_keys = list(OVERLAY_LANGUAGES.keys())
+            _ov_default = (existing.overlay_language if existing
+                           else MARKETPLACES[marketplace]["lang"])
+            overlay_language = st.selectbox(
+                "Overlay language (on-image text)",
+                options=_ov_keys,
+                format_func=lambda c: OVERLAY_LANGUAGES[c],
+                index=_ov_keys.index(_ov_default) if _ov_default in _ov_keys else 0,
+                help="The language of the text ON the images. Brief body copy is always "
+                     "English. Defaults to the marketplace language.",
+            )
             tagline = st.text_input("Tagline", value="" if is_new else existing.tagline)
             voice = st.text_area("Brand voice", value="" if is_new else existing.voice, height=80)
 
@@ -260,7 +277,7 @@ def _customer_form(existing: Customer | None) -> Customer | None:
         slug=slug,
         name=name.strip(),
         marketplace=marketplace,
-        overlay_language=MARKETPLACES[marketplace]["lang"],
+        overlay_language=overlay_language,
         primary_color=primary,
         accent_color=accent,
         text_color=text_color,
@@ -704,35 +721,29 @@ def page_generate() -> None:
             if cur:
                 st.caption("Images on file: " + ", ".join(cur))
 
-    # ---- Über uns: einmal pro Marke fragen, dann nie wieder ----
-    # Ohne diesen Text erfindet die KI eine Markengeschichte. Mit ihm bekommt sie die echte
-    # (z.B. "created by a hospice social worker") — das stärkste Trust-Asset, das es gibt.
+    # ---- About Us: ask once per brand, then never again ----
+    # Without this text the AI would invent a brand story. With it, it gets the real one
+    # (e.g. "created by a hospice social worker") — the strongest trust asset there is.
     if not (cust.about_us or "").strip():
         with st.container(border=True):
-            st.markdown(f"##### 📖 Über-uns-Seite von {cust.name} fehlt")
-            st.caption(
-                "Einmal einfügen, gilt für alle künftigen Pläne dieser Marke. Ohne diesen Text "
-                "darf die KI **keine** Markengeschichte, kein Gründungsjahr und kein Credential "
-                "erfinden — die A+ Module bleiben dann blasser als nötig."
-            )
+            st.markdown("##### " + T("about.missing_title", brand=cust.name))
+            st.caption(T("about.why"))
             _au = st.text_area(
-                "Text von der Über-uns-Seite einfügen",
+                T("about.field"),
                 height=120, key="about_quick",
-                placeholder=(f"Von {cust.website_url or 'der Website'} → Über uns / About us.\n"
-                             "Wer hat die Marke gegründet, warum, wofür steht sie, welche "
-                             "Credentials gibt es (Meisterbetrieb, seit 1912, Hebamme, Hospiz-"
-                             "Sozialarbeiterin, Familienbetrieb …)."),
+                placeholder=T("about.placeholder",
+                              source=cust.website_url or T("about.website_fallback")),
             )
             _c1, _c2 = st.columns([1, 3])
-            if _c1.button("💾 Speichern", key="about_quick_save", type="primary"):
+            if _c1.button(T("about.save"), key="about_quick_save", type="primary"):
                 if _au.strip():
                     cust.about_us = _au.strip()
                     save_customer(cust)
-                    st.success("Gespeichert. Fließt ab sofort in jeden Plan dieser Marke ein.")
+                    st.success(T("about.saved"))
                     st.rerun()
                 else:
-                    st.warning("Erst Text einfügen.")
-            _c2.caption("Oder überspringen — der Plan wird trotzdem gebaut, nur ohne Markengeschichte.")
+                    st.warning(T("about.empty"))
+            _c2.caption(T("about.skip"))
 
     st.divider()
     st.markdown("#### 1 · Upload the product inputs")
@@ -856,17 +867,16 @@ def page_generate() -> None:
         pass
     if len(_tabs) > 1:
         with st.container(border=True):
-            st.markdown(f"##### 🧬 {len(_tabs)} Varianten in diesem Sheet gefunden")
-            st.caption("Jedes SEO-Tab ist ein eigenes Kind-Listing und bekommt einen eigenen Plan. "
-                       "Auswählen, was gebaut werden soll — jede Variante kostet einen vollen Lauf.")
+            st.markdown("##### " + T("variants.found_title", n=len(_tabs)))
+            st.caption(T("variants.each_tab") + T("variants.pick"))
             _picked = []
             for _i, _t in enumerate(_tabs):
                 _label = SEOL.variation_label(_t) or _t
                 if st.checkbox(f"**{_label}**", value=True, key=f"var_{_i}",
-                               help=f"Excel-Tab: {_t}"):
+                               help=T("variants.tab_help", tab=_t)):
                     _picked.append(_t)
-            st.caption(f"{len(_picked)} von {len(_tabs)} ausgewählt.")
-            if st.button(f"🧬 {len(_picked)} Varianten-Pläne bauen", key="build_variants",
+            st.caption(T("variants.selected", n=len(_picked), total=len(_tabs)))
+            if st.button(T("variants.button", n=len(_picked)), key="build_variants",
                          type="primary", disabled=not _picked):
                 out_dir = BRIEFS_DIR / cust.slug
                 out_dir.mkdir(parents=True, exist_ok=True)
@@ -878,7 +888,7 @@ def page_generate() -> None:
                         _s = SEOL.load_seo(upload_path, sheet=_t)
                         _seo_v = (_s.title or None, SEOL.as_bullets_html(_s) or None, _s.backend or None)
                     except Exception as exc:
-                        st.error(f"SEO-Tab '{_t}' nicht lesbar: {exc}")
+                        st.error(T("variants.unreadable", tab=_t, error=exc))
                         continue
                     _stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     _slugname = slugify(f"{brief.product_name or 'plan'} {_lab}")[:80]
@@ -888,11 +898,11 @@ def page_generate() -> None:
                                                  source_upload=str(upload_path))
                         built.append(_pdf.name)
                     except Exception as exc:
-                        st.error(f"Bauen fehlgeschlagen für '{_lab}': {exc}")
+                        st.error(T("variants.failed", label=_lab, error=exc))
                 if built:
                     st.session_state["last_plan"] = {"slug": cust.slug, "name": built[-1]}
-                    st.success(f"✅ {len(built)} Varianten-Pläne gebaut. "
-                               f"Alle unter **Plans & Review** bei {cust.name}.")
+                    st.success(T("variants.done", n=len(built))
+                               + T("variants.done_where", brand=cust.name))
         st.divider()
 
     if st.button("Generate PDF", type="primary"):
@@ -916,8 +926,8 @@ def page_generate() -> None:
             st.divider()
             st.subheader("📄 Generated plan — preview & review")
             _v = next((x for x in CM.list_plans(last["slug"]) if x["name"] == last["name"]), None)
-            _vtxt = (f"  ·  **v{_v['version']} von {_v['versions_total']}**"
-                     + ("  ·  🟢 aktuellste Version" if _v["is_latest"] else "  ·  ⚪️ ältere Version")) if _v else ""
+            _vtxt = (f"  ·  **v{_v['version']}/{_v['versions_total']}**"
+                     + T("version.latest" if _v["is_latest"] else "version.older")) if _v else ""
             st.caption(f"`{last['name']}`  ·  {_when(int(p.stat().st_mtime))}{_vtxt}  ·  "
                        f"Status: **{CM.get_status(last['slug'], last['name'])}**")
             _render_pdf_inline(p)
@@ -964,20 +974,14 @@ def page_customers() -> None:
     try:
         from tools.brief_app.core.config import SEEDED_ON_BOOT
         if SEEDED_ON_BOOT:
-            st.info("🆕 Neu mit dem letzten Deploy dazugekommen: **"
-                    + "**, **".join(SEEDED_ON_BOOT) + "**")
+            st.info(T("seed.new") + "**" + "**, **".join(SEEDED_ON_BOOT) + "**")
     except Exception:
         pass
 
-    with st.expander("💾 Backup — alles herunterladen", expanded=False):
-        st.caption(
-            "Marken, Pläne, Brand Memory und Kommentare liegen nur auf dem Server. "
-            "Sie sind **nicht** im Git. Lade hier alles als ZIP herunter und lege es "
-            "irgendwo ab, das nicht derselbe Server ist — sonst ist bei einem "
-            "Serververlust alles weg."
-        )
-        if st.button("ZIP erzeugen", key="mk_backup"):
-            with st.spinner("Packe…"):
+    with st.expander(T("backup.title"), expanded=False):
+        st.caption(T("backup.why"))
+        if st.button(T("backup.make"), key="mk_backup"):
+            with st.spinner(T("backup.packing")):
                 data = _backup_zip()
             st.download_button(
                 f"⬇️  equalice-backup ({len(data) // 1024} KB)",
@@ -1050,16 +1054,15 @@ def page_archive() -> None:
         icon = _STATUS_ICON.get(plan["status"], "🟡")
         ver = (f"v{plan['version']}/{plan['versions_total']}"
                if plan["versions_total"] > 1 else "v1")
-        flag = "🟢 AKTUELL" if plan["is_latest"] else "⚪️ alt"
+        flag = T("version.flag_latest") if plan["is_latest"] else T("version.flag_old")
         header = (f"{icon}  {flag}  ·  {ver}  ·  {_when(plan['mtime'])}  ·  "
                   f"{plan['name']}  ·  {plan['size_kb']} KB  ·  💬 {plan['comment_count']}")
         with st.expander(header, expanded=False):
             p = Path(plan["path"])
             if not plan["is_latest"]:
-                st.warning(f"Das ist **nicht** die aktuellste Version dieses Plans "
-                           f"(v{plan['version']} von {plan['versions_total']}). "
-                           f"Die neueste steht weiter oben in der Liste.")
-            st.caption(f"Status: **{plan['status']}** — {CM.STATUS_HELP.get(plan['status'], '')}")
+                st.warning(T("version.not_latest", v=plan["version"],
+                             total=plan["versions_total"]))
+            st.caption(f"Status: **{plan['status']}** — {CM.status_help(plan['status'])}")
             _render_pdf_inline(p, height=800)
             with p.open("rb") as f:
                 st.download_button("⬇️  Download PDF", data=f.read(),
@@ -1115,6 +1118,18 @@ with st.sidebar:
     page = st.radio("Section", options=list(PAGES.keys()), label_visibility="collapsed")
     st.divider()
     st.text_input("Your name (for comments)", key="reviewer", placeholder="e.g. Jonas")
+
+    # Interface language only — the language of a brand's on-image overlays is set per
+    # brand on the Customers page, so switching this never changes a client deliverable.
+    _codes = list(LANGUAGES.keys())
+    _cur = get_ui_language()
+    _pick = st.selectbox(
+        "🌐 " + T("sidebar.language"), _codes, index=_codes.index(_cur),
+        format_func=lambda c: LANGUAGES[c],
+    )
+    if _pick != _cur:
+        set_ui_language(_pick)
+        st.rerun()
     st.divider()
     st.caption(f"AI ({AI_MODEL}): {'✓ ready' if (has_api_key() and sdk_available()) else '✗ disabled — set ' + ANTHROPIC_KEY_ENV}")
     st.caption(f"Unsplash key: {'✓ set' if has_unsplash_key() else '✗ missing'}")

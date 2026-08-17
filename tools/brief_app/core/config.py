@@ -69,6 +69,17 @@ MARKETPLACES = {
     "amazon.it": {"label": "amazon.it (IT)", "lang": "it", "currency": "EUR"},
 }
 
+# Languages a brand's on-image overlay text can be written in. Defaults to the
+# marketplace language but is overridable per brand — plenty of brands sell on
+# amazon.de with English creative.
+OVERLAY_LANGUAGES = {
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français",
+    "es": "Español",
+    "it": "Italiano",
+}
+
 PERSONALITY_OPTIONS = [
     "Modern", "Luxurious", "Heritage", "Playful", "Bold",
     "Calm", "Scientific", "Creative/Original", "Friendly", "Premium",

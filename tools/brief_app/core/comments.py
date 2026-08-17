@@ -18,13 +18,13 @@ COMMENTS_DIR = DATA_ROOT / "comments"
 # re-checks after the fact, so the stage only added a click on the way to "approved".
 STATUSES = ["open", "changes requested", "design done", "approved"]
 
-# Shown in the UI so nobody has to guess what a status means.
-STATUS_HELP = {
-    "open": "Neu generiert, noch niemand dran.",
-    "changes requested": "Kommentare da, Plan muss überarbeitet werden.",
-    "design done": "Design-Team ist fertig, wartet auf Freigabe.",
-    "approved": "Freigegeben. Fertig.",
-}
+def status_help(status: str) -> str:
+    """One line explaining a status, in the team's chosen interface language.
+
+    The texts live in i18n rather than in a dict here so there is exactly one place to
+    translate them; imported lazily so this module stays usable without the UI layer."""
+    from .i18n import t
+    return t(f"status.{status}")
 
 # Threads may carry a status that no longer exists — map it forward instead of silently
 # resetting someone's review state to "open". "SEO check" sat between design and approval,

@@ -32,3 +32,6 @@ briefs/
 
 # Keep (small, needed): customers/*/config.json, logo.*, brand_study.md,
 # products/*/run.py, products/*/listing.xlsx, and all app code under tools/brief_app/core.
+
+# Per-install UI state (lives on the data volume in production, not in the repo)
+tools/brief_app/app_settings.json
