@@ -978,6 +978,26 @@ def page_customers() -> None:
     except Exception:
         pass
 
+    # Brands whose shipped config differs from the live one. Shown, never applied on its
+    # own: most shipped configs carry no timestamp, so "the repo is newer" and "someone
+    # edited this in the app" are indistinguishable, and guessing wrong destroys work that
+    # exists nowhere else. A person picks, one brand at a time.
+    try:
+        from tools.brief_app.core.config import repo_config_drift, sync_brand_from_repo
+        _drift = repo_config_drift()
+    except Exception:
+        _drift = []
+    if _drift:
+        with st.expander(T("drift.title", n=len(_drift)), expanded=False):
+            st.caption(T("drift.why"))
+            _pick = st.selectbox(T("drift.brand"), _drift, key="drift_pick")
+            if st.button(T("drift.apply"), key="drift_apply"):
+                if sync_brand_from_repo(_pick):
+                    st.success(T("drift.applied", brand=_pick))
+                    st.rerun()
+                else:
+                    st.error(T("drift.failed", brand=_pick))
+
     with st.expander(T("backup.title"), expanded=False):
         st.caption(T("backup.why"))
         if st.button(T("backup.make"), key="mk_backup"):

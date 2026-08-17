@@ -142,6 +142,29 @@ STRINGS: dict[str, dict[str, str]] = {
                "nicht derselbe Server ist — sonst ist bei einem Serververlust alles weg."),
     },
     "backup.make": {"en": "Create ZIP", "de": "ZIP erzeugen"},
+    # --- repo/volume config drift ---
+    "drift.title": {
+        "en": "🔄 {n} brands differ from the version shipped with the code",
+        "de": "🔄 {n} Marken weichen von der mit dem Code gelieferten Version ab",
+    },
+    "drift.why": {
+        "en": ("These brands were edited either here in the app or in the repository, and the two "
+               "versions no longer match. Nothing is applied automatically, because there is no "
+               "reliable way to tell which one is newer, and overwriting the wrong one loses work "
+               "that exists nowhere else. Pick a brand to replace its settings here with the "
+               "shipped version."),
+        "de": ("Diese Marken wurden entweder hier in der App oder im Repository bearbeitet, und die "
+               "beiden Versionen stimmen nicht mehr überein. Es wird nichts automatisch übernommen, "
+               "weil sich nicht zuverlässig sagen lässt, welche neuer ist, und ein falsches "
+               "Überschreiben Arbeit vernichtet, die es sonst nirgends gibt. Wähle eine Marke, um "
+               "ihre Einstellungen hier durch die gelieferte Version zu ersetzen."),
+    },
+    "drift.brand": {"en": "Brand", "de": "Marke"},
+    "drift.apply": {"en": "Replace with the shipped version",
+                    "de": "Durch gelieferte Version ersetzen"},
+    "drift.applied": {"en": "{brand} updated from the repository.",
+                      "de": "{brand} aus dem Repository aktualisiert."},
+    "drift.failed": {"en": "Could not update {brand}.", "de": "{brand} konnte nicht aktualisiert werden."},
     "backup.packing": {"en": "Packing…", "de": "Packe…"},
     # --- Plans & Review ---
     "version.not_latest": {
