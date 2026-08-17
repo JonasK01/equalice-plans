@@ -35,3 +35,6 @@ briefs/
 
 # Per-install UI state (lives on the data volume in production, not in the repo)
 tools/brief_app/app_settings.json
+
+# Team-contributed brand memory (lives on the data volume in production)
+tools/brief_app/knowledge/

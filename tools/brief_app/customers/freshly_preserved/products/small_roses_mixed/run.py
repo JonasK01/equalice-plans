@@ -406,40 +406,23 @@ MODULES = [
 ]
 
 
+# House standard: exactly 5 pairs, question ≤80 chars, answer ≤120. Cut from nine, keeping
+# the wedding buyer's real blockers: what is in the pack, size, arriving intact, colour
+# honesty, and authenticity.
 QA = [
     AIQA(q="What exactly is in the pack?",
-         a="About 12 whole small rose blooms plus a mix of colourful flower petals, 0.1 oz in total. The "
-           "whole roses are your focal points; the petals fill everything around them."),
+         a="About 12 whole small rose blooms plus a mix of petals, 0.1 oz in total."),
     AIQA(q="Are these real flowers, and are they edible?",
-         a="Yes. Genuine, food-grade roses and petals, freeze-dried whole. Real edible flowers — not "
-           "silk, not potpourri, not artificial decoration."),
+         a="Yes. Food-grade roses and petals, freeze-dried whole. Not silk, not potpourri."),
     AIQA(q="How big are the roses? They look small.",
-         a="They are small roses, roughly the width of a US quarter — scaled for cupcakes, cookies and "
-           "drink garnishes where a full-size rose would overwhelm the piece. The size image shows one "
-           "beside a coin and on a cupcake."),
-    AIQA(q="How long do they last and how do I store them?",
-         a="They are shelf-stable and will not wilt like fresh roses. Keep them sealed in the pack away "
-           "from moisture and humidity, and use them whenever you need them — ideal for ordering weeks "
-           "ahead of a wedding."),
+         a="Roughly the width of a US quarter. Scaled for cupcakes, cookies and drink "
+           "garnishes."),
     AIQA(q="Will they arrive intact? Mine are for a wedding.",
-         a="Freeze-dried blooms are light and delicate by nature, so they ship cushioned in a protective "
-           "resealable pack. Handle gently and place with tweezers or clean fingers. Loose petals are "
-           "part of what the pack contains, not damage."),
+         a="They ship cushioned in a resealable pack. Loose petals are part of the pack, not "
+           "damage."),
     AIQA(q="Will the colour match the photos?",
-         a="We keep our images honest to the real bloom. Freeze-drying preserves the natural rose colour "
-           "and layered shape, though shades vary slightly between flowers because these are real "
+         a="Our images stay honest to the real bloom. Shades vary slightly between real "
            "botanicals."),
-    AIQA(q="Do they taste or smell strong?",
-         a="They are mild, with no added sugar or dyes. These roses are used mainly for natural "
-           "presentation on cakes, drinks and boards rather than for strong flavour."),
-    AIQA(q="What can I use them for?",
-         a="Wedding and celebration cakes, cupcakes, cookies and tarts; chocolates and pastries; "
-           "champagne, cocktails and clear ice cubes; charcuterie and grazing boards; plated desserts; "
-           "and craft projects such as resin art."),
-    AIQA(q="Roses or a mixed-flower pack — which should I choose?",
-         a="Roses read as romance and suit weddings, anniversaries and engagements. Pansies bring bright "
-           "multicolour, orchids bring elegance, and the loose petal mix is pure coverage. Every "
-           "variation is the same real, freeze-dried bloom."),
 ]
 
 

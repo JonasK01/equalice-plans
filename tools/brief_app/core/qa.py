@@ -9,7 +9,7 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-from .ai import AIComplianceFlag
+from .ai import AIComplianceFlag, QA_PAIRS, QA_Q_MAX, QA_A_MAX
 
 # tools/amazon_compliance_checker.py lives at the project root /tools.
 _CHECKER = Path(__file__).resolve().parents[3] / "tools" / "amazon_compliance_checker.py"
@@ -79,10 +79,22 @@ _DASHES = _re.compile(r"[—–]")
 # trusted. Construction variety is enforced in the generator prompt instead (ai.py).
 
 
-def lint_copy(title: str, bullets, images, modules) -> list[str]:
+def lint_copy(title: str, bullets, images, modules, qa=None) -> list[str]:
     """Return human-readable warnings for copy that is too long to read at a glance.
     On-image overlays are the strictest (they are headlines on the creative)."""
     warns: list[str] = []
+    # A+ Q&A: five pairs, tightly capped. This block is scanned on a phone, so an
+    # over-long answer is not a style nit — it is the reason the module gets skipped.
+    qa = list(qa or [])
+    if qa and len(qa) != QA_PAIRS:
+        warns.append(f"A+ Q&A has {len(qa)} pairs (must be exactly {QA_PAIRS})")
+    for i, pair in enumerate(qa, 1):
+        q = _plain(getattr(pair, "q", "") or (pair.get("q") if isinstance(pair, dict) else ""))
+        a = _plain(getattr(pair, "a", "") or (pair.get("a") if isinstance(pair, dict) else ""))
+        if len(q) > QA_Q_MAX:
+            warns.append(f'Q&A {i} question {len(q)}ch (max {QA_Q_MAX}): "{q}"')
+        if len(a) > QA_A_MAX:
+            warns.append(f'Q&A {i} answer {len(a)}ch (max {QA_A_MAX}): "{a}"')
     for i, im in enumerate(images or [], 1):
         ov = _plain(getattr(im, "overlay", ""))
         if ov and not ov.startswith("("):  # "(...)" = hero A/B placeholder, exempt

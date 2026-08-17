@@ -427,37 +427,23 @@ MODULES = [
 ]
 
 
+# House standard: exactly 5 pairs, question ≤80 chars, answer ≤120. Cut from nine to the
+# cook's real blockers: size, taste, whether they behave like fresh blossoms, storage and
+# arriving intact.
 QA = [
     AIQA(q="How big are they?",
-         a="Large, open blossoms — one fills a palm and makes a US quarter look small. Big enough to "
-           "stuff, plate whole or lay across a dish, which is what separates them from petals and the "
-           "small decorative blooms."),
+         a="Large, open blossoms. One fills a palm. Big enough to stuff, plate whole or lay "
+           "across a dish."),
     AIQA(q="What do they taste like?",
-         a="Mild and lightly squash-like — subtle enough to complement a dish rather than take it over, "
-           "which is why they suit burrata, soup, quesadillas, boards and cocktails."),
+         a="Mild and lightly squash-like. Subtle enough to complement a dish rather than take "
+           "it over."),
     AIQA(q="Can I stuff or fry them like fresh blossoms?",
-         a="Many cooks rehydrate them briefly first and then handle them as they would fresh blossoms. "
-           "Used dry, they are excellent laid whole over a finished plate, a board or a bowl of soup."),
-    AIQA(q="Can I use them in cocktails?",
-         a="Yes. Place one on the rim, float it on top, or use it as a garnish — the mild flavour "
-           "complements a drink without overpowering it."),
+         a="Many cooks rehydrate them briefly, then handle them as they would fresh blossoms."),
     AIQA(q="How do I store them? Do they need refrigeration?",
-         a="No refrigeration needed. Keep them sealed in their pack at room temperature, out "
-           "of direct sunlight and away from extreme heat, and they are ready whenever you cook."),
-    AIQA(q="Why do the blossoms look slightly different from each other?",
-         a="Because they are real flowers. Colour and size vary naturally from blossom to blossom, and "
-           "we keep our photography honest to that rather than matching them artificially."),
+         a="No refrigeration. Keep them sealed at room temperature, out of direct sunlight."),
     AIQA(q="Will they arrive intact?",
-         a="Freeze-dried blossoms are large and delicate, so they ship cushioned in a protective "
-           "resealable pack. Handle gently — a blossom that splits is still perfect laid over a plate or "
-           "torn across a board."),
-    AIQA(q="What can I use them for?",
-         a="Plating burrata, ricotta, soups and risotto; stuffing with soft cheese; quesadillas, tostadas "
-           "and appetisers; charcuterie and grazing boards; cocktail garnish; and pastry or cake "
-           "styling where a large bloom is wanted."),
-    AIQA(q="Are these the same as your decorative flowers?",
-         a="Same freeze-drying, different job. Squash and basil blossoms are for cooking; pansies, "
-           "orchids, roses and the petal mix are for decorating cakes, desserts and drinks."),
+         a="They ship cushioned in a resealable pack. A blossom that splits still lays "
+           "beautifully over a plate."),
 ]
 
 

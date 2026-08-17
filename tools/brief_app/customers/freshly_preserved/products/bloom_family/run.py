@@ -555,41 +555,27 @@ def build_modules(v: dict) -> list[AIModule]:
 
 
 def build_qa(v: dict) -> list[AIQA]:
+    """House standard: exactly 5 pairs, question ≤80 chars, answer ≤120.
+
+    Cut from ten. Because this runs for every child variation, the count and the
+    which-variation answer stay — they are the two that differ per child and are exactly
+    what a shopper on a variation listing is trying to resolve."""
     flower, count, weight = v["flower"], v["count"], v["weight"]
     return [
         AIQA(q="Are these real flowers, and are they edible?",
-             a=f"Yes. Genuine, food-grade {flower} blooms, freeze-dried whole. Real edible flowers, not "
-               f"artificial decoration."),
+             a=f"Yes. Food-grade {flower} blooms, freeze-dried whole. Not artificial "
+               f"decoration."),
         AIQA(q="How many blooms do I get?",
-             a=f"This variation is {v['label']} — {count} whole blooms at {weight}. The size image shows "
-               f"all {count} laid out flat so there are no surprises."),
+             a=f"This variation is {count} whole blooms at {weight}. The size image shows all "
+               f"{count} laid out flat."),
         AIQA(q="How big are the blooms? They look small.",
-             a="They are small by design — scaled for cupcakes, cookies and drink garnishes, where a "
-               "full-size bloom would overwhelm the piece. Check the size-reference image, where a bloom "
-               "is shown on a fingertip and beside a US quarter."),
-        AIQA(q="How long do they last and how do I store them?",
-             a="They are shelf-stable and will not wilt like fresh flowers. Keep them sealed in the pack, "
-               "away from moisture and direct sun, and use them whenever you need a perfect bloom — ideal "
-               "for stocking ahead of an event."),
+             a="Small by design. Scaled for cupcakes, cookies and drink garnishes."),
         AIQA(q="Are they fragile? Mine need to arrive intact.",
-             a="Freeze-dried flowers are naturally light and delicate, so they ship cushioned in a "
-               "protective resealable pack. Handle gently and place with tweezers or clean fingers. Petals "
-               "that separate are still perfect for scattering on cakes and boards."),
-        AIQA(q="Will the colour match the photos?",
-             a="We keep our images honest to the real bloom. Freeze-drying preserves the natural colour "
-               "and shape, though shades vary slightly between flowers because these are real botanicals."),
-        AIQA(q="Do they taste or smell strong?",
-             a="They are mild. These blooms are used mainly for natural presentation on cakes, drinks and "
-               "boards rather than for strong flavour."),
-        AIQA(q="What can I use them for?",
-             a="Cakes, cupcakes and wedding cake toppers; cocktails, mocktails and champagne; charcuterie "
-               "and grazing boards; plated desserts; and craft projects such as resin art."),
+             a="They ship cushioned in a resealable pack. Petals that separate are still "
+               "perfect for scattering."),
         AIQA(q="Which variation should I choose?",
-             a=f"Every variation is the same real, freeze-dried bloom — choose by flower and by count. "
-               f"{v['family_note']}"),
-        AIQA(q="Are they natural and where are they made?",
-             a="They are 100% natural with no preservatives, no added sugar and no dyes, grown and "
-               "freeze-dried in the USA."),
+             a="Every variation is the same real, freeze-dried bloom. Choose by flower and by "
+               "count."),
     ]
 
 

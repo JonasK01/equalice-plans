@@ -10,6 +10,7 @@ Architecture:
     - Brand color/font come from the Customer config
 """
 from __future__ import annotations
+import re as _re
 from dataclasses import dataclass
 from html import escape as _html_escape
 from pathlib import Path
@@ -156,6 +157,37 @@ def _layout_hints() -> dict[str, str]:
 
 
 _LAYOUT_HINTS = _layout_hints()
+
+
+def _clip(s: object, limit: int) -> str:
+    """Trim to `limit` characters on a word boundary, with an ellipsis if anything was cut."""
+    t = " ".join(str(s or "").split())
+    if len(t) <= limit:
+        return t
+    cut = t[:limit].rsplit(" ", 1)[0].rstrip(" ,;:.")
+    return (cut or t[:limit]) + "…"
+
+
+def _sentences(s: object, n: int) -> str:
+    """Keep the first `n` sentences of a flowing description.
+
+    The design cards were carrying full paragraphs of shot description. The AI is now asked
+    for two sentences, but hand-written run.py plans predate that instruction and flow
+    through the same renderer, so the trim happens here too.
+
+    DELIBERATELY EXEMPT: text that is laid out in blocks (a blank line anywhere) is not
+    prose, it is structure — above all the main image's Option A / B / C split test, which
+    the team asked for by name. Trimming that to two sentences would silently throw away
+    two of the three options. Structure is kept whole; only run-on prose is cut."""
+    raw = str(s or "")
+    if not raw.strip():
+        return ""
+    if "\n\n" in raw or _re.search(r"OPTION\s+[A-C]\b", raw):
+        return raw.strip()
+    t = " ".join(raw.split())
+    parts = _re.split(r"(?<=[.!?])\s+", t)
+    kept = " ".join(parts[:n]).strip()
+    return kept if kept else _clip(t, 220)
 
 
 def _esc(s: object) -> str:
@@ -586,7 +618,8 @@ class BriefBuilder:
             self._compliance_blocking = _qa.has_blocking(self._ai_compliance)
         # Copy-length lint — keep on-image overlays/headlines punchy (runs every build).
         self._copy_warnings = _qa.lint_copy(
-            self._draft_title(), self._draft_bullets(), self._ai_images, self._ai_modules)
+            self._draft_title(), self._draft_bullets(), self._ai_images, self._ai_modules,
+            qa=self._ai_qa)
         self.progress_cb(85, "Composing PDF…")
 
         self._cover()
@@ -603,6 +636,17 @@ class BriefBuilder:
         self.progress_cb(95, "Rendering PDF…")
         doc = self._make_doc()
         doc.build(self.story)
+
+        # Feed this plan's composition decisions back into the brand's visual system, so the
+        # NEXT plan for this brand is built to look like this one. Only after a successful
+        # render: a plan that failed to build is not a house style. Never fatal — a memory
+        # write must not lose a finished PDF.
+        try:
+            from . import knowledge as _kn
+            _kn.record_plan_visuals(self.customer.slug, self.brief.product_name, self._ai_images)
+        except Exception:
+            pass
+
         self.progress_cb(100, "Done")
         if self._compliance_blocking:
             n = len([f for f in (self._ai_compliance or []) if f.severity == "high"])
@@ -1193,25 +1237,30 @@ class BriefBuilder:
         card.append(head)
 
         # LAYOUT — the composition the designer builds. Named first, because the review team's
-        # #1 complaint was tiles that were nothing but a headline over a photo.
+        # #1 complaint was tiles that were nothing but a headline over a photo. The archetype
+        # description is clipped: it is a reminder of a shape the designer already knows, and
+        # printing the full sentence on all seven cards was a page of repeated boilerplate.
         layout = (img.get("layout") or "").strip()
         graphics = [g for g in (img.get("graphics") or []) if str(g).strip()]
         if layout or graphics:
-            card.append(Paragraph("LAYOUT", self.styles["zone_label"]))
             bits = []
             if layout:
                 pretty = layout.replace("_", " ").upper()
-                desc = _LAYOUT_HINTS.get(layout, "")
-                bits.append(f"<b>{_esc(pretty)}</b>" + (f" — {_esc(desc)}" if desc else ""))
+                desc = _clip(_LAYOUT_HINTS.get(layout, ""), 95)
+                bits.append(f"<b>{_esc(pretty)}</b>"
+                            + (f"  <font color='#6B7280'>{_esc(desc)}</font>" if desc else ""))
             for g in graphics:
                 bits.append("• " + _esc(str(g)))
+            card.append(Paragraph("LAYOUT", self.styles["zone_label"]))
             card.append(Paragraph("<br/>".join(bits), self.styles["body_small"]))
 
-        # WHAT TO SHOW (visual direction, structure preserved)
+        # WHAT TO SHOW — direction, not a screenplay. Clipped to two sentences: the review
+        # team asked for shorter shot descriptions, and hand-written run.py plans reach this
+        # renderer too, so the limit is enforced here rather than only in the AI prompt.
         card.append(Paragraph("WHAT TO SHOW", self.styles["zone_label"]))
-        visual_html = _esc(img["visual"]).replace("\n", "<br/>")
+        visual_html = _esc(_sentences(img["visual"], 2)).replace("\n", "<br/>")
         if img.get("background"):
-            visual_html = f"<b>Background:</b> {_esc(img['background'])}<br/>" + visual_html
+            visual_html = f"<b>BG:</b> {_esc(_clip(img['background'], 70))}  ·  " + visual_html
         card.append(Paragraph(visual_html, self.styles["body_small"]))
 
         # ON-IMAGE TEXT — the thing the designer actually typesets. Highlighted box.
@@ -1236,24 +1285,18 @@ class BriefBuilder:
             card.append(Paragraph("ON-IMAGE TEXT", self.styles["zone_label"]))
             card.append(Paragraph(_esc(ov), self.styles["onimg_sub"]))
 
-        # PROPS (bulleted) + LIGHT (one line) — side by side label/value rows
-        rows = []
-        props = img.get("props") or []
+        # PROPS + LIGHT on ONE line. They used to be two stacked rows with a bullet per prop,
+        # which cost four or five lines per card for what is a short list — the single biggest
+        # source of the "too much copy" the review team flagged on the design pages.
+        props = [_esc(p) for p in (img.get("props") or []) if str(p).strip()]
+        tail = []
         if props:
-            props_html = "<br/>".join("• " + _esc(p) for p in props)
-            rows.append([Paragraph("PROPS", self.styles["zone_label"]),
-                         Paragraph(props_html, self.styles["body_small"])])
+            tail.append("<b>PROPS</b>  " + ", ".join(props))
         if img.get("lighting"):
-            rows.append([Paragraph("LIGHT", self.styles["zone_label"]),
-                         Paragraph(_esc(img["lighting"]), self.styles["body_small"])])
-        if rows:
-            t = Table(rows, colWidths=[2.2 * cm, full - 2.2 * cm])
-            t.setStyle(TableStyle([
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 4),
-                ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-            ]))
-            card.append(t)
+            tail.append("<b>LIGHT</b>  " + _esc(_clip(img["lighting"], 90)))
+        if tail:
+            card.append(Paragraph("<font color='#6B7280'>  ·  </font>".join(tail),
+                                  self.styles["body_small"]))
 
         # One short grey strategy line (the only strategy kept on design pages).
         why = self._short_why(img.get("why_it_works", ""))

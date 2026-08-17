@@ -423,40 +423,23 @@ MODULES = [
 ]
 
 
+# House standard: exactly 5 pairs, question ≤80 chars, answer ≤120. Cut from ten to the
+# seasonal buyer's blockers: contents, skill needed, coverage, ordering ahead, and colour.
 QA = [
     AIQA(q="What is actually in the kit?",
-         a=f"4 oz and 25+ pieces: {CONTENTS}. Flowers and greenery together — the greenery is what makes "
-           f"a cake look arranged rather than sprinkled."),
+         a="4 oz and 25+ pieces: roses, amaranth, oregano flowers, ferns and geranium leaves."),
     AIQA(q="Do I need piping skills or special tools?",
-         a="No. No piping tips and no frosting techniques: place the greenery as your base line, set the "
-           "roses along it, then fill the gaps with amaranth sprays and oregano florets. Clean fingers or "
-           "tweezers are all you need."),
-    AIQA(q="Are the flowers and leaves safe to eat?",
-         a="Yes. They are real, food-grade edible flowers and leaves, freeze-dried for use on cakes, "
-           "cupcakes, desserts, cocktails and plated dishes."),
+         a="No. Lay the greenery as a base line, set the roses along it, fill the gaps. Fingers "
+           "or tweezers."),
     AIQA(q="How far does one kit go?",
-         a="Comfortably an 8-inch cake plus around a dozen cupcakes, or a cake and a dessert board. The "
-           "size image shows three real coverage examples so you can plan your table."),
+         a="Comfortably an 8-inch cake plus around a dozen cupcakes, or a cake and a dessert "
+           "board."),
     AIQA(q="Can I order early and decorate in November?",
-         a="Yes — that is exactly what freeze-drying is for. Kept sealed, dry and out of direct sunlight, "
-           "the kit holds its colour and shape for months."),
-    AIQA(q="Will everything arrive intact?",
-         a="Freeze-dried botanicals are light and delicate by nature, so the kit ships cushioned. Handle "
-           "gently — pieces that separate still arrange beautifully, and the smaller florets are ideal "
-           "for filling gaps between blooms."),
+         a="Yes. Kept sealed, dry and out of sunlight, the kit holds its colour and shape for "
+           "months."),
     AIQA(q="Will the autumn colours match the photos?",
-         a="We keep our images honest to the real botanicals. Freeze-drying preserves the natural rust, "
-           "wine and moss tones, though shades vary between pieces because these are real flowers and "
-           "leaves rather than printed decorations."),
-    AIQA(q="Do the flowers taste of anything?",
-         a="They are mild. The oregano flowers carry a light herbal note; the rest are used mainly for "
-           "natural colour and presentation, with no added sugar or dyes."),
-    AIQA(q="Can I use it on things other than cake?",
-         a="Yes — cupcakes, tarts, cheesecakes, cookies and pastries; cocktails, mocktails and warm "
-           "drinks; charcuterie and grazing boards; and craft projects such as resin art."),
-    AIQA(q="Would this work as a gift?",
-         a="It is a natural gift for anyone who bakes: a complete seasonal set that needs no skill and "
-           "no extra tools, and it keeps until they are ready to use it."),
+         a="Our images stay honest to the real botanicals. Shades vary because these are real "
+           "flowers."),
 ]
 
 

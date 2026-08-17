@@ -423,37 +423,23 @@ MODULES = [
 ]
 
 
+# House standard: exactly 5 pairs, question ≤80 chars, answer ≤120. Cut from nine to what
+# actually blocks the cook: taste, quantity, why not just dried leaf, storage, and the
+# organic question (answered honestly, since the listing carries no certification).
 QA = [
     AIQA(q="What do they taste like?",
-         a="Like basil, with a lighter and more floral edge than the leaf — savoury and aromatic. Whole "
-           "sprigs are subtle as a garnish; crumbled between your fingers, the flavour comes forward."),
-    AIQA(q="What do I actually cook with them?",
-         a="Seasoning blends, meat rubs and marinades; tomato sauces, pasta, pizza and roasted "
-           "vegetables; burrata and salads; charcuterie boards; herbal tea infusions; and gin or "
-           "tomato-forward cocktails."),
+         a="Like basil, lighter and more floral than the leaf. Crumble them and the flavour "
+           "comes forward."),
     AIQA(q="How many sprigs do I get?",
-         a="About 25 sprigs, 0.2 oz. Freeze-dried herbs weigh almost nothing, so the weight sounds small "
-           "— the size image shows all the sprigs laid out, plus what a single sprig yields crumbled."),
-    AIQA(q="Can I use them in tea?",
-         a="Yes. They are food-grade edible basil blossoms with a naturally aromatic herbal character, "
-           "suitable for steeping as well as for cooking and garnishing."),
-    AIQA(q="Are they organic?",
-         a="They are food-grade, freeze-dried edible basil blossoms made in the USA. This listing does "
-           "not carry an organic certification."),
-    AIQA(q="Do they need refrigeration?",
-         a="No. Keep them sealed in the pack, away from moisture, heat and direct sunlight, and they stay "
-           "ready whenever you cook."),
-    AIQA(q="Will they arrive intact?",
-         a="Freeze-dried blossoms are light and delicate by nature, so they ship cushioned in a "
-           "resealable pack. Sprigs that break up are still perfectly usable — much of the time you will "
-           "be crumbling them anyway."),
+         a="About 25 sprigs, 0.2 oz. Freeze-dried herbs weigh almost nothing."),
     AIQA(q="Why not just use dried basil leaf?",
-         a="The blossom is a different ingredient: lighter, more floral, and it stays recognisable as a "
-           "whole sprig on the plate. Basil only flowers for a couple of weeks, which is why blossoms "
-           "are rarely available fresh."),
-    AIQA(q="Are these the same as your decorative flowers?",
-         a="Same freeze-drying, different job. Basil and squash blossoms are for cooking; pansies, "
-           "orchids, roses and the petal mix are for decorating cakes, desserts and drinks."),
+         a="The blossom is a different ingredient. Lighter, more floral, and recognisable "
+           "whole on the plate."),
+    AIQA(q="Are they organic?",
+         a="They are food-grade and made in the USA. This listing does not carry an organic "
+           "certification."),
+    AIQA(q="Do they need refrigeration?",
+         a="No. Keep them sealed, away from moisture, heat and direct sunlight."),
 ]
 
 

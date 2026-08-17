@@ -93,6 +93,51 @@ def add_review_learning(slug: str, text: str, author: str = "") -> None:
     f.write_text(prior.rstrip() + f"\n- {text}{who}\n", encoding="utf-8")
 
 
+# ---------- the brand's visual system: every plan must look like the last one ----------
+#
+# A brand is not just a voice and a palette, it is a recognisable way of building a tile —
+# the same icon treatment, the same panel, the same place the badge sits. Brand memory
+# already carried the words; it did not carry the design, so plan 6 could arrive looking
+# nothing like plan 1 even though both were "on brand" by the config. This records the
+# composition decisions each finished plan actually made and feeds them back, so the brand
+# accumulates a house style instead of restarting every time.
+
+def get_visual_system(slug: str) -> str:
+    f = TEAM_KNOWLEDGE_DIR / (slug or "") / "visual_system.md"
+    return _read(f, 4000) if f.exists() else ""
+
+
+def record_plan_visuals(slug: str, product: str, images) -> None:
+    """Append the composition decisions a finished plan made, for future plans to match.
+
+    Deliberately terse: layouts plus the graphic devices actually specified. A long dump
+    would crowd out the rest of brand memory and stop being read."""
+    slug = (slug or "").strip()
+    if not slug or not images:
+        return
+    layouts, devices = [], []
+    for im in images:
+        lay = (getattr(im, "layout", "") or "").strip()
+        if lay:
+            layouts.append(lay)
+        for g in (getattr(im, "graphics", None) or [])[:2]:
+            g = " ".join(str(g).split())
+            if g:
+                devices.append(g[:90])
+    if not layouts:
+        return
+    line = f"- **{product or 'plan'}** — layouts: {', '.join(layouts)}"
+    if devices:
+        line += "\n  devices: " + " · ".join(devices[:6])
+    f = team_knowledge_dir(slug) / "visual_system.md"
+    head = ("# Visual system — how this brand's tiles are actually built\n"
+            "Each entry is a plan already delivered for this brand.\n")
+    prior = f.read_text(encoding="utf-8") if f.exists() else head
+    if line.split("\n")[0] in prior:          # same product rebuilt: don't duplicate
+        return
+    f.write_text(prior.rstrip() + "\n" + line + "\n", encoding="utf-8")
+
+
 def _team_knowledge(slug: str) -> str:
     parts = []
     info = get_team_info(slug)
@@ -129,6 +174,16 @@ def build_brand_memory(slug: str) -> str:
     team = _team_knowledge(slug)
     if team:
         parts.append("## Team-added knowledge (latest info + notes the team uploaded — treat as current)\n" + team)
+
+    visual = get_visual_system(slug)
+    if visual:
+        parts.append(
+            "## Visual system — HOW THIS BRAND'S TILES ARE BUILT. This is a house style, not a "
+            "history: a shopper who has seen one of this brand's listings must recognise the next "
+            "one. Reuse the same icon treatment, the same panel and badge placement, the same way "
+            "text sits on the image. Vary the ARCHETYPE per tile as instructed, never the styling. "
+            "Only depart from it if the product genuinely cannot carry it, and say so in "
+            "why_it_works.\n" + visual)
 
     learnings = get_review_learnings(slug)
     if learnings:

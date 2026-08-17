@@ -59,6 +59,41 @@ LANGUAGE_NAMES = {
 # "mehr Vielfalt — muss zum Produkt passen".
 # A tile is not a headline on a photo. Every tile now has to declare WHICH COMPOSITION it uses,
 # picked from this catalogue, and no two tiles in a plan may use the same one.
+# A+ Q&A block. Five pairs, tightly capped: on a phone this module is scanned, not read,
+# and the team found longer blocks simply get skipped. The caps are enforced three times —
+# in the JSON schema description, in the prompt, and by the linter in core/qa.py — because
+# a model asked for "about 80 characters" reliably returns 95.
+QA_PAIRS = 5
+QA_Q_MAX = 80
+QA_A_MAX = 120
+
+# Which composition FAMILY each tile has to come from.
+#
+# Asking the model for "variety" does not produce variety. Earlier versions listed every
+# archetype and said "use at least three of these four families"; the model satisfied that
+# minimally and the plans still read as headline-over-photo seven times running — which is
+# exactly what the review team kept flagging. Tying each slot to a family makes the shape of
+# a plan structural instead of a preference: slot 2 is always a contrast, slot 3 always an
+# anatomy tile, slot 5 always icon- or proof-driven. The model still picks WHICH archetype
+# inside the family, so the plan stays product-specific.
+SLOT_FAMILIES: dict[int, tuple[str, list[str]]] = {
+    2: ("CONTRAST — show the problem losing",
+        ["before_after", "problem_grid", "myth_vs_fact", "us_vs_others", "comparison_columns"]),
+    3: ("ANATOMY — prove the quality by showing the thing itself",
+        ["hub_and_spokes", "annotated_callouts", "cutaway", "exploded_kit",
+         "ingredient_origin", "macro_detail", "texture_swatch"]),
+    4: ("LIFE — the buyer in the moment",
+        ["lifestyle_candid", "cross_section_room", "hand_in_frame", "split_duo", "grid_of_uses"]),
+    5: ("ICONS & PROOF — reasons to believe, laid out graphically",
+        ["icon_halo", "split_icon_panel", "icon_row", "why_us", "stat_block",
+         "us_vs_others", "quote_card"]),
+    6: ("SEQUENCE & CONTENTS — what you get, or how it goes",
+        ["numbered_steps", "contents_flatlay", "pack_shot_open", "timeline",
+         "size_ladder", "scale_reference"]),
+    7: ("CLOSE — the brand, the promise",
+        ["brand_close", "why_us", "quote_card", "lifestyle_candid"]),
+}
+
 LAYOUT_ARCHETYPES: dict[str, str] = {
     "clean_hero": "Product alone, dominant, no graphic furniture. Amazon main image only.",
     "before_after": "Split frame or slider: the problem state vs the result state, divider down the middle.",
@@ -88,6 +123,11 @@ LAYOUT_ARCHETYPES: dict[str, str] = {
     "ingredient_origin": "The raw material beside the finished product, connected by a single line: where it comes from, what it becomes.",
     "myth_vs_fact": "Two stacked bands: the common wrong belief struck through on top, the correction beneath.",
     "pack_shot_open": "The packaging opened or cut away so the contents, the amount and the protection are all visible at once.",
+    # --- third wave: shapes the review team asked for by name ---
+    "us_vs_others": "Two columns, ours vs the usual alternative. Green ticks down our side, grey crosses down theirs, 4-5 rows of plain criteria. Describe the OTHER side generically ('most supermarket versions'), never a named brand.",
+    "why_us": "Three or four reasons to believe stacked as labelled cards, each a proof (a number, a certificate, a material, a guarantee) rather than an adjective. Product small in the corner.",
+    "icon_halo": "Product centred and large, 5-6 circular icon badges evenly spaced in a ring around it, each with a two-word label outside the ring. The radial version of hub_and_spokes: no leader lines, the ring itself does the work.",
+    "split_icon_panel": "Half the frame is the product photo, the other half a flat colour panel carrying a 2x2 icon grid with short labels. The panel gives the text a clean home instead of floating it over the image.",
 }
 
 
@@ -419,7 +459,7 @@ class BriefAI:
                             },
                             "background": {"type": "string", "description": "Specific background — for Image 1 MUST be 'Pure white #FFFFFF'"},
                             "purpose": {"type": "string", "description": "What this tile does for the buyer in 1 sentence"},
-                            "visual": {"type": "string", "description": "Specific shot direction — composition, framing, angle. For Image 1: pure white BG, ≥85% product, no overlay text"},
+                            "visual": {"type": "string", "description": "Shot direction in AT MOST 2 short sentences: composition, angle, distance. No prose. The layout and graphics fields carry the design; do not repeat them here. For Image 1: pure white BG, ≥85% product, no overlay text (here alone, list the 2-3 A/B options)."},
                             "overlay": {"type": "string", "description": f"On-image headline in {LANGUAGE_NAMES.get(self.lang, 'English')}. EMPTY STRING for Image 1 (Amazon policy bans overlay on main image)."},
                             "overlay_sub": {"type": "string", "description": f"On-image subline in {LANGUAGE_NAMES.get(self.lang, 'English')}. EMPTY STRING for Image 1."},
                             "props": {"type": "array", "items": {"type": "string"}, "description": "Specific props on set (e.g. 'wooden brow brush, glass dropper, linen towel')"},
@@ -460,8 +500,10 @@ class BriefAI:
             "5. trust — badges + objection-defusing (sourced from the actual review concerns)\n"
             "6. desire — second lifestyle or how-to-use ritual (different from #4)\n"
             "7. close — brand identity tile that turns hesitating buyers into loyal ones\n\n"
-            "Each tile must be SPECIFIC to THIS product — not generic templates. Visual direction must read like a photographer's brief: "
-            "composition, angle, framing, distance, props list, lighting note. "
+            "Each tile must be SPECIFIC to THIS product — not generic templates.\n"
+            "KEEP THE VISUAL FIELD SHORT: at most two sentences, naming composition, angle and distance. "
+            "The designer reads 'layout', 'graphics', 'props' and 'lighting' as separate fields, so a long "
+            "prose paragraph in 'visual' just repeats them and buries the idea. Direction, not a screenplay. "
             f"Overlay text (where allowed) MUST be in {LANGUAGE_NAMES.get(self.lang, 'English')} for marketplace {self.customer.marketplace}. "
             "Body fields (visual, why_it_works) stay English. "
             "For Image 1, overlay/overlay_sub MUST be empty strings (Amazon main-image policy bans overlay text). "
@@ -478,17 +520,20 @@ class BriefAI:
             + "\n".join(f"  - {k}: {v}" for k, v in LAYOUT_ARCHETYPES.items()) + "\n\n"
             "RULES:\n"
             "- Image 1 = 'clean_hero' with an EMPTY graphics array (Amazon policy).\n"
-            "- Images 2-7 must each use a DIFFERENT archetype. Never repeat one inside a plan.\n"
-            "- Across the 7 tiles include at least THREE of these four: a before/after or comparison, an "
-            "icon-driven tile, a hub_and_spokes or annotated_callouts tile, and a numbered_steps or "
-            "contents_flatlay tile. Photography-only tiles may never be more than two of the seven.\n"
-            "- PUSH PAST THE OBVIOUS. At least ONE tile must use an archetype from the second half of "
-            "the list above (timeline, exploded_kit, size_ladder, problem_grid, hand_in_frame, "
-            "texture_swatch, quote_card, cross_section_room, ingredient_origin, myth_vs_fact, "
-            "pack_shot_open). A plan built only from clean_hero / icon_row / lifestyle_candid / "
-            "numbered_steps is the safe, boring plan the review team already rejected. Pick the "
-            "unexpected archetype that this product can genuinely carry, and say in why_it_works why "
-            "that composition beats the obvious one.\n"
+            "- Images 2-7: each tile MUST take its archetype from that slot's family below. This is not "
+            "a suggestion. Pick the one archetype inside the family that THIS product can genuinely "
+            "carry, and say in why_it_works why that composition beats the obvious one.\n"
+            + "".join(
+                f"    Image {n} → {label}\n       choose one of: {', '.join(opts)}\n"
+                for n, (label, opts) in SLOT_FAMILIES.items()
+            ) +
+            "- Never repeat an archetype inside a plan.\n"
+            "- AT MOST TWO of the seven tiles may be carried by photography alone. A plan that is seven "
+            "photos with a headline on each is the plan the review team rejected. If you cannot see the "
+            "graphic furniture in your head, you have not designed the tile yet.\n"
+            "- The 'icons & proof' slot must genuinely be built from graphic elements: a ring of icon "
+            "badges around the product, a 2x2 icon panel, a two-column ours-vs-the-usual table, or "
+            "stacked reason-to-believe cards. Not a photo with a list typed over it.\n"
             "- Pick archetypes that FIT THIS PRODUCT. A cross-section suits hardware, not a card game; a "
             "scale_reference suits anything reviewers call 'smaller than expected'; contents_flatlay suits "
             "multi-part products; before_after suits anything that fixes a visible problem. Choosing an "
@@ -568,7 +613,8 @@ class BriefAI:
             "3. a+_banner — Production / story banner (heritage, process, traceability)\n"
             "4. a+_banner — Use cases triptych (LEFT/CENTER/RIGHT real-world scenes)\n"
             "5. a+_carousel — Product family carousel (this SKU + 4 cross-sell tiles)\n"
-            "6. a+_qa — 4-6 Q&A pairs (each defuses a specific review-driven friction)\n"
+            f"6. a+_qa — exactly {QA_PAIRS} Q&A pairs, question ≤{QA_Q_MAX} chars, answer ≤{QA_A_MAX} chars "
+            "(each defuses a specific review-driven friction)\n"
             "7. a+_comparison — Comparison vs commodity / vs cheap alternative\n\n"
             "Each module must be SPECIFIC to this product. Headlines in "
             f"{LANGUAGE_NAMES.get(self.lang, 'English')}. Body in English.\n\n"
@@ -602,12 +648,17 @@ class BriefAI:
             "properties": {
                 "qa": {
                     "type": "array",
-                    "minItems": 1,
+                    # Exactly five: the A+ Q&A module is a scan-read block on the listing, and
+                    # the team found more than five turns it into a wall nobody finishes.
+                    "minItems": QA_PAIRS,
+                    "maxItems": QA_PAIRS,
                     "items": {
                         "type": "object",
                         "properties": {
-                            "q": {"type": "string", "description": "The exact question a hesitating buyer would ask"},
-                            "a": {"type": "string", "description": "Brand-voice answer that defuses the objection. Honest. Compliance-safe."},
+                            "q": {"type": "string",
+                                  "description": f"The exact question a hesitating buyer would ask. HARD LIMIT {QA_Q_MAX} characters."},
+                            "a": {"type": "string",
+                                  "description": f"Brand-voice answer that defuses the objection. Honest. Compliance-safe. HARD LIMIT {QA_A_MAX} characters."},
                         },
                         "required": ["q", "a"],
                         "additionalProperties": False,
@@ -618,12 +669,20 @@ class BriefAI:
             "additionalProperties": False,
         }
         task = (
-            "Write 5-8 Q&A pairs for this product. Each Q MUST be a real hesitation a buyer would have, drawn from:\n"
+            f"Write EXACTLY {QA_PAIRS} Q&A pairs for this product. Each Q MUST be a real hesitation a buyer would have, drawn from:\n"
             "- The negative reviews (defuse those objections)\n"
             "- Common category questions (e.g. how to use, what's the difference, is it safe for X)\n"
             "- Compliance edge cases (patch test, allergies, regulatory expectations)\n"
             "Each A: brand voice, honest, never over-claims. If existing RUFUS Q&A is in the product context, rewrite it in brand voice — "
-            "don't copy verbatim. Return JSON."
+            "don't copy verbatim.\n\n"
+            "# LENGTH IS A HARD CONSTRAINT, NOT A TARGET\n"
+            f"- Every question: MAXIMUM {QA_Q_MAX} characters, including spaces.\n"
+            f"- Every answer: MAXIMUM {QA_A_MAX} characters, including spaces.\n"
+            "This block is scan-read on a phone. Count the characters before you return a line; a line "
+            "that is one character over gets rejected. Cut the wind-up, answer the question in the first "
+            "few words, and stop. 'Yes, and here is the one thing to watch:' beats a paragraph.\n"
+            f"Pick the {QA_PAIRS} objections that actually block a purchase, not the {QA_PAIRS} easiest to answer. "
+            "Return JSON."
         )
         result = self._structured_call(task, schema, max_tokens=3000)
         if not result:

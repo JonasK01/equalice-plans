@@ -407,37 +407,25 @@ MODULES = [
 ]
 
 
+# House standard: exactly 5 pairs, question ≤80 chars, answer ≤120. Cut from nine — the
+# five kept are the ones that actually block the purchase (quantity, authenticity, damage
+# in transit, colour honesty, origin). Taste and use-cases are already covered in bullets.
 QA = [
     AIQA(q="How much do I actually get?",
-         a="About 1.5 cups of petals, 0.2 oz by weight. Freeze-dried petals weigh almost nothing, so the "
-           "weight sounds small while the volume is generous — the size image shows them measured in a "
-           "glass cup so there are no surprises."),
+         a="About 1.5 cups of petals, 0.2 oz. They weigh almost nothing, so the volume is "
+           "generous."),
     AIQA(q="Are these real flowers, and are they edible?",
-         a="Yes. Real, food-grade petals from roses, carnations, pansies and orchids, freeze-dried whole "
-           "and ready to use. Not craft confetti and not artificial decoration."),
-    AIQA(q="Petals or whole blooms — which do I need?",
-         a="Petals cover ground: scatter them across a cake top, a grazing board or a plated dessert. "
-           "Whole blooms are focal points you place one at a time. Most customers end up using both."),
-    AIQA(q="How long do they last and how do I store them?",
-         a="They are shelf-stable and will not wilt like fresh flowers. Keep them sealed in the pack, "
-           "away from moisture and direct sun, and use them whenever inspiration strikes."),
+         a="Yes. Food-grade petals from roses, carnations, pansies and orchids. Not craft "
+           "confetti."),
     AIQA(q="Will they arrive damaged?",
-         a="Petals are light and delicate by nature, so they travel cushioned in a resealable pack. Some "
-           "settling is normal — and because these are loose petals rather than whole blooms, a little "
-           "movement in transit does not affect how they look on your cake."),
+         a="They travel cushioned in a resealable pack. Some settling is normal and does not "
+           "affect loose petals."),
     AIQA(q="Will the colour match the photos?",
-         a="We keep our images honest to the real petal. Freeze-drying preserves the natural colour, "
-           "though shades vary slightly between flowers because these are real botanicals."),
-    AIQA(q="Do they taste of anything?",
-         a="They are mild. Petals are used mainly for natural colour and presentation, with no added "
-           "sugar, salt or preservatives."),
-    AIQA(q="What can I use them for?",
-         a="Cakes, cupcakes and cookies; chocolates and pastries; cocktails, mocktails and clear ice "
-           "cubes; charcuterie and grazing boards; salads and plated dishes; and craft projects such as "
-           "resin art."),
+         a="Our images stay honest to the real petal. Shades vary slightly because these are "
+           "real botanicals."),
     AIQA(q="Where are they grown?",
-         a="They are selected from USA-grown flowers and freeze-dried in the USA, with no added sugar, "
-           "salt or preservatives."),
+         a="USA-grown flowers, freeze-dried in the USA. No added sugar, salt or "
+           "preservatives."),
 ]
 
 

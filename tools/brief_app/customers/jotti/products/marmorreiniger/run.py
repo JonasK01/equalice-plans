@@ -444,30 +444,24 @@ MODULES = [
 ]
 
 
+# Five pairs, question ≤80 chars, answer ≤120 (house standard — the A+ Q&A is scanned on a
+# phone). Cut from seven: "hochglanzpoliert" duplicated the surfaces answer, and dosage volume
+# is a value question rather than one that blocks a purchase.
 QA = [
     AIQA(q="Hinterlässt der Reiniger Schlieren?",
-         a="Entscheidend ist der letzte Schritt: die Fläche nach dem Auftragen vollständig trocknen "
-           "lassen, statt sie trocken zu wischen. So trocknet sie gleichmäßig auf. Für zusätzlichen "
-           "Glanz kann anschließend nachpoliert werden."),
+         a="Nicht, wenn die Fläche nach dem Auftragen trocknen darf statt trocken gewischt zu "
+           "werden. Danach nachpolieren."),
     AIQA(q="Für welche Flächen ist er geeignet?",
-         a="Für Marmor, Naturstein, Kunststein und hochglanzpolierte Steinflächen im Innenbereich, zum "
-           "Beispiel Böden, Treppen und Fensterbänke. Im Zweifel an einer unauffälligen Stelle testen."),
-    AIQA(q="Wie wird der Reiniger dosiert und angewendet?",
-         a="In einem Eimer mit warmem Wasser mischen, mit einem Aufnehmer gleichmäßig auf der Fläche "
-           "verteilen und anschließend trocknen lassen. Wer mehr Glanz möchte, poliert danach nach."),
+         a="Marmor, Naturstein, Kunststein und hochglanzpolierte Steinflächen im Innenbereich. "
+           "Im Zweifel unauffällig testen."),
+    AIQA(q="Wie wird er dosiert und angewendet?",
+         a="Mit warmem Wasser im Eimer mischen, gleichmäßig auftragen, trocknen lassen. Für mehr "
+           "Glanz danach nachpolieren."),
     AIQA(q="Was bewirkt das Carnaubawachs?",
-         a="Carnaubawachs ist ein natürliches Wachs. Es pflegt die Oberfläche, unterstützt den Schutz "
-           "der behandelten Fläche und vertieft die natürliche Farbwirkung des Steins."),
-    AIQA(q="Ist er für hochglanzpolierte Flächen geeignet?",
-         a="Ja. Der Reiniger kann auch zur Pflege entsprechender hochglanzpolierter Steinoberflächen "
-           "eingesetzt werden."),
-    AIQA(q="Wie ergiebig ist eine Flasche?",
-         a="Die Flasche enthält 500 ml und wird für die Anwendung mit Wasser im Eimer verdünnt, sodass "
-           "eine Flasche für mehrere Reinigungsdurchgänge reicht. Die genaue Reichweite hängt von "
-           "Fläche und Verschmutzungsgrad ab."),
+         a="Ein natürliches Wachs. Es pflegt die Oberfläche und vertieft die natürliche "
+           "Farbwirkung des Steins."),
     AIQA(q="Wo wird der Marmor Reiniger hergestellt?",
-         a="In Deutschland. Jotti fertigt seit 1912 im Schwarzwald und stellt alle Produkte mit "
-           "jahrzehntelanger Erfahrung her."),
+         a="In Deutschland. Jotti fertigt seit 1912 im Schwarzwald."),
 ]
 
 
