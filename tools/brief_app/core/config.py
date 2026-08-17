@@ -21,27 +21,44 @@ for p in (CUSTOMERS_DIR, BRIEFS_DIR, CACHE_DIR):
     p.mkdir(parents=True, exist_ok=True)
 
 
-def _seed_customers_if_empty() -> None:
-    """First-boot seeding: if the DATA_ROOT customers folder is empty (fresh deploy
-    with a new volume), copy the seed customers shipped with the code into it."""
+def _seed_customers() -> list[str]:
+    """Copy brands that ship with the code onto the data volume — ADDITIVELY.
+
+    The old version only ran when the volume was completely empty, i.e. once, on the
+    very first boot. That meant a brand added to the repo later never reached a running
+    server: the volume already had brands, so seeding returned immediately and the new
+    folder was silently skipped forever.
+
+    Now every seed brand is checked individually. A brand the volume does not have yet
+    is copied in full (config, logo, brand study, products). A brand it already has is
+    left completely alone — the team edits brands through the UI and those edits live
+    only on the volume, so overwriting them would destroy work that exists nowhere else.
+    Never make this function overwrite; 'missing' is the only condition it may act on."""
     if DATA_ROOT == CODE_ROOT:
-        return
-    if any(CUSTOMERS_DIR.glob("*/config.json")):
-        return
+        return []                      # dev: code and data are the same folder
     if not SEED_CUSTOMERS_DIR.exists():
-        return
+        return []
     import shutil
-    for cfg in SEED_CUSTOMERS_DIR.glob("*/config.json"):
-        if cfg.parent.name.startswith("_"):
-            continue  # skip scaffolding folders like _TEMPLATE
-        target = CUSTOMERS_DIR / cfg.parent.name
-        target.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(cfg, target / "config.json")
-        for extra in cfg.parent.glob("logo.*"):
-            shutil.copy2(extra, target / extra.name)
+    added: list[str] = []
+    for cfg in sorted(SEED_CUSTOMERS_DIR.glob("*/config.json")):
+        slug = cfg.parent.name
+        if slug.startswith("_"):
+            continue                   # scaffolding folders like _TEMPLATE
+        target = CUSTOMERS_DIR / slug
+        if (target / "config.json").exists():
+            continue                   # already on the volume — hands off
+        try:
+            # copy the whole brand, not just config + logo: brand_study.md and the
+            # products folder are what make the brand usable, and the old partial
+            # copy left seeded brands looking empty in the UI.
+            shutil.copytree(cfg.parent, target, dirs_exist_ok=True)
+            added.append(slug)
+        except Exception:
+            continue                   # a bad seed folder must never break boot
+    return added
 
 
-_seed_customers_if_empty()
+SEEDED_ON_BOOT = _seed_customers()
 
 MARKETPLACES = {
     "amazon.com": {"label": "amazon.com (US)", "lang": "en", "currency": "USD"},

@@ -931,9 +931,62 @@ def page_generate() -> None:
             _comment_thread_ui(last["slug"], last["name"], key_prefix="gen")
 
 
+def _backup_zip() -> bytes:
+    """Everything the team created, as one ZIP.
+
+    Brands added through the UI and every generated plan live ONLY on the server's data
+    volume — they are not in git and nothing else copies them. If that volume is lost,
+    so is the work. This is the escape hatch: download it, commit it, keep it somewhere
+    that is not the same machine."""
+    import io, zipfile
+    from tools.brief_app.core.config import DATA_ROOT
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for folder in ("customers", "briefs", "knowledge", "comments"):
+            root = DATA_ROOT / folder
+            if not root.exists():
+                continue
+            for f in root.rglob("*"):
+                if f.is_file() and not f.name.startswith("."):
+                    try:
+                        z.write(f, str(f.relative_to(DATA_ROOT)))
+                    except Exception:
+                        continue
+    return buf.getvalue()
+
+
 def page_customers() -> None:
     st.title("Customers")
     customers = list_customers()
+
+    # Brands seeded from the repo on this boot — so it is visible that a new brand
+    # arrived with a deploy rather than being created by someone in the UI.
+    try:
+        from tools.brief_app.core.config import SEEDED_ON_BOOT
+        if SEEDED_ON_BOOT:
+            st.info("🆕 Neu mit dem letzten Deploy dazugekommen: **"
+                    + "**, **".join(SEEDED_ON_BOOT) + "**")
+    except Exception:
+        pass
+
+    with st.expander("💾 Backup — alles herunterladen", expanded=False):
+        st.caption(
+            "Marken, Pläne, Brand Memory und Kommentare liegen nur auf dem Server. "
+            "Sie sind **nicht** im Git. Lade hier alles als ZIP herunter und lege es "
+            "irgendwo ab, das nicht derselbe Server ist — sonst ist bei einem "
+            "Serververlust alles weg."
+        )
+        if st.button("ZIP erzeugen", key="mk_backup"):
+            with st.spinner("Packe…"):
+                data = _backup_zip()
+            st.download_button(
+                f"⬇️  equalice-backup ({len(data) // 1024} KB)",
+                data=data,
+                file_name=f"equalice-plans-backup_{datetime.now():%Y-%m-%d}.zip",
+                mime="application/zip",
+                type="primary",
+                key="dl_backup",
+            )
 
     tabs = st.tabs(["Existing", "+ New customer"])
 
