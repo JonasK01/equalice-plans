@@ -1,0 +1,27 @@
+{
+  "slug": "ppe-innovations-safe-steps-usa",
+  "name": "PPE Innovations - Safe Steps USA",
+  "marketplace": "amazon.com",
+  "overlay_language": "en",
+  "primary_color": "#222222",
+  "accent_color": "#888888",
+  "text_color": "#000000",
+  "background_color": "#FFFFFF",
+  "mood_background_color": "#F5F1EA",
+  "voice": "",
+  "tagline": "",
+  "personality": [],
+  "fonts": [
+    "Inter"
+  ],
+  "photo_rules": "",
+  "no_gos": "",
+  "moodboard_search_terms": [],
+  "creative_freedom": 4,
+  "logo_path": null,
+  "notes": "",
+  "new_brand": true,
+  "brand_statement": "",
+  "created_at": "2026-08-13T14:18:15",
+  "updated_at": "2026-08-13T14:18:15"
+}

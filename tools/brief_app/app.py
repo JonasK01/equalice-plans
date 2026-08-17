@@ -1025,7 +1025,7 @@ def page_customers() -> None:
 
 
 _STATUS_ICON = {"open": "🟡", "changes requested": "🔴", "design done": "🎨",
-                "SEO check": "🔍", "approved": "🟢"}
+                "approved": "🟢"}
 
 
 def page_archive() -> None:

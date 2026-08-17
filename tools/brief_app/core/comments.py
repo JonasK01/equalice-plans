@@ -13,23 +13,23 @@ from .config import DATA_ROOT, BRIEFS_DIR
 
 COMMENTS_DIR = DATA_ROOT / "comments"
 
-# The plan's journey through the team. "SEO check" was added on team feedback: after the
-# design team has worked a plan, SEO looks at it once more before it ships, so keyword and
-# listing-copy problems are caught before the creative is produced, not after.
-STATUSES = ["open", "changes requested", "design done", "SEO check", "approved"]
+# The plan's journey through the team. Deliberately short: a separate "SEO check" stage was
+# tried and dropped again — the SEO sheet is the input to the plan, not something the team
+# re-checks after the fact, so the stage only added a click on the way to "approved".
+STATUSES = ["open", "changes requested", "design done", "approved"]
 
 # Shown in the UI so nobody has to guess what a status means.
 STATUS_HELP = {
     "open": "Neu generiert, noch niemand dran.",
     "changes requested": "Kommentare da, Plan muss überarbeitet werden.",
-    "design done": "Design-Team ist fertig, wartet auf den SEO-Check.",
-    "SEO check": "Liegt bei SEO zur finalen Prüfung (Keywords, Titel, Bullets).",
+    "design done": "Design-Team ist fertig, wartet auf Freigabe.",
     "approved": "Freigegeben. Fertig.",
 }
 
-# Legacy threads may carry a status that no longer exists — map it forward instead of
-# silently resetting someone's review state to "open".
-_LEGACY = {"in review": "SEO check", "done": "approved"}
+# Threads may carry a status that no longer exists — map it forward instead of silently
+# resetting someone's review state to "open". "SEO check" sat between design and approval,
+# so a plan parked there is closest to "design done".
+_LEGACY = {"in review": "design done", "SEO check": "design done", "done": "approved"}
 
 
 def _safe(name: str) -> str:
