@@ -67,6 +67,25 @@ QA_PAIRS = 5
 QA_Q_MAX = 80
 QA_A_MAX = 120
 
+# A+ Premium: the fixed module sequence. Full-width image, slider, full-width image, slider,
+# full-width image, full-width image that hands over to the Q&A, Q&A. This is the house
+# structure — it is not re-decided per product, and there is no Comparison module in it.
+APLUS_STRUCTURE: list[tuple[str, str]] = [
+    ("a+_banner",   "Brand hero. The promise and the world the product lives in."),
+    ("a+_carousel", "Slider: the 5 strongest USPs as scan-friendly tiles."),
+    ("a+_banner",   "Production and story. Heritage, process, traceability."),
+    ("a+_carousel", "Slider: use cases, or the product family for cross-sell."),
+    ("a+_banner",   "The proof module. The one objection this product has to beat."),
+    ("a+_banner",   "Brand closer. Ends by handing the reader over to the Q&A."),
+    ("a+_qa",       "The finale. Exactly five pairs, under the Q&A rules."),
+]
+
+# A+ copy is support text under a picture, not a paragraph. The review team's verdict on the
+# old output was blunt: "way too much copy, not readable". A+ pages that convert run roughly
+# 70% image, 30% text — if a module needs more than this, the visual is not doing its job.
+MODULE_BODY_MAX = 180
+MODULE_VISUAL_MAX = 450
+
 # Which composition FAMILY each tile has to come from.
 #
 # Asking the model for "variety" does not produce variety. Earlier versions listed every
@@ -591,11 +610,13 @@ class BriefAI:
                             "name": {"type": "string", "description": "e.g. 'Module 1 — Brand banner'"},
                             "role": {
                                 "type": "string",
-                                "enum": ["a+_banner", "a+_carousel", "a+_qa", "a+_comparison"],
+                                # No a+_comparison: it is not part of the house structure. The
+                                # renderer still understands it so older plans keep working.
+                                "enum": ["a+_banner", "a+_carousel", "a+_qa"],
                             },
-                            "headline": {"type": "string", "description": f"Module headline in {LANGUAGE_NAMES.get(self.lang, 'English')}"},
-                            "body": {"type": "string", "description": "Module body / supporting copy (English, brand-voice, 2-4 sentences)"},
-                            "visual": {"type": "string", "description": "Visual direction for designer"},
+                            "headline": {"type": "string", "description": f"Module headline in {LANGUAGE_NAMES.get(self.lang, 'English')}, max 38 characters, no dashes"},
+                            "body": {"type": "string", "description": f"Support copy under the image. English, brand voice. HARD LIMIT {MODULE_BODY_MAX} characters — about two short sentences."},
+                            "visual": {"type": "string", "description": f"Layout spec for the designer: how the frame divides, what sits where, what graphic furniture to build, how it reflows on mobile. Compact spec lines, max {MODULE_VISUAL_MAX} characters."},
                             "alt": {"type": "string", "description": "Accessibility alt text"},
                         },
                         "required": ["name", "role", "headline", "body", "visual", "alt"],
@@ -607,34 +628,44 @@ class BriefAI:
             "additionalProperties": False,
         }
         task = (
-            "Design the 7 A+ Premium modules for this product. Fixed Amazon sequence:\n"
-            "1. a+_banner — Brand hero banner (tagline + lifestyle scene)\n"
-            "2. a+_carousel — 5-tile 'Brand Difference' (the 5 strongest USPs as scan-friendly tiles)\n"
-            "3. a+_banner — Production / story banner (heritage, process, traceability)\n"
-            "4. a+_banner — Use cases triptych (LEFT/CENTER/RIGHT real-world scenes)\n"
-            "5. a+_carousel — Product family carousel (this SKU + 4 cross-sell tiles)\n"
-            f"6. a+_qa — exactly {QA_PAIRS} Q&A pairs, question ≤{QA_Q_MAX} chars, answer ≤{QA_A_MAX} chars "
-            "(each defuses a specific review-driven friction)\n"
-            "7. a+_comparison — Comparison vs commodity / vs cheap alternative\n\n"
+            "Design the 7 A+ Premium modules for this product. The sequence is FIXED — this is the "
+            "house structure and it is not re-decided per product. Return the modules in exactly "
+            "this order, with exactly these roles:\n"
+            + "".join(f"{i}. {role} — {purpose}\n"
+                      for i, (role, purpose) in enumerate(APLUS_STRUCTURE, 1))
+            + f"Module 7 carries exactly {QA_PAIRS} Q&A pairs, question ≤{QA_Q_MAX} chars, "
+            f"answer ≤{QA_A_MAX} chars, each defusing a specific review-driven friction.\n"
+            "Module 6 must END by handing the reader over to the Q&A, in brand voice.\n"
+            "There is NO comparison module. Do not add one, do not reorder, do not merge.\n\n"
             "Each module must be SPECIFIC to this product. Headlines in "
             f"{LANGUAGE_NAMES.get(self.lang, 'English')}. Body in English.\n\n"
 
+            "# COPY LENGTH IS THE HARDEST CONSTRAINT HERE\n"
+            f"- Headline: max 38 characters.\n"
+            f"- Body: MAXIMUM {MODULE_BODY_MAX} characters, including spaces. About two short "
+            "sentences. Count them before you return the module.\n"
+            "The review team's verdict on the previous output was 'way too much copy, not "
+            "readable'. A+ modules are support text under a picture, not paragraphs. A shopper "
+            "scrolls this on a phone and reads the headline plus maybe one line. Every sentence "
+            "must carry a fact, a benefit or a reason to trust; cut anything a competitor could "
+            "paste onto their own product unchanged. The strongest A+ pages run roughly 70% image "
+            "and 30% text. If a module seems to need a long paragraph, the VISUAL is not carrying "
+            "its share — redesign the visual instead of writing more copy.\n\n"
+
             "# THE 'visual' FIELD IS A LAYOUT SPEC, NOT A MOOD NOTE\n"
-            "Reviewers rejected A+ banners that were just a headline over a photo. For every module, the "
-            "'visual' field must state the actual composition: how the frame is divided, what sits left / "
-            "centre / right, what graphic furniture the designer builds (icons, numbers, dividers, callout "
-            "lines, badges, panel labels), and how it reflows for mobile. Name the elements and their "
-            "positions. Vary the construction across the seven modules — never ship three banners built the "
-            "same way. Always give BOTH sizes: desktop 1464x600, mobile 600x450, and say what stays inside "
-            "the mobile safe area.\n\n"
+            "Reviewers rejected A+ banners that were just a headline over a photo. For every module, "
+            "state the actual composition: how the frame divides, what sits left / centre / right, "
+            "what graphic furniture the designer builds (icons, numbers, dividers, callout lines, "
+            "badges, panel labels), and how it reflows for mobile. Name the elements and their "
+            "positions. Vary the construction across the modules — never ship three banners built "
+            "the same way. Give both sizes: desktop 1464x600, mobile 600x450, and say what stays "
+            f"inside the mobile safe area. Write it as COMPACT SPEC LINES, max {MODULE_VISUAL_MAX} "
+            "characters. Telegraphic is correct here; full prose sentences are not.\n\n"
 
             "# WRITING STYLE\n"
-            "- NO em-dashes or en-dashes (— –) in any headline. Reviewers flagged dash overuse explicitly.\n"
+            "- NO em-dashes or en-dashes (— –) in any headline or body. Reviewers flagged dash "
+            "overuse explicitly.\n"
             "- Vary headline construction across the seven modules.\n"
-            "- Body copy: 2-4 sentences, no filler, every sentence carries a fact, a benefit or a reason to "
-            "trust. Cut anything a competitor could paste onto their own product unchanged.\n"
-            "- The strongest A+ pages run roughly 70% image, 30% text. If a module needs a long paragraph to "
-            "work, the visual is not carrying its share — redesign the visual instead of writing more.\n"
             "Return JSON."
         )
         result = self._structured_call(task, schema, max_tokens=6000)

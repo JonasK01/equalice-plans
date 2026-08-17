@@ -1308,17 +1308,24 @@ class BriefBuilder:
 
     # ---- A+ modules ----
     def _apply_brand_module_rules(self) -> None:
-        """House rules applied to the A+ module list before scans + render (Jonas):
-        NEW brands: (1) NO Premium Comparison. (2) The Q&A is the FINALE (last module).
-        (3) The module right before the Q&A ends with a SMART line that bridges into it
-        (brand-voice + a 'the answers are right below' teaser). Keeps 7 modules — if no
-        benefits/brand closer was authored, a 'From the Brand' banner is inserted before
-        the Q&A. Established brands are untouched."""
+        """House rules applied to the A+ module list before scans + render (Jonas).
+
+        For EVERY brand: the Q&A is the finale, and the module immediately before it ends
+        with a brand-voice line that hands the reader over ("the answers are right below").
+        That is the published house structure: image, slider, image, slider, image, image
+        that bridges, Q&A.
+
+        Additionally for NEW brands only: no Premium Comparison module, and if nothing was
+        authored to sit before the Q&A, a 'From the Brand' banner is inserted so the page
+        still runs to seven modules. Established brands keep whatever modules they authored;
+        only the ordering and the bridge are applied."""
         from .ai import AIModule
         mods = self._ai_modules
-        if not mods or not bool(getattr(self.customer, "new_brand", False)):
+        if not mods:
             return
-        mods = [m for m in mods if m.role != "a+_comparison"]      # new brands don't compare yet
+        is_new = bool(getattr(self.customer, "new_brand", False))
+        if is_new:
+            mods = [m for m in mods if m.role != "a+_comparison"]  # new brands don't compare yet
         qa = [m for m in mods if m.role == "a+_qa"]
         non_qa = [m for m in mods if m.role != "a+_qa"]
         statement = (getattr(self.customer, "brand_statement", "") or "").strip()
@@ -1331,7 +1338,7 @@ class BriefBuilder:
             self._ai_modules = non_qa
             return
         # keep 7 modules: if there is no dedicated benefits/brand closer before the Q&A, add one
-        if statement and len(non_qa) < 6:
+        if is_new and statement and len(non_qa) < 6:
             non_qa.append(AIModule(
                 name="Module — From the Brand",
                 role="a+_banner",

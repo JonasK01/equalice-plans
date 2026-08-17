@@ -9,7 +9,11 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-from .ai import AIComplianceFlag, QA_PAIRS, QA_Q_MAX, QA_A_MAX
+from .ai import (
+    AIComplianceFlag, QA_PAIRS, QA_Q_MAX, QA_A_MAX,
+    MODULE_BODY_MAX as MAX_MODULE_BODY_CHARS,
+    MODULE_VISUAL_MAX as MAX_MODULE_VISUAL_CHARS,
+)
 
 # tools/amazon_compliance_checker.py lives at the project root /tools.
 _CHECKER = Path(__file__).resolve().parents[3] / "tools" / "amazon_compliance_checker.py"
@@ -113,6 +117,20 @@ def lint_copy(title: str, bullets, images, modules, qa=None) -> list[str]:
             warns.append(f'Module {i} headline {len(h)}ch (max {MAX_MODULE_HEADLINE_CHARS}): "{h}"')
         if _DASHES.search(h):
             warns.append(f'Module {i} headline uses a dash — rewrite without it: "{h}"')
+        # Body length. Two things are deliberately excluded from the measurement:
+        #   - the Q&A bridge line, appended by a house rule after the copy is written, so
+        #     module 6 is not failed for a sentence its author never wrote;
+        #   - the Q&A module itself, whose body IS the question-and-answer block. That copy
+        #     is governed by the Q&A rules above and is checked there, so measuring it as a
+        #     banner paragraph would report every plan twice for the same text.
+        role = str(getattr(mo, "role", "") or "")
+        body = _plain(_re.sub(r"<i>.*?</i>", "", str(getattr(mo, "body", "") or ""), flags=_re.S))
+        if role != "a+_qa" and len(body) > MAX_MODULE_BODY_CHARS:
+            warns.append(f'Module {i} body {len(body)}ch (max {MAX_MODULE_BODY_CHARS}) — '
+                         f'A+ copy is support text, not a paragraph')
+        vis = _plain(getattr(mo, "visual", ""))
+        if len(vis) > MAX_MODULE_VISUAL_CHARS:
+            warns.append(f'Module {i} layout spec {len(vis)}ch (max {MAX_MODULE_VISUAL_CHARS})')
     for i, b in enumerate(bullets or [], 1):
         m = _re.search(r"<b>(.*?)</b>", b or "")
         head = _plain(m.group(1)) if m else ""
