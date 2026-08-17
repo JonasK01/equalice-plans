@@ -58,7 +58,21 @@ No dull, dark or moody backgrounds — they fight the 'fresh & bright' identity 
 
 ## Notes (product context, keywords, compliance)
 
-Freshly Preserved — premium FREEZE-DRIED EDIBLE FLOWERS (flagship line), plus a freeze-dried fruit / vegetable snack line. Sells DTC at freshlypreserved.com and on Amazon (US). Contact: linda@freshlypreserved.com (founder Linda Bartoul). Amazon engagement CONFIRMED as the EDIBLE-FLOWERS line (product 01 = Small Pansy & Orchids).
+Freshly Preserved — premium FREEZE-DRIED EDIBLE FLOWERS (flagship line), plus a freeze-dried fruit / vegetable snack line. Sells DTC at freshlypreserved.com and on Amazon (US). Contact: linda@freshlypreserved.com (founder Linda Bartoul). Amazon engagement CONFIRMED as the EDIBLE-FLOWERS line.
+
+LIVE PLAN CATALOGUE (SEO drop 08.08.26 — 6 products, 11 plans; all built, all compliance-clean):
+01 petals_mix B0H8FDVXFJ — Flower Petals 0.2 oz / about 1.5 cups (rose, carnation, pansy, orchid petals). Angle: COVERAGE + the measured 1.5-cup shot.
+02 bloom_family PARENT B0H8TR2WSB — SIX child variations, one run.py loops them: a Small Pansy 12 / b Small Orchid 12 / c Small Pansy & Orchid 12 (0.1 oz) / d Pansy 25 / e Pansy & Orchid 25 / f Purple Orchids 25 (0.2 oz).
+03 small_roses_mixed B0H8ZDCP71 — Small Roses & Mixed 0.1 oz, ~12 rose blooms PLUS loose petals (only listing with both formats). Angle: romance/weddings.
+04 fall_cake_kit B0H9532666 — Fall Cake Decorating Kit 4 oz, 25+ pieces (roses, amaranth/firesticks, oregano flowers, ferns, geranium leaves). Angle: 'place, don't pipe' + abundance + seasonal.
+05 basil_blossoms B0H9ZFBXSF — Basil Blossoms 0.2 oz, ~25 sprigs. SAVOURY: rubs, marinades, sauces, salads, tea, cocktails. Different buyer (cooks, not cake decorators). NO health claims, NOT certified organic.
+06 squash_blossoms B0CN47WW2D — Squash Blossoms 0.2 oz, 12 whole. SAVOURY + the only LARGE bloom (stuff/plate whole) — size is a boast here, not a defence.
+
+PARENT-CHILD IS BUILT INTO EVERY PLAN: Image 7 = 'Find your flower' family strip with THIS child ringed ('YOU ARE HERE'); A+ Module 5 = family carousel ('You are viewing: X'); Image 6 carries this child's count/size against its siblings.
+
+OPEN (blocking correct filing): the SIX child ASINs for parent B0H8TR2WSB are NOT recoverable from the workbook — Excel truncates sheet names at 31 chars, so tab names like 'SEO_Small Pansy Freeze_B0GLR6GB' cut the ASIN off. All six PDFs are currently filed under the PARENT ASIN with a variant suffix. Get the child ASINs from Jonas and set VARIANTS[...]['asin'].
+
+ASIN NOTE: for 01/03/04/05 the SEO folder name and the workbook's 'Overview Product' tab disagree (01 B0H8FDVXFJ vs B0CV9435JM · 03 B0H8ZDCP71 vs B0GLR76YW1 · 04 B0H9532666 vs B0DH2XBFY3 · 05 B0H9ZFBXSF vs B0CR6XHZG7). The plans use the FOLDER ASIN (how the SEO team named the deliverable). Unconfirmed by Jonas.
 
 WHAT THEY SELL (flowers line): individual varieties — pansies, orchids, roses, marigolds, squash blossoms, carnations, bachelor buttons — plus mixed petals / confetti, sampler boxes, cake-decorating kits; whole-bloom AND petal options; small & mini sizes. Also a fruit/veg SNACK line (freeze-dried fruits, veggies like sweet-potato bits, build-your-own boxes) that shares the same bright natural palette — not the current focus.
 
