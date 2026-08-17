@@ -38,6 +38,10 @@ class Customer:
     notes: str = ""
     new_brand: bool = False          # True -> builder drops the A+ Comparison module (house rule)
     brand_statement: str = ""        # "From the Brand" cool statement appended to the A+ Q&A module
+    website_url: str = ""            # brand homepage — style + claims reference
+    about_us: str = ""               # the brand's own About Us / story text, pasted by the team.
+                                     # Feeds Brand Memory so plans use the brand's real founding
+                                     # story instead of inventing one.
     created_at: str = ""
     updated_at: str = ""
 

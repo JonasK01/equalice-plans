@@ -31,6 +31,7 @@ from tools.brief_app.core.customers import (
 )
 from tools.brief_app.core.excel_parser import parse_excel
 from tools.brief_app.core.pdf_builder import build_brief
+from tools.brief_app.core import pdf_builder as PB
 from tools.brief_app.core import seo_loader as SEOL
 from tools.brief_app.core.unsplash import has_unsplash_key, UNSPLASH_KEY_ENV
 from tools.brief_app.core.ai import BriefAI, has_api_key, sdk_available, ANTHROPIC_KEY_ENV, MODEL as AI_MODEL
@@ -219,6 +220,24 @@ def _customer_form(existing: Customer | None) -> Customer | None:
             placeholder="From <Brand>: <one punchy, on-brand promise>.",
             help="Shown as the 'From the Brand' module (and only used when 'New brand' is on).",
         )
+        st.markdown("**Website & About Us**")
+        st.caption("The brand's own words. Used for voice, the founding story and real claims — "
+                   "so a plan never has to invent a brand story.")
+        website_url = st.text_input(
+            "Website URL",
+            value="" if is_new else existing.website_url,
+            placeholder="https://brand.com",
+        )
+        about_us = st.text_area(
+            "About Us / brand story (paste from their About page)",
+            value="" if is_new else existing.about_us,
+            height=110,
+            placeholder="Paste the brand's About Us text here — who founded it, why, what they "
+                        "stand for, any credentials worth using (e.g. 'created by a hospice "
+                        "social worker', 'family farm since 1978').",
+            help="Ask the client for this during onboarding. It is the single best source for the "
+                 "A+ brand banner and the 'From the Brand' close.",
+        )
         notes = st.text_area(
             "Internal notes",
             value="" if is_new else existing.notes,
@@ -259,6 +278,8 @@ def _customer_form(existing: Customer | None) -> Customer | None:
         notes=notes.strip(),
         new_brand=new_brand,
         brand_statement=brand_statement.strip(),
+        website_url=website_url.strip(),
+        about_us=about_us.strip(),
         created_at=existing.created_at if existing else "",
         updated_at="",
     )
@@ -293,6 +314,49 @@ def _render_pdf_inline(pdf_path: Path, height: int = 900) -> None:
 
 def _reviewer_name() -> str:
     return (st.session_state.get("reviewer") or "").strip() or "anon"
+
+
+def _when(ts: int) -> str:
+    """Local wall-clock time for a plan. The archive used to show a bare timestamp with no
+    sense of recency, so nobody could tell which version was current at a glance."""
+    dt = datetime.fromtimestamp(ts)
+    today = datetime.now().date()
+    delta = (today - dt.date()).days
+    day = {0: "heute", 1: "gestern"}.get(delta) or dt.strftime("%d.%m.%Y")
+    return f"{day}, {dt.strftime('%H:%M')}"
+
+
+def _download_name(slug: str, pdf_name: str) -> str:
+    """A filename that means something on the designer's desktop.
+
+    Generated files are named `<brand>__<product>__<stamp>.pdf`, which downloads as an
+    unreadable slug blob. This rebuilds it as
+    `EQUALICE_<Brand>_<Product>_Image-Plan_v<n>_<YYYY-MM-DD>.pdf` (team feedback:
+    "richtige Benennung nach Herunterladen")."""
+    meta = _load_plan_meta(slug, pdf_name)
+    try:
+        cust_name = load_customer(slug).name
+    except Exception:
+        cust_name = slug
+    product = (meta.get("product") or "").strip()
+    if not product:
+        base = CM.plan_family(pdf_name)
+        product = re.sub(r"^%s__" % re.escape(slug), "", base).split("__")[0].replace("-", " ")
+    version = ""
+    for pl in CM.list_plans(slug):
+        if pl["name"] == pdf_name:
+            if pl["versions_total"] > 1:
+                version = f"_v{pl['version']}"
+            break
+    stamp = ""
+    p = BRIEFS_DIR / slug / pdf_name
+    if p.exists():
+        stamp = "_" + datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d")
+
+    def clean(s: str) -> str:
+        return re.sub(r"[^A-Za-z0-9]+", "-", (s or "")).strip("-")[:45] or "Plan"
+
+    return f"EQUALICE_{clean(cust_name)}_{clean(product)}_Image-Plan{version}{stamp}.pdf"
 
 
 def _meta_path(slug: str, pdf_name: str) -> Path:
@@ -389,7 +453,132 @@ def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", sour
             st.success("✅ Copy lengths punchy.")
 
     _save_plan_meta(cust.slug, pdf_path.name, {"upload": str(source_upload), "product": brief.product_name or ""})
+    # Sidecar with the editable plan content, so the team can correct a plan and re-render it
+    # without paying for another AI generation.
+    if _res.get("content"):
+        _save_plan_content(cust.slug, pdf_path.name, _res["content"])
     return pdf_path
+
+
+def _plan_content_path(slug: str, pdf_name: str) -> Path:
+    return BRIEFS_DIR / slug / (pdf_name + ".plan.json")
+
+
+def _save_plan_content(slug: str, pdf_name: str, content: dict) -> None:
+    try:
+        _plan_content_path(slug, pdf_name).write_text(
+            json.dumps(content, ensure_ascii=False, indent=1), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _load_plan_content(slug: str, pdf_name: str) -> dict:
+    p = _plan_content_path(slug, pdf_name)
+    if p.exists():
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def _plan_editor_ui(slug: str, pdf_name: str, key_prefix: str) -> None:
+    """Edit the generated plan — image plan AND A+ Premium — then re-render the PDF.
+
+    No AI call: this re-renders exactly what you typed, then re-runs the compliance and
+    copy-length scans so an edit cannot quietly introduce a banned claim or a 40-character
+    overlay. Requested by the team: "the full pdf plan image and A+ Premium if possible"."""
+    data = _load_plan_content(slug, pdf_name)
+    if not data:
+        st.caption("✏️ This plan was generated before in-app editing existed — regenerate it once to unlock editing.")
+        return
+    meta = _load_plan_meta(slug, pdf_name)
+    upload = meta.get("upload", "")
+    if not upload or not Path(upload).exists():
+        st.caption("✏️ Editing needs the original SEO sheet, which is no longer on disk for this plan.")
+        return
+
+    edited = {"title": data.get("title", ""), "backend": data.get("backend", ""),
+              "bullets": list(data.get("bullets") or []),
+              "images": [dict(i) for i in (data.get("images") or [])],
+              "modules": [dict(m) for m in (data.get("modules") or [])],
+              "qa": [dict(q) for q in (data.get("qa") or [])]}
+
+    t_img, t_apl, t_qa = st.tabs(
+        [f"🖼️ Images ({len(edited['images'])})",
+         f"📄 A+ Premium ({len(edited['modules'])})",
+         f"❓ Q&A ({len(edited['qa'])})"])
+
+    with t_img:
+        for i, im in enumerate(edited["images"]):
+            role = (im.get("role") or "").upper()
+            with st.expander(f"Image {i + 1} · {role} — {(im.get('overlay') or '(no overlay)')[:40]}",
+                             expanded=False):
+                k = f"{key_prefix}_i{i}"
+                im["overlay"] = st.text_input("On-image headline (≤30 chars, ≤5 words, no dashes)",
+                                              value=im.get("overlay", ""), key=f"{k}_ov")
+                im["overlay_sub"] = st.text_input("On-image subline (≤90 chars)",
+                                                  value=im.get("overlay_sub", ""), key=f"{k}_sub")
+                im["purpose"] = st.text_input("Purpose", value=im.get("purpose", ""), key=f"{k}_pur")
+                im["visual"] = st.text_area("What to show (art direction)",
+                                            value=im.get("visual", ""), height=150, key=f"{k}_vis")
+                c1, c2 = st.columns(2)
+                with c1:
+                    im["background"] = st.text_input("Background", value=im.get("background", ""), key=f"{k}_bg")
+                    im["props"] = [p.strip() for p in st.text_area(
+                        "Props (one per line)", value="\n".join(im.get("props") or []),
+                        height=90, key=f"{k}_props").splitlines() if p.strip()]
+                with c2:
+                    im["lighting"] = st.text_input("Lighting", value=im.get("lighting", ""), key=f"{k}_lig")
+                    im["graphics"] = [g.strip() for g in st.text_area(
+                        "Graphics / icons to build (one per line)",
+                        value="\n".join(im.get("graphics") or []), height=90, key=f"{k}_gfx").splitlines() if g.strip()]
+
+    with t_apl:
+        for i, mo in enumerate(edited["modules"]):
+            with st.expander(f"Module {i + 1} — {(mo.get('headline') or mo.get('name') or '')[:50]}",
+                             expanded=False):
+                k = f"{key_prefix}_m{i}"
+                mo["headline"] = st.text_input("Headline (≤38 chars, no dashes)",
+                                               value=mo.get("headline", ""), key=f"{k}_h")
+                mo["body"] = st.text_area("Body (HTML allowed: <b>, <br/>)",
+                                          value=mo.get("body", ""), height=180, key=f"{k}_b")
+                mo["visual"] = st.text_area("Layout / visual direction",
+                                            value=mo.get("visual", ""), height=110, key=f"{k}_v")
+                mo["alt"] = st.text_input("Alt text", value=mo.get("alt", ""), key=f"{k}_a")
+
+    with t_qa:
+        for i, q in enumerate(edited["qa"]):
+            k = f"{key_prefix}_q{i}"
+            q["q"] = st.text_input(f"Q{i + 1}", value=q.get("q", ""), key=f"{k}_q")
+            q["a"] = st.text_area(f"A{i + 1}", value=q.get("a", ""), height=80, key=f"{k}_a")
+
+    st.caption("Re-renders the PDF from exactly what you typed. No AI call, no cost, a few seconds. "
+               "Compliance and copy-length are re-checked on the edited text.")
+    if st.button("💾 Save edits & re-render PDF", key=f"{key_prefix}_apply", type="primary"):
+        try:
+            cust = load_customer(slug)
+            brief = parse_excel(upload)
+            content = PB.plan_from_dict(edited)
+            stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            base = pdf_name[:-4] if pdf_name.endswith(".pdf") else pdf_name
+            base = re.sub(r"__edit-\d{8}_\d{6}$", "", base)
+            out_path = BRIEFS_DIR / slug / f"{base}__edit-{stamp}.pdf"
+            _res: dict = {}
+            PB.build_brief(cust, brief, out_path, ai=None, result_out=_res,
+                           plan_content=content)
+            if _res.get("content"):
+                _save_plan_content(slug, out_path.name, _res["content"])
+            _save_plan_meta(slug, out_path.name, {"upload": upload, "product": brief.product_name or ""})
+            warn = _res.get("copy_warnings") or []
+            if _res.get("compliance_blocking"):
+                st.error("⛔ Your edit introduced a blocking compliance issue — see section 7 of the new PDF.")
+            if warn:
+                st.warning("⚠️ Copy-length / dash issues in the edit:\n" + "\n".join(f"- {w}" for w in warn[:8]))
+            st.session_state["last_plan"] = {"slug": slug, "name": out_path.name}
+            st.success(f"Saved as `{out_path.name}` — open it under **Plans & Review**.")
+        except Exception as exc:
+            st.error(f"Re-render failed: {exc}")
 
 
 def _comment_thread_ui(slug: str, pdf_name: str, key_prefix: str) -> None:
@@ -515,11 +704,53 @@ def page_generate() -> None:
             if cur:
                 st.caption("Images on file: " + ", ".join(cur))
 
+    # ---- Über uns: einmal pro Marke fragen, dann nie wieder ----
+    # Ohne diesen Text erfindet die KI eine Markengeschichte. Mit ihm bekommt sie die echte
+    # (z.B. "created by a hospice social worker") — das stärkste Trust-Asset, das es gibt.
+    if not (cust.about_us or "").strip():
+        with st.container(border=True):
+            st.markdown(f"##### 📖 Über-uns-Seite von {cust.name} fehlt")
+            st.caption(
+                "Einmal einfügen, gilt für alle künftigen Pläne dieser Marke. Ohne diesen Text "
+                "darf die KI **keine** Markengeschichte, kein Gründungsjahr und kein Credential "
+                "erfinden — die A+ Module bleiben dann blasser als nötig."
+            )
+            _au = st.text_area(
+                "Text von der Über-uns-Seite einfügen",
+                height=120, key="about_quick",
+                placeholder=(f"Von {cust.website_url or 'der Website'} → Über uns / About us.\n"
+                             "Wer hat die Marke gegründet, warum, wofür steht sie, welche "
+                             "Credentials gibt es (Meisterbetrieb, seit 1912, Hebamme, Hospiz-"
+                             "Sozialarbeiterin, Familienbetrieb …)."),
+            )
+            _c1, _c2 = st.columns([1, 3])
+            if _c1.button("💾 Speichern", key="about_quick_save", type="primary"):
+                if _au.strip():
+                    cust.about_us = _au.strip()
+                    save_customer(cust)
+                    st.success("Gespeichert. Fließt ab sofort in jeden Plan dieser Marke ein.")
+                    st.rerun()
+                else:
+                    st.warning("Erst Text einfügen.")
+            _c2.caption("Oder überspringen — der Plan wird trotzdem gebaut, nur ohne Markengeschichte.")
+
     st.divider()
-    st.markdown("#### 1 · Upload the SEO sheet")
-    upload = st.file_uploader("Drop the product's SEO analysis .xlsx", type=["xlsx"], key="seo_up")
+    st.markdown("#### 1 · Upload the product inputs")
+    up_c1, up_c2 = st.columns([1, 1])
+    with up_c1:
+        upload = st.file_uploader("SEO analysis sheet (.xlsx) *", type=["xlsx"], key="seo_up")
+    with up_c2:
+        prod_imgs = st.file_uploader(
+            "Product images (optional, several)",
+            type=["png", "jpg", "jpeg", "webp"],
+            accept_multiple_files=True,
+            key="prod_imgs",
+            help="Packshots, existing listing images, lifestyle shots, the packaging. The plan "
+                 "references what actually exists instead of describing shots you cannot produce.",
+        )
     if not upload:
-        st.caption("SEO title + bullets come from the sheet — the tool writes the creative Image + A+ plan.")
+        st.caption("SEO title + bullets come from the sheet — the tool writes the creative Image + A+ plan. "
+                   "Product images are optional but make the plan far more concrete.")
         return
 
     # Save upload to a tmp working path so the parser (file-based) can read it
@@ -528,6 +759,23 @@ def page_generate() -> None:
     safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", upload.name)
     upload_path = work_dir / f"{int(time.time())}__{safe_name}"
     upload_path.write_bytes(upload.read())
+
+    # Product images live beside the sheet they were uploaded with, so a regenerated version
+    # picks up the same set. Saved under the plan's own folder, not brand-wide Brand Memory.
+    img_dir = work_dir / (upload_path.stem + "__images")
+    saved_imgs: list[str] = []
+    for f in (prod_imgs or []):
+        try:
+            img_dir.mkdir(parents=True, exist_ok=True)
+            safe = re.sub(r"[^A-Za-z0-9._-]+", "_", f.name)
+            (img_dir / safe).write_bytes(f.read())
+            saved_imgs.append(safe)
+        except Exception as exc:
+            st.warning(f"Could not save {f.name}: {exc}")
+    if saved_imgs:
+        st.caption(f"🖼️ {len(saved_imgs)} product image(s) attached: " + ", ".join(saved_imgs))
+        with st.expander("Preview attached images", expanded=False):
+            st.image([str(img_dir / n) for n in saved_imgs], width=150)
 
     with st.spinner("Parsing Excel…"):
         try:
@@ -600,6 +848,53 @@ def page_generate() -> None:
     else:
         st.warning("AI is disabled (no API key) — the plan will use template copy.")
 
+    # ---- Build Variants: mehrere SEO-Tabs = Kind-Varianten unter einem Parent ----
+    _tabs = []
+    try:
+        _tabs = SEOL.list_seo_sheets(upload_path)
+    except Exception:
+        pass
+    if len(_tabs) > 1:
+        with st.container(border=True):
+            st.markdown(f"##### 🧬 {len(_tabs)} Varianten in diesem Sheet gefunden")
+            st.caption("Jedes SEO-Tab ist ein eigenes Kind-Listing und bekommt einen eigenen Plan. "
+                       "Auswählen, was gebaut werden soll — jede Variante kostet einen vollen Lauf.")
+            _picked = []
+            for _i, _t in enumerate(_tabs):
+                _label = SEOL.variation_label(_t) or _t
+                if st.checkbox(f"**{_label}**", value=True, key=f"var_{_i}",
+                               help=f"Excel-Tab: {_t}"):
+                    _picked.append(_t)
+            st.caption(f"{len(_picked)} von {len(_tabs)} ausgewählt.")
+            if st.button(f"🧬 {len(_picked)} Varianten-Pläne bauen", key="build_variants",
+                         type="primary", disabled=not _picked):
+                out_dir = BRIEFS_DIR / cust.slug
+                out_dir.mkdir(parents=True, exist_ok=True)
+                built = []
+                for _n, _t in enumerate(_picked, 1):
+                    _lab = SEOL.variation_label(_t) or _t
+                    st.markdown(f"**{_n}/{len(_picked)} · {_lab}**")
+                    try:
+                        _s = SEOL.load_seo(upload_path, sheet=_t)
+                        _seo_v = (_s.title or None, SEOL.as_bullets_html(_s) or None, _s.backend or None)
+                    except Exception as exc:
+                        st.error(f"SEO-Tab '{_t}' nicht lesbar: {exc}")
+                        continue
+                    _stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    _slugname = slugify(f"{brief.product_name or 'plan'} {_lab}")[:80]
+                    _out = out_dir / f"{cust.slug}__{_slugname}__{_stamp}.pdf"
+                    try:
+                        _pdf = _build_and_report(cust, brief, _out, _seo_v,
+                                                 source_upload=str(upload_path))
+                        built.append(_pdf.name)
+                    except Exception as exc:
+                        st.error(f"Bauen fehlgeschlagen für '{_lab}': {exc}")
+                if built:
+                    st.session_state["last_plan"] = {"slug": cust.slug, "name": built[-1]}
+                    st.success(f"✅ {len(built)} Varianten-Pläne gebaut. "
+                               f"Alle unter **Plans & Review** bei {cust.name}.")
+        st.divider()
+
     if st.button("Generate PDF", type="primary"):
         out_dir = BRIEFS_DIR / cust.slug
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -620,11 +915,18 @@ def page_generate() -> None:
         if p.exists():
             st.divider()
             st.subheader("📄 Generated plan — preview & review")
-            st.caption(f"`{last['name']}`  ·  status: **{CM.get_status(last['slug'], last['name'])}**")
+            _v = next((x for x in CM.list_plans(last["slug"]) if x["name"] == last["name"]), None)
+            _vtxt = (f"  ·  **v{_v['version']} von {_v['versions_total']}**"
+                     + ("  ·  🟢 aktuellste Version" if _v["is_latest"] else "  ·  ⚪️ ältere Version")) if _v else ""
+            st.caption(f"`{last['name']}`  ·  {_when(int(p.stat().st_mtime))}{_vtxt}  ·  "
+                       f"Status: **{CM.get_status(last['slug'], last['name'])}**")
             _render_pdf_inline(p)
             with p.open("rb") as f:
-                st.download_button("⬇️  Download PDF", data=f.read(), file_name=p.name,
+                st.download_button("⬇️  Download PDF", data=f.read(),
+                                   file_name=_download_name(last["slug"], last["name"]),
                                    mime="application/pdf", type="primary", key="dl_last")
+            st.markdown("#### ✏️ Edit this plan")
+            _plan_editor_ui(last["slug"], last["name"], key_prefix="gen_edit")
             st.markdown("#### 💬 Comments")
             _comment_thread_ui(last["slug"], last["name"], key_prefix="gen")
 
@@ -669,7 +971,8 @@ def page_customers() -> None:
             st.rerun()
 
 
-_STATUS_ICON = {"open": "🟡", "approved": "🟢", "changes requested": "🔴"}
+_STATUS_ICON = {"open": "🟡", "changes requested": "🔴", "design done": "🎨",
+                "SEO check": "🔍", "approved": "🟢"}
 
 
 def page_archive() -> None:
@@ -692,15 +995,25 @@ def page_archive() -> None:
 
     for plan in plans:
         icon = _STATUS_ICON.get(plan["status"], "🟡")
-        when = datetime.fromtimestamp(plan["mtime"]).strftime("%Y-%m-%d %H:%M")
-        header = (f"{icon}  {plan['name']}   ·   {when}   ·   {plan['size_kb']} KB"
-                  f"   ·   💬 {plan['comment_count']}")
+        ver = (f"v{plan['version']}/{plan['versions_total']}"
+               if plan["versions_total"] > 1 else "v1")
+        flag = "🟢 AKTUELL" if plan["is_latest"] else "⚪️ alt"
+        header = (f"{icon}  {flag}  ·  {ver}  ·  {_when(plan['mtime'])}  ·  "
+                  f"{plan['name']}  ·  {plan['size_kb']} KB  ·  💬 {plan['comment_count']}")
         with st.expander(header, expanded=False):
             p = Path(plan["path"])
+            if not plan["is_latest"]:
+                st.warning(f"Das ist **nicht** die aktuellste Version dieses Plans "
+                           f"(v{plan['version']} von {plan['versions_total']}). "
+                           f"Die neueste steht weiter oben in der Liste.")
+            st.caption(f"Status: **{plan['status']}** — {CM.STATUS_HELP.get(plan['status'], '')}")
             _render_pdf_inline(p, height=800)
             with p.open("rb") as f:
-                st.download_button("⬇️  Download PDF", data=f.read(), file_name=p.name,
+                st.download_button("⬇️  Download PDF", data=f.read(),
+                                   file_name=_download_name(cust.slug, plan["name"]),
                                    mime="application/pdf", key=f"dl_{plan['name']}")
+            st.markdown("#### ✏️ Edit this plan")
+            _plan_editor_ui(cust.slug, plan["name"], key_prefix=f"archedit_{plan['name']}")
             st.markdown("#### 💬 Comments")
             _comment_thread_ui(cust.slug, plan["name"], key_prefix=f"arch_{plan['name']}")
 

@@ -51,6 +51,22 @@ def list_seo_sheets(listing_xlsx: str | Path) -> list[str]:
     return out
 
 
+def variation_label(sheet_name: str) -> str:
+    """The variation name IS the Excel tab name (Jonas, 08.26): tabs are named
+    'SEO_<variation>'. Excel caps tab names at 31 chars, so the tail is often clipped and
+    sometimes carries a partial ASIN — strip the prefix and any ASIN fragment, tidy the rest.
+
+        'SEO_Small Pansy Freeze_B0GLR6GB' -> 'Small Pansy Freeze'
+        'SEO_Freeze-Dried Edible Orchids' -> 'Freeze-Dried Edible Orchids'
+    """
+    import re as _re
+    s = (sheet_name or "").strip()
+    s = _re.sub(r"^SEO[_\s-]*", "", s, flags=_re.I)
+    # a trailing '_B0XXXXXXXX' or a clipped fragment of one ('_B0GLR6GB', '_B0')
+    s = _re.sub(r"[_\s-]+B0[A-Z0-9]{0,8}$", "", s, flags=_re.I)
+    return _re.sub(r"\s+", " ", s.replace("_", " ")).strip()
+
+
 def load_seo(listing_xlsx: str | Path, sheet: str | None = None) -> SeoListing:
     wb = openpyxl.load_workbook(str(listing_xlsx), data_only=True)
     if sheet:

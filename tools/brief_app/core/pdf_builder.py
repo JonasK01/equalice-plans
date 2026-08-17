@@ -145,6 +145,19 @@ class BrandStyle:
 
 # ---------- Flowables ----------
 
+def _layout_hints() -> dict[str, str]:
+    """One-line description per composition archetype, printed on the design card so the
+    designer does not have to look the name up. Sourced from ai.LAYOUT_ARCHETYPES."""
+    try:
+        from .ai import LAYOUT_ARCHETYPES
+        return dict(LAYOUT_ARCHETYPES)
+    except Exception:
+        return {}
+
+
+_LAYOUT_HINTS = _layout_hints()
+
+
 def _esc(s: object) -> str:
     """HTML-escape user text before passing to a Paragraph.
     Normalise any already-escaped '&amp;' back to '&' first, so a field that was
@@ -185,17 +198,22 @@ class MoodTile(Flowable):
 
     def draw(self):
         c = self.canv
-        img_h = self.height - 1.3 * cm
+        # With no Unsplash key the placeholder already prints the search prompt inside the tile,
+        # so the caption underneath repeated the identical string. Drop the caption band in that
+        # case: it was duplicated text AND wasted vertical space on every moodboard.
+        has_image = bool(self.mood.file_path)
+        cap_h = 1.3 * cm if has_image else 0.25 * cm
+        img_h = self.height - cap_h
         # frame
         c.setStrokeColor(self.brand.accent)
         c.setLineWidth(0.5)
-        c.rect(0, 1.3 * cm, self.width, img_h, stroke=1, fill=0)
+        c.rect(0, cap_h, self.width, img_h, stroke=1, fill=0)
         # image or placeholder
         if self.mood.file_path:
             try:
                 c.drawImage(
                     str(self.mood.file_path),
-                    1, 1.3 * cm + 1,
+                    1, cap_h + 1,
                     width=self.width - 2,
                     height=img_h - 2,
                     preserveAspectRatio=True,
@@ -203,28 +221,30 @@ class MoodTile(Flowable):
                     mask="auto",
                 )
             except Exception:
-                self._placeholder(c, img_h)
+                self._placeholder(c, img_h, cap_h)
         else:
-            self._placeholder(c, img_h)
-        # caption
-        c.setFillColor(self.brand.text)
-        c.setFont("Helvetica-Bold", 8)
-        c.drawString(0, 0.7 * cm, self._trunc(self.caption, 70))
-        if self.mood.photographer:
+            self._placeholder(c, img_h, cap_h)
+        # caption — only when a real image is shown (the placeholder carries its own label)
+        if has_image:
+            c.setFillColor(self.brand.text)
+            c.setFont("Helvetica-Bold", 8)
+            c.drawString(0, 0.7 * cm, self._trunc(self.caption, 70))
+        if has_image and self.mood.photographer:
             c.setFillColor(self.brand.accent)
             c.setFont("Helvetica", 6.5)
             c.drawString(0, 0.2 * cm, f"Photo: {self.mood.photographer} / Unsplash")
 
-    def _placeholder(self, c, img_h):
+    def _placeholder(self, c, img_h, cap_h=None):
+        cap_h = 1.3 * cm if cap_h is None else cap_h
         c.setFillColor(self.brand.mood_bg)
-        c.rect(1, 1.3 * cm + 1, self.width - 2, img_h - 2, stroke=0, fill=1)
+        c.rect(1, cap_h + 1, self.width - 2, img_h - 2, stroke=0, fill=1)
         c.setFillColor(self.brand.accent)
         c.setFont("Helvetica-Oblique", 8)
         # word-wrap the search prompt manually
         prompt = f'"{self.mood.query}"'
         words = prompt.split()
         line = ""
-        y = 1.3 * cm + img_h / 2 + 1 * cm
+        y = cap_h + img_h / 2 + 1 * cm
         for w in words:
             test = (line + " " + w).strip()
             if c.stringWidth(test, "Helvetica-Oblique", 8) > self.width - 10:
@@ -271,6 +291,9 @@ class BriefBuilder:
         # Set to a custom string (e.g. "Hand-written senior copy") when the AI fields are
         # populated manually instead of via Claude.
         self.copy_source_label: Optional[str] = None
+        # Optional per-product moodboard search terms, overriding the brand-level ones.
+        # For multi-line brands whose brand terms only describe one product line.
+        self.moodboard_terms: Optional[list[str]] = None
         # AI outputs are populated up-front in build() so each section can use them
         self._ai_title: Optional[str] = None
         self._ai_bullets: Optional[list[str]] = None
@@ -350,6 +373,15 @@ class BriefBuilder:
         s["mono"] = ParagraphStyle(
             "mono", parent=base["BodyText"], fontName="Courier",
             fontSize=8, leading=11, textColor=self.brand.text, spaceAfter=2,
+        )
+        # ---- section header (orange chip + ink title) ----
+        s["sec_num"] = ParagraphStyle(
+            "sec_num", parent=base["BodyText"], fontName="Helvetica-Bold",
+            fontSize=15, leading=17, textColor=colors.white, alignment=1, spaceAfter=0,
+        )
+        s["sec_title"] = ParagraphStyle(
+            "sec_title", parent=base["Heading1"], fontName="Helvetica-Bold",
+            fontSize=17, leading=20, textColor=self.brand.primary, spaceBefore=0, spaceAfter=0,
         )
         # ---- EQUALICE deliverable identity ----
         s["eq_wordmark"] = ParagraphStyle(
@@ -443,7 +475,12 @@ class BriefBuilder:
         # footer
         canvas.setFillColor(self.brand.text)
         canvas.setFont("Helvetica", 7.5)
-        footer = f"{self.customer.name} · {self.brief.product_name[:80]} · p.{doc.page - 1}"
+        # Brand and product are often the same string (e.g. "The Death Deck"), which printed
+        # the name twice in every footer. Only add the product when it says something new.
+        prod = (self.brief.product_name or "")[:80].strip()
+        brand = (self.customer.name or "").strip()
+        parts = [brand] + ([prod] if prod and prod.lower() != brand.lower() else [])
+        footer = " · ".join(p for p in parts if p) + f" · p.{doc.page - 1}"
         canvas.drawString(1.5 * cm, 0.55 * cm, footer)
         canvas.drawRightString(A4[0] - 1.5 * cm, 0.55 * cm, f"Marketplace: {self.customer.marketplace}")
 
@@ -695,38 +732,88 @@ class BriefBuilder:
     # ---- at a glance ----
     def _at_a_glance(self) -> None:
         st = self.story
-        st.append(Paragraph("At a Glance", self.styles["h1"]))
+        self._section_header("", "At a Glance")
+        # Brand / Product / ASIN / Marketplace / Overlay language are already on the cover, and
+        # Voice / Personality are the first thing in the Brand Sheet. Repeating them here cost a
+        # third of the page and taught the reader that this document repeats itself. Only the
+        # rows that appear nowhere else survive.
+        counts = (f"{len(self.brief.usps)} USPs · {len(self.brief.all_keywords)} keywords · "
+                  f"{len(self.brief.rufus_qa)} Q&A · {len(self.brief.good_reviews)} good / "
+                  f"{len(self.brief.bad_reviews)} bad reviews")
         rows = [
-            ["Brand", Paragraph(_esc(self.customer.name), self.styles["body_small"])],
-            ["Product", Paragraph(_esc(self.brief.product_name or "—"), self.styles["body_small"])],
-            ["ASIN", Paragraph(_esc(self.brief.asin or "—"), self.styles["body_small"])],
-            ["Marketplace", Paragraph(_esc(self.customer.marketplace), self.styles["body_small"])],
-            ["Overlay language", Paragraph(_esc(self.lang.upper()), self.styles["body_small"])],
-            ["Listing URL", Paragraph(_esc(self.brief.listing_url or "—"), self.styles["body_small"])],
-            ["Voice", Paragraph(_esc(self.customer.voice or "—"), self.styles["body_small"])],
-            ["Personality", Paragraph(_esc(", ".join(self.customer.personality) or "—"), self.styles["body_small"])],
             ["Target group", Paragraph(_esc(self.brief.target_group[:400] or "—"), self.styles["body_small"])],
             ["Target problems", Paragraph(_esc(self.brief.target_problems[:400] or "—"), self.styles["body_small"])],
-            ["USPs detected", str(len(self.brief.usps))],
-            ["Keywords harvested", str(len(self.brief.all_keywords))],
-            ["RUFUS Q&A entries", str(len(self.brief.rufus_qa))],
-            ["Review insights", f"{len(self.brief.good_reviews)} good / {len(self.brief.bad_reviews)} bad"],
+            ["Source data", Paragraph(_esc(counts), self.styles["body_small"])],
         ]
-        t = Table(rows, colWidths=[4 * cm, 13 * cm])
+        if self.brief.listing_url:
+            rows.append(["Listing", Paragraph(_esc(self.brief.listing_url), self.styles["body_small"])])
+        t = Table(rows, colWidths=[3.4 * cm, 13.6 * cm])
         t.setStyle(self._kv_style())
         st.append(t)
         if self.brief.ctr_notes or self.brief.cvr_notes:
-            st.append(Spacer(1, 0.5 * cm))
-            st.append(Paragraph("Briefing notes from Excel (CTR / CVR)", self.styles["h2"]))
+            st.append(Spacer(1, 0.35 * cm))
+            st.append(Paragraph("Briefing notes from the SEO sheet", self.styles["h3"]))
+            note_rows = []
             if self.brief.ctr_notes:
-                st.append(Paragraph("<b>CTR improvements:</b>", self.styles["h3"]))
-                for n in self.brief.ctr_notes[:5]:
-                    st.append(Paragraph(f"• {_esc(n)}", self.styles["body_small"]))
+                note_rows.append(["CTR", Paragraph("<br/>".join("• " + _esc(n) for n in self.brief.ctr_notes[:5]),
+                                                   self.styles["body_small"])])
             if self.brief.cvr_notes:
-                st.append(Paragraph("<b>CVR improvements:</b>", self.styles["h3"]))
-                for n in self.brief.cvr_notes[:5]:
-                    st.append(Paragraph(f"• {_esc(n)}", self.styles["body_small"]))
-        st.append(PageBreak())
+                note_rows.append(["CVR", Paragraph("<br/>".join("• " + _esc(n) for n in self.brief.cvr_notes[:5]),
+                                                   self.styles["body_small"])])
+            nt = Table(note_rows, colWidths=[3.4 * cm, 13.6 * cm])
+            nt.setStyle(self._kv_style())
+            st.append(nt)
+        self._section_gap()
+
+    def _section_header(self, num: str, title: str, subtitle: str = "") -> None:
+        """EQUALICE section header: orange number chip + ink title + hairline rule.
+
+        Sections used to open with a bare bold line, so every section looked like every
+        paragraph and the document had no visible skeleton ("der Aufbau ist schwer zu lesen").
+        One consistent header makes the structure scannable at a glance."""
+        st = self.story
+        full = A4[0] - 1.7 * cm * 2
+        chip = ""
+        if num:
+            chip = Table([[Paragraph(_esc(num), self.styles["sec_num"])]],
+                         colWidths=[0.95 * cm], rowHeights=[0.95 * cm])
+            chip.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), self.brand.accent),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]))
+        head = Table([[chip, Paragraph(_esc(title), self.styles["sec_title"])]],
+                     colWidths=[1.35 * cm if num else 0.01 * cm, full - (1.35 * cm if num else 0.01 * cm)])
+        head.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("LINEBELOW", (0, 0), (-1, -1), 1.2, self.brand.primary),
+        ]))
+        st.append(head)
+        if subtitle:
+            st.append(Spacer(1, 0.12 * cm))
+            st.append(Paragraph(_esc(subtitle), self.styles["caption"]))
+        st.append(Spacer(1, 0.28 * cm))
+
+    def _section_gap(self) -> None:
+        """Separator between two short sections that now SHARE a page.
+
+        Team feedback (test phase): "zu viele Seiten". Roughly a quarter of the old 20 pages
+        were spill — a section overflowing by a few centimetres onto an otherwise blank page,
+        because every section ended in a hard PageBreak. Short sections now flow, separated by
+        a rule instead of a break; only the big ones (image plan, A+) still start fresh."""
+        self.story.append(Spacer(1, 0.45 * cm))
+        rule = Table([[""]], colWidths=[A4[0] - 1.7 * cm * 2], rowHeights=[0.02 * cm])
+        rule.setStyle(TableStyle([
+            ("LINEBELOW", (0, 0), (-1, -1), 0.6, self.brand.accent),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ]))
+        self.story.append(rule)
+        self.story.append(Spacer(1, 0.45 * cm))
 
     def _kv_style(self) -> TableStyle:
         return TableStyle([
@@ -746,11 +833,9 @@ class BriefBuilder:
     # ---- brandbook ----
     def _brandbook(self) -> None:
         st = self.story
-        st.append(Paragraph(f"1 · Brand Sheet — {_esc(self.customer.name)}", self.styles["h1"]))
-        st.append(Paragraph(
-            "Read this first. Everything below is the client's brand — use it for every image in this plan.",
-            self.styles["caption"],
-        ))
+        self._section_header("1", f"Brand Sheet — {self.customer.name}",
+                            "Read this first. Everything below is the client's brand. "
+                            "Use it for every image in this plan.")
         # Identity
         st.append(Paragraph("Identity", self.styles["h2"]))
         st.append(Paragraph(f"<b>Brand:</b> {_esc(self.customer.name)}", self.styles["body"]))
@@ -808,43 +893,63 @@ class BriefBuilder:
         ]:
             st.append(Paragraph("• " + line, self.styles["body_small"]))
 
-        st.append(PageBreak())
+        self._section_gap()
 
     # ---- buyer psychology ----
     def _buyer_psychology(self) -> None:
         st = self.story
-        st.append(Paragraph("2 · Buyer Psychology", self.styles["h1"]))
+        self._section_header("2", "Buyer Psychology")
         st.append(Paragraph("Target group", self.styles["h2"]))
         st.append(Paragraph(_esc(self.brief.target_group or "—"), self.styles["body"]))
         st.append(Paragraph("Target problems", self.styles["h2"]))
         st.append(Paragraph(_esc(self.brief.target_problems or "—"), self.styles["body"]))
 
-        st.append(Paragraph("USPs / Technical Information", self.styles["h2"]))
-        for u in self.brief.usps:
-            st.append(Paragraph(f"• {_esc(u)}", self.styles["body_small"]))
+        # These four lists used to run down the full page width as one long column each, which
+        # alone pushed this section onto a second page. Paired into two columns they carry the
+        # same content in roughly half the height, and the pairing is meaningful:
+        # what the product IS beside what it FEELS like; what buyers praise beside what they fault.
+        full = A4[0] - 1.7 * cm * 2
 
-        if self.brief.emotional_benefits:
-            st.append(Paragraph("Emotional benefits", self.styles["h2"]))
-            for e in self.brief.emotional_benefits:
-                st.append(Paragraph(f"• {_esc(e)}", self.styles["body_small"]))
+        def bullet_col(title: str, items, marker: str = "•"):
+            if not items:
+                return ""
+            inner = [Paragraph(title, self.styles["h3"])]
+            inner += [Paragraph(f"{marker} {_esc(x)}", self.styles["body_small"]) for x in items]
+            return inner
 
-        if self.brief.good_reviews:
-            st.append(Paragraph("Top positive review themes (verbatim)", self.styles["h2"]))
-            for r in self.brief.good_reviews[:8]:
-                st.append(Paragraph(f"+ {_esc(r)}", self.styles["body_small"]))
+        def two_col(left, right):
+            if not left and not right:
+                return
+            t = Table([[left or "", right or ""]], colWidths=[full / 2 - 0.2 * cm, full / 2 - 0.2 * cm])
+            t.setStyle(TableStyle([
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (0, -1), 0), ("RIGHTPADDING", (0, 0), (0, -1), 10),
+                ("LEFTPADDING", (1, 0), (1, -1), 10), ("RIGHTPADDING", (1, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+            ]))
+            st.append(t)
 
-        if self.brief.bad_reviews:
-            st.append(Paragraph("Top objections (to defuse in copy + image)", self.styles["h2"]))
-            for r in self.brief.bad_reviews[:8]:
-                st.append(Paragraph(f"– {_esc(r)}", self.styles["body_small"]))
+        # Capped at 6 / 5. This is a brief, not an archive — the full lists stay in the SEO
+        # sheet, and the sheet is the source of truth. Uncapped, these four lists alone ran to
+        # a second page and pushed the moodboard grid (an unsplittable block) onto a third.
+        two_col(bullet_col("USPs / technical", self.brief.usps[:6]),
+                bullet_col("Emotional benefits", self.brief.emotional_benefits[:6]))
+        st.append(Spacer(1, 0.2 * cm))
+        two_col(bullet_col("Buyers praise", self.brief.good_reviews[:5], "+"),
+                bullet_col("Objections to defuse", self.brief.bad_reviews[:5], "–"))
 
-        st.append(PageBreak())
+        self._section_gap()
 
     # ---- moodboard ----
     def _get_moodboard(self) -> list[MoodImage]:
         if self._moodboard_cache is not None:
             return self._moodboard_cache
-        queries = self.customer.moodboard_search_terms[:6] or [
+        # Per-product override. Brands with more than one product line (Jotti sells leather care
+        # AND stone/household cleaners) have brand-level moodboard terms that fit only one line —
+        # a marble-cleaner brief was pulling saddles and riding boots. A run.py can set
+        # builder.moodboard_terms = [...] to brief the right references for this product.
+        override = [t for t in (getattr(self, "moodboard_terms", None) or []) if str(t).strip()]
+        queries = override[:6] or self.customer.moodboard_search_terms[:6] or [
             f"{self.customer.name} brand moodboard premium",
             f"{self.brief.product_name[:40]} lifestyle warm light",
         ]
@@ -853,7 +958,7 @@ class BriefBuilder:
 
     def _moodboard(self) -> None:
         st = self.story
-        st.append(Paragraph("3 · Moodboard", self.styles["h1"]))
+        self._section_header("3", "Moodboard")
         if not has_unsplash_key():
             st.append(Paragraph(
                 "<i>No UNSPLASH_ACCESS_KEY set — embedded tiles below show the search prompt only. Set the env var to fetch real reference images automatically.</i>",
@@ -861,22 +966,27 @@ class BriefBuilder:
             ))
             st.append(Spacer(1, 0.2 * cm))
         moods = self._get_moodboard()
-        # 2x3 grid
-        tile_w = (17 * cm - 0.4 * cm) / 2
-        tile_h = 6.4 * cm
+        # 3-wide grid. Was 2x3 at 6.4 cm tall, which needed 19 cm of column and reliably spilled
+        # onto a near-empty page. These are reference thumbnails, not artwork — 3 across at
+        # 5.0 cm reads just as well and keeps the moodboard on one page.
+        cols = 3
+        gap = 0.35 * cm
+        tile_w = (17 * cm - gap * (cols - 1)) / cols
+        tile_h = 4.2 * cm
         rows = []
         row = []
         for i, m in enumerate(moods):
             caption = self.customer.moodboard_search_terms[i] if i < len(self.customer.moodboard_search_terms) else m.query
             row.append(MoodTile(tile_w, tile_h, m, caption, self.brand))
-            if len(row) == 2:
+            if len(row) == cols:
                 rows.append(row)
                 row = []
         if row:
-            row.append(Spacer(tile_w, tile_h))
+            while len(row) < cols:
+                row.append(Spacer(tile_w, tile_h))
             rows.append(row)
 
-        tbl = Table(rows, colWidths=[tile_w, tile_w], rowHeights=[tile_h] * len(rows))
+        tbl = Table(rows, colWidths=[tile_w] * cols, rowHeights=[tile_h] * len(rows))
         tbl.setStyle(TableStyle([
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
             ("LEFTPADDING", (0, 0), (-1, -1), 0),
@@ -884,18 +994,18 @@ class BriefBuilder:
             ("TOPPADDING", (0, 0), (-1, -1), 0),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ]))
-        st.append(tbl)
-        st.append(PageBreak())
+        # Keep the grid whole — a moodboard split across two pages reads as a layout accident.
+        st.append(KeepTogether(tbl))
+        self._section_gap()
 
     # ---- image plan ----
     def _image_plan(self) -> None:
         st = self.story
         images = self._build_image_plan()
-        st.append(Paragraph(f"4 · {len(images)} Listing Images", self.styles["h1"]))
-        st.append(Paragraph(
-            f"Format: 2000 × 2000 px · sRGB · JPG · ≤ 5 MB · Overlay text in <b>{self.lang.upper()}</b> for marketplace <b>{self.customer.marketplace}</b>",
-            self.styles["caption"],
-        ))
+        self._section_header(
+            "4", f"{len(images)} Listing Images",
+            f"2000 × 2000 px · sRGB · JPG · ≤ 5 MB · Overlay text in {self.lang.upper()} "
+            f"for marketplace {self.customer.marketplace}")
         st.append(Spacer(1, 0.25 * cm))
         # 1) Storyboard — the whole plan on one page, at a glance.
         self._storyboard(images)
@@ -935,6 +1045,10 @@ class BriefBuilder:
                 ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
             ]))
             inner = [head, Paragraph(_esc(img.get("purpose", "")), self.styles["sb_body"])]
+            lay = (img.get("layout") or "").strip()
+            if lay:
+                inner.append(Paragraph("LAYOUT: " + _esc(lay.replace("_", " ").upper()),
+                                       self.styles["sb_text"]))
             ov = img.get("overlay") or ""
             if ov and not ov.startswith("("):
                 inner.append(Paragraph("TEXT: " + _esc(ov), self.styles["sb_text"]))
@@ -979,6 +1093,8 @@ class BriefBuilder:
                     "why_it_works": img.why_it_works,
                     "ctr": getattr(img, "ctr", ""),
                     "cvr": getattr(img, "cvr", ""),
+                    "layout": getattr(img, "layout", "") or "",
+                    "graphics": list(getattr(img, "graphics", []) or []),
                 }
                 for img in self._ai_images
             ]
@@ -1075,6 +1191,21 @@ class BriefBuilder:
             ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ]))
         card.append(head)
+
+        # LAYOUT — the composition the designer builds. Named first, because the review team's
+        # #1 complaint was tiles that were nothing but a headline over a photo.
+        layout = (img.get("layout") or "").strip()
+        graphics = [g for g in (img.get("graphics") or []) if str(g).strip()]
+        if layout or graphics:
+            card.append(Paragraph("LAYOUT", self.styles["zone_label"]))
+            bits = []
+            if layout:
+                pretty = layout.replace("_", " ").upper()
+                desc = _LAYOUT_HINTS.get(layout, "")
+                bits.append(f"<b>{_esc(pretty)}</b>" + (f" — {_esc(desc)}" if desc else ""))
+            for g in graphics:
+                bits.append("• " + _esc(str(g)))
+            card.append(Paragraph("<br/>".join(bits), self.styles["body_small"]))
 
         # WHAT TO SHOW (visual direction, structure preserved)
         card.append(Paragraph("WHAT TO SHOW", self.styles["zone_label"]))
@@ -1178,7 +1309,7 @@ class BriefBuilder:
     def _aplus_modules(self) -> None:
         st = self.story
         n = len(self._ai_modules or [])
-        st.append(Paragraph(f"5 · A+ Premium Content ({n} modules)", self.styles["h1"]))
+        self._section_header("5", f"A+ Premium Content ({n} modules)")
 
         # Prefer AI-designed modules. Body may contain intentional HTML
         # (<b>, <br/>) — do NOT escape here. _render_module's Body cell uses
@@ -1291,7 +1422,7 @@ class BriefBuilder:
     # ---- master copy ----
     def _master_copy(self) -> None:
         st = self.story
-        st.append(Paragraph("6 · Master Copy", self.styles["h1"]))
+        self._section_header("6", "Master Copy")
 
         title_text = self._draft_title()
         title_card = [
@@ -1315,7 +1446,7 @@ class BriefBuilder:
 
         st.append(Paragraph("Backend search terms (≤ 250 bytes)", self.styles["h2"]))
         st.append(Paragraph(_esc(self._draft_backend()), self.styles["mono"]))
-        st.append(PageBreak())
+        self._section_gap()
 
     def _draft_title(self) -> str:
         if self._ai_title:
@@ -1366,11 +1497,9 @@ class BriefBuilder:
         if not imgs:
             return
         st = self.story
-        st.append(Paragraph("8 · CTR / CVR Strategy (per image)", self.styles["h1"]))
-        st.append(Paragraph(
-            "Why each image earns the click (CTR) and converts (CVR). For the strategy/account team.",
-            self.styles["caption"],
-        ))
+        self._section_header("8", "CTR / CVR Strategy (per image)",
+                            "Why each image earns the click (CTR) and converts (CVR). "
+                            "For the strategy and account team.")
         st.append(Spacer(1, 0.2 * cm))
         rows = [[Paragraph("<b>Image</b>", self.styles["body_small"]),
                  Paragraph("<b>CTR — why it earns the click</b>", self.styles["body_small"]),
@@ -1399,7 +1528,7 @@ class BriefBuilder:
     # ---- compliance & designer handoff ----
     def _compliance_and_handoff(self) -> None:
         st = self.story
-        st.append(Paragraph("7 · Compliance & Designer Handoff", self.styles["h1"]))
+        self._section_header("7", "Compliance & Designer Handoff")
 
         # Status banner — blocking violations (high) vs warnings (low).
         flags = self._ai_compliance or []
@@ -1496,6 +1625,44 @@ class BriefBuilder:
                 st.append(Paragraph(f"• {_esc(m)}", self.styles["body_small"]))
 
 
+def plan_to_dict(builder: "BriefBuilder") -> dict:
+    """Everything the team can edit, as plain JSON. Saved beside each PDF so a plan can be
+    corrected and re-rendered WITHOUT paying for another AI generation."""
+    from dataclasses import asdict, is_dataclass
+
+    def dump(x):
+        return asdict(x) if is_dataclass(x) else dict(x or {})
+
+    return {
+        "title": builder._ai_title or "",
+        "bullets": list(builder._ai_bullets or []),
+        "backend": builder._ai_backend or "",
+        "images": [dump(i) for i in (builder._ai_images or [])],
+        "modules": [dump(m) for m in (builder._ai_modules or [])],
+        "qa": [dump(q) for q in (builder._ai_qa or [])],
+    }
+
+
+def plan_from_dict(data: dict) -> dict:
+    """Inverse of plan_to_dict — rebuild the dataclasses, ignoring unknown/missing keys so an
+    older sidecar (written before a field existed) still loads."""
+    from .ai import AIImagePlanItem, AIModule, AIQA
+    import inspect
+
+    def make(cls, d):
+        allowed = set(inspect.signature(cls).parameters)
+        return cls(**{k: v for k, v in (d or {}).items() if k in allowed})
+
+    return {
+        "title": data.get("title") or "",
+        "bullets": list(data.get("bullets") or []),
+        "backend": data.get("backend") or "",
+        "images": [make(AIImagePlanItem, i) for i in (data.get("images") or [])],
+        "modules": [make(AIModule, m) for m in (data.get("modules") or [])],
+        "qa": [make(AIQA, q) for q in (data.get("qa") or [])],
+    }
+
+
 def build_brief(
     customer: Customer,
     brief: ParsedBrief,
@@ -1506,19 +1673,32 @@ def build_brief(
     seo_bullets: Optional[list[str]] = None,
     seo_backend: Optional[str] = None,
     result_out: Optional[dict] = None,
+    plan_content: Optional[dict] = None,
 ) -> Path:
     """Build a branded Image + A+ Premium plan PDF.
 
     SEO copy is INPUT, not generated: pass seo_title / seo_bullets / seo_backend (from the
     SEO team's sheet) and they are used verbatim; the AI then writes only the creative
-    Image plan + A+ modules + Q&A. Leave them None to let the AI draft copy too (fallback)."""
-    builder = BriefBuilder(customer, brief, output_path, ai=ai, progress_cb=progress_cb)
+    Image plan + A+ modules + Q&A. Leave them None to let the AI draft copy too (fallback).
+
+    plan_content: an edited plan (from plan_from_dict). When given, NO AI runs — the plan is
+    re-rendered exactly as edited, then re-scanned for compliance and copy length."""
+    builder = BriefBuilder(customer, brief, output_path,
+                           ai=None if plan_content else ai, progress_cb=progress_cb)
     if seo_title:
         builder._ai_title = seo_title
     if seo_bullets:
         builder._ai_bullets = seo_bullets
     if seo_backend:
         builder._ai_backend = seo_backend
+    if plan_content:
+        builder._ai_title = plan_content.get("title") or builder._ai_title
+        builder._ai_bullets = plan_content.get("bullets") or builder._ai_bullets
+        builder._ai_backend = plan_content.get("backend") or builder._ai_backend
+        builder._ai_images = plan_content.get("images") or None
+        builder._ai_modules = plan_content.get("modules") or None
+        builder._ai_qa = plan_content.get("qa") or None
+        builder.copy_source_label = "Edited in the tool by the team"
     path = builder.build()
     if result_out is not None:
         from . import qa as _qa
@@ -1526,6 +1706,7 @@ def build_brief(
         result_out["compliance"] = comp
         result_out["compliance_blocking"] = _qa.has_blocking(comp)
         result_out["copy_warnings"] = builder._copy_warnings or []
+        result_out["content"] = plan_to_dict(builder)
     return path
 
 

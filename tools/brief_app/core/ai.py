@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional
 
 try:
@@ -53,6 +53,44 @@ LANGUAGE_NAMES = {
 
 # ---------- AI output dataclasses ----------
 
+# ---------- layout archetypes ----------
+# Team feedback (test phase): "oftmals nur Headline und Subheadline — bitte kreativer planen",
+# "mal mehr Icons, mal davor/danach, mal smart in der Mitte Text und drumherum die Benefits",
+# "mehr Vielfalt — muss zum Produkt passen".
+# A tile is not a headline on a photo. Every tile now has to declare WHICH COMPOSITION it uses,
+# picked from this catalogue, and no two tiles in a plan may use the same one.
+LAYOUT_ARCHETYPES: dict[str, str] = {
+    "clean_hero": "Product alone, dominant, no graphic furniture. Amazon main image only.",
+    "before_after": "Split frame or slider: the problem state vs the result state, divider down the middle.",
+    "hub_and_spokes": "Product centred; 4-6 benefits radiate around it with hairline leader lines to the exact part they describe.",
+    "icon_row": "One clear product/lifestyle shot with a row of 3-5 icon+label tiles beneath it.",
+    "numbered_steps": "2-4 numbered panels showing a sequence (how to use, how it is made, how a round is played).",
+    "annotated_callouts": "Single hero shot with 3-5 callout labels pinned to specific features by thin lines.",
+    "grid_of_uses": "2x2 or 1x4 grid of distinct use cases / variants, identical composition in every cell.",
+    "scale_reference": "Product against a familiar reference (hand, coin, everyday object) to settle size honestly.",
+    "contents_flatlay": "Overhead flat-lay of everything in the box, each component hairline-labelled.",
+    "comparison_columns": "2-3 labelled columns comparing options, formats or category alternatives (never named competitors).",
+    "stat_block": "One or two big numbers as the hero graphic, product supporting, proof line beneath.",
+    "macro_detail": "Extreme macro on the one texture/material/finish that proves the quality claim.",
+    "lifestyle_candid": "Real people mid-moment, product present but not posed. Emotion carries the frame.",
+    "split_duo": "Two related frames side by side (two flavours, two audiences, two moments) under one idea.",
+    "cutaway": "Cross-section or exploded view revealing what is inside or how it is built.",
+    "brand_close": "Brand-forward closing frame: logo, tagline, the product in its world.",
+    # --- second wave, added on team feedback "generell mehr kreative layouts" ---
+    "timeline": "A horizontal time axis (day 1 / week 2 / month 3, or morning to night) with the product's effect plotted along it.",
+    "exploded_kit": "Every component floating apart in ordered space, thin leader lines naming each piece.",
+    "size_ladder": "The same product in all its sizes or strengths, lined up smallest to largest, each labelled.",
+    "problem_grid": "3-4 problem states across the top, the single product beneath, arrows tying each problem to it.",
+    "hand_in_frame": "A hand performing the exact gesture the product needs, shot so the scale and the ease both read.",
+    "texture_swatch": "Large swatches of the actual finish/texture the product produces, labelled like a paint chart.",
+    "quote_card": "A real customer sentence set large as the hero element, product small, attribution beneath.",
+    "cross_section_room": "The product placed in a cutaway of its real environment, other use points marked around it.",
+    "ingredient_origin": "The raw material beside the finished product, connected by a single line: where it comes from, what it becomes.",
+    "myth_vs_fact": "Two stacked bands: the common wrong belief struck through on top, the correction beneath.",
+    "pack_shot_open": "The packaging opened or cut away so the contents, the amount and the protection are all visible at once.",
+}
+
+
 @dataclass
 class AIImagePlanItem:
     name: str
@@ -69,6 +107,10 @@ class AIImagePlanItem:
     # they override the role-template CTR/CVR in the brief. Default "" = use template.
     ctr: str = ""
     cvr: str = ""
+    # Composition archetype (key of LAYOUT_ARCHETYPES) + the graphic furniture the designer
+    # must build. These exist so a tile is a DESIGNED LAYOUT, not a headline on a photo.
+    layout: str = ""
+    graphics: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -150,6 +192,13 @@ def build_system_prompt(customer: Customer, brief: ParsedBrief, feedback: str = 
 - Photography rules: {_trim(customer.photo_rules, 600)}
 - No-gos (NEVER include in any visual or copy): {_trim(customer.no_gos, 600)}
 - Creative freedom: {customer.creative_freedom}/5
+- Website: {getattr(customer, 'website_url', '') or '(not supplied)'}
+
+# ABOUT US — THE BRAND'S OWN STORY (in their words)
+Use this for the brand banner, the "From the Brand" close and any heritage/credential claim.
+If a founding story, a credential or a reason-for-existing is in here, USE IT — it is the one
+thing a competitor cannot copy. NEVER invent a brand story that is not supported below.
+{_trim(getattr(customer, 'about_us', '') or '', 1200) or '(No About Us on file — do NOT invent a founding story, credential or heritage claim. Stay with what the product facts support.)'}
 
 # BRAND MEMORY — everything we have created and verified for this brand before
 Use this to stay consistent with past work, reuse proven angles, respect the established
@@ -376,8 +425,25 @@ class BriefAI:
                             "props": {"type": "array", "items": {"type": "string"}, "description": "Specific props on set (e.g. 'wooden brow brush, glass dropper, linen towel')"},
                             "lighting": {"type": "string", "description": "Specific lighting note (e.g. 'Warm side-light from camera-left, 45° rim, soft fill right')"},
                             "why_it_works": {"type": "string", "description": "1-2 sentence rationale tied to a specific USP, keyword, or review insight"},
+                            "layout": {
+                                "type": "string",
+                                "enum": list(LAYOUT_ARCHETYPES.keys()),
+                                "description": "The COMPOSITION this tile uses. Image 1 must be 'clean_hero'. No two tiles may share the same layout.",
+                            },
+                            "graphics": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": (
+                                    "The graphic furniture the designer must actually build for this layout — icons, "
+                                    "badges, callout lines, numbers, dividers, arrows, panel labels. Be concrete and "
+                                    "name each element and where it sits (e.g. '5 line icons across the base: leaf, "
+                                    "clock, shield, drop, USA outline', 'thin arrow from the split divider pointing "
+                                    "right', 'big 112 set in brand navy, cards fanned behind it'). EMPTY ARRAY for "
+                                    "Image 1 only — Amazon bans graphics on the main image."
+                                ),
+                            },
                         },
-                        "required": ["name", "role", "background", "purpose", "visual", "overlay", "overlay_sub", "props", "lighting", "why_it_works"],
+                        "required": ["name", "role", "background", "purpose", "visual", "overlay", "overlay_sub", "props", "lighting", "why_it_works", "layout", "graphics"],
                         "additionalProperties": False,
                     },
                 },
@@ -403,7 +469,63 @@ class BriefAI:
             "Option A / Option B / Option C — each a different composition/props/angle that could win the click. "
             "Every overlay (Images 2-7) MUST be PUNCHY (≤30 chars AND ≤5 words, one idea) AND marketing-strong: "
             "lead with the dream outcome, use power words and specifics, never generic (e.g. 'GENTLE, NO CRAMPING.'). "
-            "overlay_sub ≤90 chars. "
+            "overlay_sub ≤90 chars.\n\n"
+
+            "# DESIGN THE LAYOUT, NOT JUST THE HEADLINE (hard requirement)\n"
+            "A tile is a COMPOSITION, not a caption on a photo. Reviewers rejected plans where every tile was "
+            "just headline + subheadline over an image. For every tile you must choose a 'layout' archetype and "
+            "specify the 'graphics' the designer builds. Available archetypes:\n"
+            + "\n".join(f"  - {k}: {v}" for k, v in LAYOUT_ARCHETYPES.items()) + "\n\n"
+            "RULES:\n"
+            "- Image 1 = 'clean_hero' with an EMPTY graphics array (Amazon policy).\n"
+            "- Images 2-7 must each use a DIFFERENT archetype. Never repeat one inside a plan.\n"
+            "- Across the 7 tiles include at least THREE of these four: a before/after or comparison, an "
+            "icon-driven tile, a hub_and_spokes or annotated_callouts tile, and a numbered_steps or "
+            "contents_flatlay tile. Photography-only tiles may never be more than two of the seven.\n"
+            "- PUSH PAST THE OBVIOUS. At least ONE tile must use an archetype from the second half of "
+            "the list above (timeline, exploded_kit, size_ladder, problem_grid, hand_in_frame, "
+            "texture_swatch, quote_card, cross_section_room, ingredient_origin, myth_vs_fact, "
+            "pack_shot_open). A plan built only from clean_hero / icon_row / lifestyle_candid / "
+            "numbered_steps is the safe, boring plan the review team already rejected. Pick the "
+            "unexpected archetype that this product can genuinely carry, and say in why_it_works why "
+            "that composition beats the obvious one.\n"
+            "- Pick archetypes that FIT THIS PRODUCT. A cross-section suits hardware, not a card game; a "
+            "scale_reference suits anything reviewers call 'smaller than expected'; contents_flatlay suits "
+            "multi-part products; before_after suits anything that fixes a visible problem. Choosing an "
+            "archetype the product cannot support is worse than a plain shot.\n"
+            "- 'graphics' must name real elements and their position. 'Some icons' is a failure; "
+            "'row of 4 line icons under the product: leaf, clock, shield, USA outline' is correct.\n\n"
+
+            "# MOBILE LEGIBILITY (over 70% of Amazon traffic is mobile — these are hard specs)\n"
+            "- THE TOP TWO THIRDS RULE: the bottom 15-20% of a listing image is de-emphasised or partly "
+            "covered by Amazon's own mobile UI. Put the headline, the key callout and any badge in the "
+            "TOP TWO THIRDS. Never place the single most important callout bottom-left or bottom-right.\n"
+            "- THE THUMBNAIL TEST: state in the visual how the tile survives at 100x100 px. A shopper must "
+            "identify the product category in under one second at that size. If the idea only reads at full "
+            "size, it is the wrong idea for that slot.\n"
+            "- Minimum on-image body text 30 px in a 2000x2000 file (headlines much larger). Sans-serif for "
+            "overlays — it stays legible where a display serif breaks up. Text-to-background contrast at "
+            "least 4.5:1; on a busy photo, put the text on a solid or semi-transparent panel rather than "
+            "shrinking it.\n"
+            "- ONE IDEA PER TILE. Four features, three specs and a comparison in one graphic means none of "
+            "them gets read.\n\n"
+
+            "# OVERLAYS DOUBLE AS KEYWORD REINFORCEMENT\n"
+            "Where it can be done without bending the language, echo the buyer's ACTUAL search wording from "
+            "the keyword list above in the overlay or subline. The shopper arrived on a search term; seeing "
+            "their own words on the image confirms they are in the right place. Never keyword-stuff, and "
+            "never let a keyword make a line clumsy — a natural line beats a keyword-shaped one.\n\n"
+
+            "# WRITING STYLE FOR ON-IMAGE TEXT\n"
+            "- NO em-dashes or en-dashes (— –) in overlay or overlay_sub. Reviewers flagged dash overuse "
+            "explicitly. Use a full stop, a comma, or restructure the line. A colon is fine, sparingly.\n"
+            "- A CONCRETE NUMBER BEATS AN ADJECTIVE. Counts, sizes, minutes, years, temperatures and "
+            "quantities measurably out-perform vague quality words in headlines. Use a real figure from the "
+            "product data whenever one exists; never invent one.\n"
+            "- Vary the sentence SHAPE across the seven overlays. Do not ship seven lines built the same way "
+            "(e.g. all 'ADJECTIVE NOUN. ADJECTIVE NOUN.'). Mix a command, a number-led claim, a question a "
+            "buyer actually asks, a plain statement of the result.\n"
+            "- Punchy is not choppy: each line must still read smoothly out loud.\n"
             "Return JSON."
         )
         result = self._structured_call(task, schema, max_tokens=6000)
@@ -449,7 +571,24 @@ class BriefAI:
             "6. a+_qa — 4-6 Q&A pairs (each defuses a specific review-driven friction)\n"
             "7. a+_comparison — Comparison vs commodity / vs cheap alternative\n\n"
             "Each module must be SPECIFIC to this product. Headlines in "
-            f"{LANGUAGE_NAMES.get(self.lang, 'English')}. Body in English. "
+            f"{LANGUAGE_NAMES.get(self.lang, 'English')}. Body in English.\n\n"
+
+            "# THE 'visual' FIELD IS A LAYOUT SPEC, NOT A MOOD NOTE\n"
+            "Reviewers rejected A+ banners that were just a headline over a photo. For every module, the "
+            "'visual' field must state the actual composition: how the frame is divided, what sits left / "
+            "centre / right, what graphic furniture the designer builds (icons, numbers, dividers, callout "
+            "lines, badges, panel labels), and how it reflows for mobile. Name the elements and their "
+            "positions. Vary the construction across the seven modules — never ship three banners built the "
+            "same way. Always give BOTH sizes: desktop 1464x600, mobile 600x450, and say what stays inside "
+            "the mobile safe area.\n\n"
+
+            "# WRITING STYLE\n"
+            "- NO em-dashes or en-dashes (— –) in any headline. Reviewers flagged dash overuse explicitly.\n"
+            "- Vary headline construction across the seven modules.\n"
+            "- Body copy: 2-4 sentences, no filler, every sentence carries a fact, a benefit or a reason to "
+            "trust. Cut anything a competitor could paste onto their own product unchanged.\n"
+            "- The strongest A+ pages run roughly 70% image, 30% text. If a module needs a long paragraph to "
+            "work, the visual is not carrying its share — redesign the visual instead of writing more.\n"
             "Return JSON."
         )
         result = self._structured_call(task, schema, max_tokens=6000)
@@ -561,6 +700,37 @@ class BriefAI:
             "'best/#1', no competitor names, no prices/URLs).\n"
             f"- Overlays + sublines MUST be in {lang}. Overlay ≤30 chars AND ≤5 words; subline ≤90 chars; "
             "A+ headline ≤38 chars.\n"
+
+            "\nNON-NEGOTIABLES — the review team rejected the previous output on exactly these points:\n"
+            "1. NO em-dashes or en-dashes (— –) anywhere in an overlay, subline or A+ headline. They were "
+            "used as a crutch to bolt two half-thoughts together. Use a full stop, a comma, or rewrite the "
+            "line so it does not need one.\n"
+            "2. NO two lines in the set may share the same construction. If you have written three lines as "
+            "'NOUN PHRASE. NOUN PHRASE.', rewrite two of them. Across the set, deliberately mix: a command, "
+            "a number-led claim, a real buyer question, a flat statement of the result, a short line with a "
+            "twist in the second half.\n"
+            "3. NO stock marketing filler: 'premium quality', 'perfect for', 'take it anywhere', 'elevate "
+            "your', 'game changer', 'say goodbye to'. If a competitor could paste the line onto their own "
+            "product unchanged, it is not finished.\n"
+            "4. Every line must be sayable out loud without stumbling. Read each one back before you keep it.\n"
+
+            "\n# THE BAR: THIS COPY EXISTS TO CONVERT, NOT TO DESCRIBE\n"
+            "Judge every line by one question: does it move somebody closer to buying? A line that is "
+            "merely accurate is a wasted line. Specifically:\n"
+            "- OWN A JOB PER TILE. Across the seven overlays, the set must cover: the dream outcome, "
+            "the objection that loses the sale, the proof, and the reason to buy THIS one. If two "
+            "overlays do the same job, rewrite one.\n"
+            "- LEAD WITH THE AFTER. Not what it is, not what it does — what the buyer's life looks "
+            "like once it worked. 'Marmor wie am ersten Tag' beats 'Reinigt Naturstein'.\n"
+            "- USE THEIR NUMBERS. A concrete figure from the product data (count, size, minutes, "
+            "years, temperature) out-converts any adjective. Never invent one; if the data has none, "
+            "use a sensory specific instead.\n"
+            "- TURN THE TOP COMPLAINT INTO A PROMISE. Take the loudest negative review theme and write "
+            "the overlay that answers it head-on. That single line usually carries the whole plan.\n"
+            "- SOUND LIKE THE BUYER, NOT THE SELLER. Reuse the exact words from the review data. If "
+            "customers say 'wie neu', say 'wie neu' — do not upgrade it to 'revitalisiert'.\n"
+            "- EARN THE SECOND GLANCE. At thumbnail size the shopper reads three words. Front-load "
+            "the ones that matter and let the subline carry the rest.\n"
             "- Return the SAME items by their 'i' index (do not add, drop, or reorder). Improve the text; "
             "if a line is already excellent, you may keep it.\n\n"
             "IMAGES (overlays to elevate):\n" + _json.dumps(img_in, ensure_ascii=False) + "\n\n"

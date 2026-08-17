@@ -69,6 +69,16 @@ def _plain(s: object) -> str:
     return _re.sub(r"<[^>]+>", "", str(s or "").replace("&amp;", "&")).strip()
 
 
+# Review-team standard (test phase): dashes were being used as a crutch to weld two
+# half-thoughts into one headline. On-image text and A+ headlines must not contain them.
+_DASHES = _re.compile(r"[—–]")
+
+# NOTE: "all seven overlays are built the same way" is a real review complaint, but it is NOT
+# lintable — at ≤5 words per overlay any fingerprint collapses and the check fires on every
+# plan. A linter that cries wolf gets ignored, and it sits next to the dash rule that must be
+# trusted. Construction variety is enforced in the generator prompt instead (ai.py).
+
+
 def lint_copy(title: str, bullets, images, modules) -> list[str]:
     """Return human-readable warnings for copy that is too long to read at a glance.
     On-image overlays are the strictest (they are headlines on the creative)."""
@@ -78,13 +88,19 @@ def lint_copy(title: str, bullets, images, modules) -> list[str]:
         if ov and not ov.startswith("("):  # "(...)" = hero A/B placeholder, exempt
             if len(ov) > MAX_OVERLAY_CHARS or len(ov.split()) > MAX_OVERLAY_WORDS:
                 warns.append(f'Image {i} overlay {len(ov)}ch/{len(ov.split())}w (max {MAX_OVERLAY_CHARS}ch/{MAX_OVERLAY_WORDS}w): "{ov}"')
+            if _DASHES.search(ov):
+                warns.append(f'Image {i} overlay uses a dash — rewrite without it: "{ov}"')
         sub = _plain(getattr(im, "overlay_sub", ""))
         if len(sub) > MAX_OVERLAY_SUB_CHARS:
             warns.append(f'Image {i} overlay_sub {len(sub)}ch (max {MAX_OVERLAY_SUB_CHARS})')
+        if _DASHES.search(sub):
+            warns.append(f'Image {i} overlay_sub uses a dash — rewrite without it')
     for i, mo in enumerate(modules or [], 1):
         h = _plain(getattr(mo, "headline", ""))
         if len(h) > MAX_MODULE_HEADLINE_CHARS:
             warns.append(f'Module {i} headline {len(h)}ch (max {MAX_MODULE_HEADLINE_CHARS}): "{h}"')
+        if _DASHES.search(h):
+            warns.append(f'Module {i} headline uses a dash — rewrite without it: "{h}"')
     for i, b in enumerate(bullets or [], 1):
         m = _re.search(r"<b>(.*?)</b>", b or "")
         head = _plain(m.group(1)) if m else ""
