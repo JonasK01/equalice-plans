@@ -131,29 +131,36 @@ IMAGES = [
         ),
     ),
     AIImagePlanItem(
-        name="Image 4 — The daily routine",
+        name="Image 4 — Standardised, then tested twice",
         role="desire",
-        background="Warm, bright kitchen counter in morning light. Real, never clinical.",
-        purpose="Set honest expectations and show how small the daily step is.",
-        layout="hand_in_frame",
+        background="White with three soft #EEF2F8 panels. Clean process diagram.",
+        purpose="Explain what quality actually means here, instead of showing another badge.",
+        layout="numbered_steps",
         graphics=[
-            "two capsules held in an open palm in the lower left third, at true scale beside a "
-            "water glass so capsule size reads honestly",
-            "navy routine strip across the top third: '2 capsules daily · 60 per bottle'",
-            "one grey honesty line beneath: 'A long term routine, not an overnight change.'",
+            "three numbered panels left to right, thin navy #14294D arrows between them",
+            "panel 1 '01 STANDARDISED': a botanical beside a small chromatogram-style trace, "
+            "caption 'each extract standardised for its active compounds'",
+            "panel 2 '02 INGREDIENTS TESTED': a lab vial with a tick, caption 'purity and potency, "
+            "before anything is blended'",
+            "panel 3 '03 FINISHED BOTTLE TESTED': the sealed bottle with a tick, caption 'tested "
+            "again before release'",
+            "navy strip beneath all three: 'Made in the USA in a GMP facility'",
         ],
         visual=(
-            "A real adult at a bright counter taking the two capsules with breakfast. Active and "
-            "everyday, never medical."
+            "Three numbered panels reading left to right, one arrow between each. Diagrammatic "
+            "and calm, no stock laboratory photography."
         ),
-        overlay="TWO CAPSULES A DAY.",
-        overlay_sub="60 vegetarian capsules. One easy step in a long term routine.",
-        props=["bottle", "two capsules in palm", "water glass", "routine strip"],
-        lighting="Warm natural morning light. Aspirational and real.",
+        overlay="TESTED TWICE, NOT ONCE.",
+        overlay_sub="Ingredients for purity and potency, then the finished bottle before release.",
+        props=["botanical + trace", "lab vial", "sealed bottle", "GMP strip"],
+        lighting="Flat, even, diagrammatic. Product shots only inside panel 3.",
         why_it_works=(
-            "Longevity buyers ask how long before anything happens. Saying plainly that it is a "
-            "long term routine protects the review average and lifts repeat purchase."
+            "'Lab tested' appears on every bottle in the grid and means nothing to a shopper. "
+            "Naming the two separate stages, and what standardised actually means, turns a generic "
+            "badge into a process the buyer can picture. It is the most scientific thing this "
+            "product can honestly say, since no lifespan study was run on this formula."
         ),
+        cvr="Answers 'is this a white-label bottle?' without ever asking the question.",
     ),
     AIImagePlanItem(
         name="Image 5 — Who formulated this",

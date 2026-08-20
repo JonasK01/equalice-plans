@@ -111,6 +111,8 @@ IMAGES = [
             "caption beneath in 30 px grey: 'median lifespan, Drosophila fruit flies'",
             "paired bar chart bottom-left: treated 89 days navy vs control 48 days grey",
             "citation line bottom-centre 30 px: 'PLoS One 2015, 10:e0119068'",
+            "second figure set small beside the hero number: '+77%' with caption 'oldest 5% of the treated group'",
+            "method strip along the bottom edge in 30 px grey: '3 treated cages vs 3 controls, 500 flies per cage, 250 male and 250 female'",
             "bottle small bottom-right, no badge on it",
         ],
         visual=(
@@ -185,29 +187,41 @@ IMAGES = [
         ),
     ),
     AIImagePlanItem(
-        name="Image 6 — The daily routine",
+        name="Image 6 — Every claim has a reference",
         role="desire",
-        background="Warm, bright kitchen counter in morning light. Real, never clinical.",
-        purpose="Set honest expectations and show how small the daily step is.",
-        layout="hand_in_frame",
+        background="White, thin navy grid rules. Reads like a table in a paper, not an advert.",
+        purpose="Show the evidence base itself. This is what 'backed by science' should mean.",
+        layout="grid_of_uses",
         graphics=[
-            "two capsules held in an open palm in the lower left third, shot at true scale "
-            "beside a water glass so capsule size reads honestly",
-            "navy routine strip across the top third: '2 capsules daily · 60 per bottle'",
-            "one grey honesty line beneath the strip: 'A long term routine, not an overnight change.'",
+            "3x3 grid, nine equal cells, hairline navy #14294D rules between them",
+            "each cell: the supported area in navy semi-bold, its reference numbers beneath in "
+            "grey 30 px, e.g. 'Adult stem cell rejuvenation' / '[1-4]'",
+            "the nine cells: adult stem cell rejuvenation [1-4]; healthy cardiovascular system "
+            "[5-8]; healthy blood glucose, for those already in the normal range [9-13]; healthy "
+            "blood pressure, for those already in the normal range [14-15]; healthy cholesterol, "
+            "for those already in the normal range [9, 16-17]; more youthful looking skin [18-24]; "
+            "learning and focus [25-30]; endurance with vigorous exercise [31-35]; healthy immune "
+            "system [31-32, 36-39]",
+            "footer rule with 'References 1 to 39, published and listed by Life Code' in 30 px grey",
+            "FDA disclaimer set small beneath the footer, full sentence, never abbreviated",
+            "bottle small bottom-right outside the grid",
         ],
         visual=(
-            "A real adult at a bright counter taking the two capsules with breakfast. Active and "
-            "everyday, never medical."
+            "Nine cells, identical construction, each pairing one supported area with its "
+            "citation numbers. Restrained typography, no icons, no colour beyond the navy rules."
         ),
-        overlay="TWO CAPSULES A DAY.",
-        overlay_sub="60 vegetarian capsules. One easy step in a long term routine.",
-        props=["bottle", "two capsules in palm", "water glass", "routine strip"],
-        lighting="Warm natural morning light. Aspirational and real.",
+        overlay="EVERY CLAIM HAS A NUMBER.",
+        overlay_sub="Nine supported areas, each tied to published references.",
+        props=["3x3 citation grid", "footer reference line", "FDA disclaimer", "bottle"],
+        lighting="Flat and even. This tile is a document; treat it as typography, not photography.",
         why_it_works=(
-            "Reviewers dislike vague expectations and say effects build slowly. Saying so plainly "
-            "on the creative costs nothing, protects the review average and lifts repeat purchase."
+            "Every rival in this category writes 'backed by science' and shows nothing. Printing "
+            "the reference numbers next to each supported area is the opposite move: it invites "
+            "the shopper to check, which only a brand with real citations can afford to do. The "
+            "'already in the normal range' qualifiers are part of the claim and stay on the cells. "
+            "References 40 to 46 are deliberately excluded from the grid."
         ),
+        cvr="Converts the informed sceptic, who is exactly this brand's buyer.",
     ),
     AIImagePlanItem(
         name="Image 7 — Brand close",
@@ -305,7 +319,7 @@ MODULES = [
         ),
         visual=("DESKTOP 1464x600, white. CENTRE-LEFT: '+123%' very large navy #14294D, caption "
                 "'median lifespan, Drosophila fruit flies'. RIGHT: paired bars, treated 89 days "
-                "navy vs control 48 days grey. FOOT: 'PLoS One 2015, 10:e0119068'. MOBILE "
+                "navy vs control 48 days grey. FOOT: 'PLoS One 2015, 10:e0119068 · 3 treated cages vs 3 controls, 500 flies each'. MOBILE "
                 "600x450: figure top, bars beneath, citation legible."),
         alt="A+ banner showing the peer-reviewed Drosophila lifespan result and its citation.",
     ),
