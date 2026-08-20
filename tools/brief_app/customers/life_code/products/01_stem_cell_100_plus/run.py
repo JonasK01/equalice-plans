@@ -109,9 +109,9 @@ IMAGES = [
         graphics=[
             "hero figure '+123%' set very large in navy #14294D, centred in the top two thirds",
             "caption directly beneath in 30 px grey: 'median lifespan, Drosophila fruit flies'",
-            "small paired bar chart bottom-left: treated 89 days vs control 48 days, navy vs grey",
+            "paired bar chart bottom-left comparing the OLDEST 5% of each group, treated navy vs control grey, labelled '+77% in the oldest 5%'",
             "citation line bottom-centre in 30 px: 'PLoS One 2015, 10:e0119068'",
-            "second figure set small beside the hero number: '+77%' with caption 'oldest 5% of the treated group'",
+            "a one-line note under the chart in 30 px grey: 'group comparison, not a single longest-lived individual'",
             "method strip along the bottom edge in 30 px grey: '3 treated cages vs 3 controls, 500 flies per cage, 250 male and 250 female'",
             "bottle small at bottom-right, no badge on it",
         ],
@@ -149,7 +149,7 @@ IMAGES = [
             "rather than by any extra copy."
         ),
         overlay="TWO FORMULAS. ONE CHOICE.",
-        overlay_sub="Plus adds Rhodiola Rosea and Tulsi, and is the faster acting version.",
+        overlay_sub="Plus adds Rhodiola Rosea and Tulsi to the SC100 blend.",
         props=["Stem Cell 100 + 100+ bottles side by side", "four-row criteria table", "red + accent"],
         lighting="Even, clean; true label colours on both bottles.",
         why_it_works=(
@@ -168,7 +168,7 @@ IMAGES = [
             "three white reason cards stacked with 24 px gaps, each with a navy #14294D left rule",
             "card 1: 'Co-founded by Dr. Bryant Villeponteau, Ph.D.' with a small portrait at 120 px "
             "(CLIENT TO SUPPLY, see SOURCE_NOTES)",
-            "card 2: 'Formula published in a peer reviewed journal' with the PLoS One citation small beneath",
+            "card 2: 'A study of this formula was published in a peer reviewed journal', PLoS One citation beneath",
             "card 3: 'Made in the USA, GMP facility, laboratory tested' with three 40 px line icons in a row",
             "bottle bottom-right at 25% height, no badge",
         ],
@@ -274,7 +274,7 @@ MODULES = [
             "Tile 1: <b>PATHWAY SUPPORT</b> Stem cell and telomere related pathways.<br/>"
             "Tile 2: <b>THE NICHE</b> Supports the environment around your stem cells.<br/>"
             "Tile 3: <b>SC100+ BLEND</b> Astragalus, Rhodiola Rosea, Tulsi, Pine Bark OPCs.<br/>"
-            "Tile 4: <b>PEER REVIEWED</b> Formula published in PLoS One.<br/>"
+            "Tile 4: <b>PEER REVIEWED</b> A study of the formula, published in PLoS One.<br/>"
             "Tile 5: <b>MADE IN USA</b> GMP, lab tested, vegetarian capsules."
         ),
         visual=("Five square tiles, navy accent corner on each, one disciplined red highlight on "
@@ -286,8 +286,9 @@ MODULES = [
         role="a+_banner",
         headline="MORE IS NOT THE GOAL.",
         body=(
-            "Each stem cell divides a limited number of times. This formula supports the ones you "
-            "already have, and the environment around them."
+            "Each stem cell divides a limited number of times, and the niche around it becomes "
+            "less nurturing with age. This formula supports the cells you have and that niche, "
+            "rather than spending them faster."
         ),
         visual=("DESKTOP 1464x600. LEFT 50% grey #E8EAED: dot row depleting to the right, thin red "
                 "strike-through, chip 'THE USUAL PITCH'. RIGHT 50% navy #14294D: same dots steady "
@@ -300,7 +301,7 @@ MODULES = [
         role="a+_carousel",
         headline="THE LIFE CODE RANGE",
         body=(
-            "Tile 1: <b>STEM CELL 100+</b> The faster acting formula (this product).<br/>"
+            "Tile 1: <b>STEM CELL 100+</b> The SC100 blend plus Rhodiola and Tulsi (this product).<br/>"
             "Tile 2: <b>STEM CELL 100</b> The original SC100 formula.<br/>"
             "Tile 3: <b>TELOMAX</b> Telomere focused botanical support.<br/>"
             "Tile 4: <b>LONGEVITY COMBO</b> Stem Cell 100+ paired with TeloMax.<br/>"
@@ -315,12 +316,12 @@ MODULES = [
         role="a+_banner",
         headline="PUBLISHED IN PLOS ONE.",
         body=(
-            "Median lifespan more than doubled in a peer reviewed fruit fly study. That is an "
-            "animal result, not a human one."
+            "Median lifespan rose 123% in a peer reviewed Drosophila study: three treated "
+            "cages against three controls, 500 flies each. An animal result, not a human one."
         ),
         visual=("DESKTOP 1464x600, white. CENTRE-LEFT: '+123%' very large navy #14294D, caption "
-                "beneath 'median lifespan, Drosophila fruit flies'. RIGHT: paired bars, treated 89 "
-                "days navy vs control 48 days grey. FOOT: 'PLoS One 2015, 10:e0119068 · 3 treated cages vs 3 controls, 500 flies each'. MOBILE "
+                "beneath 'median lifespan, Drosophila fruit flies'. RIGHT: paired bars comparing the "
+                "oldest 5% of each group, +77%, navy vs grey. FOOT: 'PLoS One 2015, 10:e0119068 · 3 treated cages vs 3 controls, 500 flies each'. MOBILE "
                 "600x450: figure on top, bars beneath, citation stays legible."),
         alt="A+ banner showing the peer-reviewed Drosophila lifespan result and its citation.",
     ),
@@ -329,8 +330,8 @@ MODULES = [
         role="a+_banner",
         headline="BUILT BY A SCIENTIST.",
         body=(
-            "Life Code was co-founded by Dr. Bryant Villeponteau, Ph.D. Made in the USA, GMP, "
-            "laboratory tested."
+            "Life Code was co-founded by Dr. Bryant Villeponteau, Ph.D., whose background is in "
+            "molecular biology and longevity science. Made in the USA, GMP, laboratory tested."
         ),
         visual=("DESKTOP 1464x600, soft #EEF2F8. LEFT 40%: founder portrait in a white card, name "
                 "and Ph.D. beneath (CLIENT TO SUPPLY). RIGHT 60%: two stacked white proof cards "
@@ -365,8 +366,7 @@ QA = [
     AIQA(q="How do I take it, and how long does a bottle last?",
          a="Two vegetarian capsules daily. 60 capsules per bottle, about a 30 day supply."),
     AIQA(q="How is Stem Cell 100+ different from Stem Cell 100?",
-         a="Plus adds Rhodiola Rosea and Tulsi to the SC100 blend and is the faster acting "
-           "version."),
+         a="Plus adds Rhodiola Rosea and Tulsi to the SC100 blend."),
     AIQA(q="When will I notice a difference?",
          a="It is a long term daily routine, not an overnight product. Results vary from "
            "person to person."),

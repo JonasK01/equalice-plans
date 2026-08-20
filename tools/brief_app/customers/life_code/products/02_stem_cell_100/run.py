@@ -109,9 +109,9 @@ IMAGES = [
         graphics=[
             "hero figure '+123%' very large in navy #14294D, centred in the top two thirds",
             "caption beneath in 30 px grey: 'median lifespan, Drosophila fruit flies'",
-            "paired bar chart bottom-left: treated 89 days navy vs control 48 days grey",
+            "paired bar chart bottom-left comparing the OLDEST 5% of each group, treated navy vs control grey, labelled '+77% in the oldest 5%'",
             "citation line bottom-centre 30 px: 'PLoS One 2015, 10:e0119068'",
-            "second figure set small beside the hero number: '+77%' with caption 'oldest 5% of the treated group'",
+            "a one-line note under the chart in 30 px grey: 'group comparison, not a single longest-lived individual'",
             "method strip along the bottom edge in 30 px grey: '3 treated cages vs 3 controls, 500 flies per cage, 250 male and 250 female'",
             "bottle small bottom-right, no badge on it",
         ],
@@ -140,22 +140,26 @@ IMAGES = [
         graphics=[
             "bottle centred, occupying the middle third",
             "eight labelled nodes evenly spaced around it, hairline navy leader lines to the bottle",
-            "nodes: ASTRAGALUS root, VACCINIUM ULIGINOSUM fruit, PINE BARK OPCs, L-THEANINE, "
-            "POLYGONUM MULTIFLORUM stem, SCHISANDRA CHINENSIS fruit, HE SHOU WU root, DRYNARIA rhizome",
+            "nodes: ASTRAGALUS root, VACCINIUM ULIGINOSUM fruit, PINE BARK OPCs, POLYGONUM "
+            "MULTIFLORUM stem, HE SHOU WU root (same species as the stem, different part), "
+            "SCHISANDRA CHINENSIS fruit, DRYNARIA rhizome, and L-THEANINE (an amino acid, "
+            "set apart from the seven plant extracts)",
             "a small navy chip above the bottle reading '465 mg SC100 blend per capsule'",
         ],
         visual=(
-            "Eight named botanicals ringed around the bottle with leader lines. Real botanical "
-            "photography in each node, not illustration."
+            "Eight ingredients ringed around the bottle with leader lines. Real botanical photography "
+            "in each node; the L-theanine node is set as a molecular mark, not a plant."
         ),
-        overlay="465 MG. EIGHT BOTANICALS.",
-        overlay_sub="Astragalus, pine bark OPCs, schisandra, he shou wu and four more. Standardised.",
+        overlay="465 MG PER CAPSULE.",
+        overlay_sub="Seven plant extracts from six species, plus L-theanine. All standardised.",
         props=["bottle", "eight botanical nodes", "465 mg chip"],
         lighting="Bright, clean, flat-lay quality on the botanicals; bottle lit as studio product.",
         why_it_works=(
-            "A named count and a real milligram figure are checkable against the label, where "
-            "'10+ botanicals' is not. Specificity is the whole trust argument for a proprietary "
-            "blend, and shoppers in this category read supplement facts panels."
+            "A real milligram figure is checkable against the label, where '10+ botanicals' is not. "
+            "The count is stated precisely because this buyer will check it: two of the eight "
+            "entries are the same species in different parts, and L-theanine is an amino acid "
+            "rather than a botanical. Getting that right is the difference between a formulator "
+            "trusting the page and dismissing it."
         ),
     ),
     AIImagePlanItem(
@@ -168,7 +172,7 @@ IMAGES = [
             "three white reason cards stacked with 24 px gaps, each with a navy #14294D left rule",
             "card 1: 'Dr. Bryant Villeponteau, Ph.D.' with 'decades of research in molecular "
             "biology and longevity science' beneath, portrait at 120 px (CLIENT TO SUPPLY)",
-            "card 2: 'Formula published in a peer reviewed journal', PLoS One citation small beneath",
+            "card 2: 'A study of this formula was published in a peer reviewed journal', PLoS One citation beneath",
             "card 3: 'Tested twice: ingredients for purity and potency, then the finished bottle'",
             "bottle bottom-right at 25% height, no badge",
         ],
@@ -273,7 +277,7 @@ MODULES = [
             "Tile 1: <b>PATHWAY SUPPORT</b> Stem cell and telomere related pathways.<br/>"
             "Tile 2: <b>THE NICHE</b> Supports the environment around your stem cells.<br/>"
             "Tile 3: <b>465 MG SC100</b> Eight standardised botanicals per capsule.<br/>"
-            "Tile 4: <b>PEER REVIEWED</b> Formula published in PLoS One.<br/>"
+            "Tile 4: <b>PEER REVIEWED</b> A study of the formula, published in PLoS One.<br/>"
             "Tile 5: <b>MADE IN USA</b> GMP facility, tested twice, vegetarian capsules."
         ),
         visual=("Five square tiles, navy accent corner on each, one red highlight on tile 4. "
@@ -285,8 +289,9 @@ MODULES = [
         role="a+_banner",
         headline="MORE IS NOT THE GOAL.",
         body=(
-            "Each stem cell divides a limited number of times. This formula supports the ones "
-            "you have, and the environment around them."
+            "Each stem cell divides a limited number of times, and the niche around it becomes "
+            "less nurturing with age. This formula supports the cells you have and that niche, "
+            "rather than spending them faster."
         ),
         visual=("DESKTOP 1464x600. LEFT 50% grey #E8EAED: dot row depleting right, thin red "
                 "strike-through, chip 'THE USUAL PITCH'. RIGHT 50% navy #14294D: same dots steady "
@@ -314,12 +319,12 @@ MODULES = [
         role="a+_banner",
         headline="PUBLISHED IN PLOS ONE.",
         body=(
-            "Median lifespan more than doubled in a peer reviewed fruit fly study. That is an "
-            "animal result, not a human one."
+            "Median lifespan rose 123% in a peer reviewed Drosophila study: three treated "
+            "cages against three controls, 500 flies each. An animal result, not a human one."
         ),
         visual=("DESKTOP 1464x600, white. CENTRE-LEFT: '+123%' very large navy #14294D, caption "
-                "'median lifespan, Drosophila fruit flies'. RIGHT: paired bars, treated 89 days "
-                "navy vs control 48 days grey. FOOT: 'PLoS One 2015, 10:e0119068 · 3 treated cages vs 3 controls, 500 flies each'. MOBILE "
+                "'median lifespan, Drosophila fruit flies'. RIGHT: paired bars comparing the oldest 5% "
+                "of each group, +77%, navy vs grey. FOOT: 'PLoS One 2015, 10:e0119068 · 3 treated cages vs 3 controls, 500 flies each'. MOBILE "
                 "600x450: figure top, bars beneath, citation legible."),
         alt="A+ banner showing the peer-reviewed Drosophila lifespan result and its citation.",
     ),
@@ -329,7 +334,8 @@ MODULES = [
         headline="BUILT BY A SCIENTIST.",
         body=(
             "Life Code was co-founded by Dr. Bryant Villeponteau, Ph.D., with decades of research "
-            "in molecular biology and longevity science."
+            "in molecular biology and longevity science. Ingredients and finished bottles are "
+            "both tested before release."
         ),
         visual=("DESKTOP 1464x600, soft #EEF2F8. LEFT 40%: founder portrait in a white card, name "
                 "and credential beneath (CLIENT TO SUPPLY). RIGHT 60%: two stacked white proof "
@@ -363,8 +369,7 @@ QA = [
          a="Yes. A peer reviewed fruit fly lifespan study, PLoS One 2015. An animal result, "
            "not a human one."),
     AIQA(q="How is Stem Cell 100 different from Stem Cell 100+?",
-         a="Plus adds Rhodiola Rosea and Tulsi to this blend and is the faster acting "
-           "version."),
+         a="Plus adds Rhodiola Rosea and Tulsi to this blend."),
     AIQA(q="How do I take it, and how long does a bottle last?",
          a="Two vegetarian capsules daily. 60 capsules per bottle, about a 30 day supply."),
 ]

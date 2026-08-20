@@ -53,12 +53,6 @@ LANGUAGE_NAMES = {
 
 # ---------- AI output dataclasses ----------
 
-# ---------- layout archetypes ----------
-# Team feedback (test phase): "oftmals nur Headline und Subheadline — bitte kreativer planen",
-# "mal mehr Icons, mal davor/danach, mal smart in der Mitte Text und drumherum die Benefits",
-# "mehr Vielfalt — muss zum Produkt passen".
-# A tile is not a headline on a photo. Every tile now has to declare WHICH COMPOSITION it uses,
-# picked from this catalogue, and no two tiles in a plan may use the same one.
 # A+ Q&A block. Five pairs, tightly capped: on a phone this module is scanned, not read,
 # and the team found longer blocks simply get skipped. The caps are enforced three times —
 # in the JSON schema description, in the prompt, and by the linter in core/qa.py — because
@@ -83,7 +77,14 @@ APLUS_STRUCTURE: list[tuple[str, str]] = [
 # A+ copy is support text under a picture, not a paragraph. The review team's verdict on the
 # old output was blunt: "way too much copy, not readable". A+ pages that convert run roughly
 # 70% image, 30% text — if a module needs more than this, the visual is not doing its job.
-MODULE_BODY_MAX = 180
+#
+# Raised from 180 to 220 after the Life Code work. 180 was measured against generic banner
+# copy, where every extra clause was filler. It is too tight for a claim that has to carry a
+# qualifier to stay accurate — "for those already in the normal range", "in fruit flies, not
+# a human result", "an isoflavone rather than a plant". Those clauses are the difference
+# between a true sentence and a false one, and a limit that squeezes them out is a limit that
+# rewards imprecision. Still roughly a quarter of what the old output was shipping.
+MODULE_BODY_MAX = 220
 MODULE_VISUAL_MAX = 450
 
 # Which composition FAMILY each tile has to come from.
@@ -113,6 +114,12 @@ SLOT_FAMILIES: dict[int, tuple[str, list[str]]] = {
         ["brand_close", "why_us", "quote_card", "lifestyle_candid"]),
 }
 
+# ---------- layout archetypes ----------
+# Team feedback (test phase): "oftmals nur Headline und Subheadline — bitte kreativer planen",
+# "mal mehr Icons, mal davor/danach, mal smart in der Mitte Text und drumherum die Benefits",
+# "mehr Vielfalt — muss zum Produkt passen".
+# A tile is not a headline on a photo. Every tile declares WHICH COMPOSITION it uses, picked
+# from this catalogue, and no two tiles in a plan may use the same one.
 LAYOUT_ARCHETYPES: dict[str, str] = {
     "clean_hero": "Product alone, dominant, no graphic furniture. Amazon main image only.",
     "before_after": "Split frame or slider: the problem state vs the result state, divider down the middle.",

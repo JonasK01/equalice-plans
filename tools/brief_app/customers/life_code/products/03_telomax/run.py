@@ -57,7 +57,7 @@ IMAGES = [
             "callout each, navy anchor with a single red accent. Amazon slot-1 stays pure white "
             "and product only.\n\n"
             "OPTION A — THE BLEND (owns real ingredients): bottle with ashwagandha root, gotu "
-            "kola leaf and milk thistle arranged beside it. Badge (navy): 'SIX BOTANICALS'.\n"
+            "kola leaf and milk thistle arranged beside it. Badge (navy): 'FIVE PLANTS, ONE ISOFLAVONE'.\n"
             "OPTION B — THE FORMULATOR (owns credibility): bottle with a small portrait chip and "
             "'Dr. Bryant Villeponteau, Ph.D.'. Badge: 'FORMULATED BY A SCIENTIST'.\n"
             "OPTION C — THE CATEGORY (owns the search): bottle centred with a clean abstract "
@@ -112,22 +112,26 @@ IMAGES = [
         graphics=[
             "bottle centred, occupying the middle third",
             "six labelled nodes evenly spaced around it, hairline navy leader lines to the bottle",
-            "nodes: WITHANIA SOMNIFERA (ashwagandha), GOTU KOLA, SILYBUM MARIANUM (milk thistle), "
-            "SCUTELLARIA BAICALENSIS, GENISTEIN, UNCARIA TOMENTOSA (cat's claw)",
+            "five plant nodes: WITHANIA SOMNIFERA (ashwagandha), CENTELLA ASIATICA (gotu kola), "
+            "SILYBUM MARIANUM (milk thistle), SCUTELLARIA BAICALENSIS, UNCARIA TOMENTOSA "
+            "(cat's claw)",
+            "sixth node set apart as a molecular mark: GENISTEIN, an isoflavone",
             "small navy chip above the bottle reading 'TX100 proprietary blend'",
         ],
         visual=(
-            "Six named botanicals ringed around the bottle with leader lines. Real botanical "
-            "photography in each node, common name large and latin name small."
+            "Six ingredients ringed around the bottle with leader lines. Real botanical photography in "
+            "the five plant nodes; genistein is set as a molecular mark, because it is an "
+            "isoflavone compound rather than a plant."
         ),
-        overlay="SIX BOTANICALS. ONE BLEND.",
-        overlay_sub="Ashwagandha, gotu kola, milk thistle, scutellaria, genistein, cat's claw.",
+        overlay="FIVE PLANTS. ONE ISOFLAVONE.",
+        overlay_sub="Ashwagandha, gotu kola, milk thistle, scutellaria and cat's claw, plus genistein.",
         props=["bottle", "six botanical nodes", "TX100 chip"],
         lighting="Bright, clean, flat-lay quality on the botanicals; bottle lit as studio product.",
         why_it_works=(
-            "A named count is checkable against the label where 'botanical blend' is not, and "
-            "several of these are botanicals the shopper already recognises and trusts. "
-            "Specificity is the entire trust argument for a proprietary blend."
+            "A named count is checkable against the label where 'botanical blend' is not, and several "
+            "of these are plants the shopper already recognises. The split is stated exactly: "
+            "five plant extracts and one isoflavone. Calling genistein a botanical is the kind "
+            "of slip a formulator notices immediately, and it would cost the page its authority."
         ),
     ),
     AIImagePlanItem(
@@ -172,7 +176,7 @@ IMAGES = [
             "three white reason cards stacked with 24 px gaps, each with a navy #14294D left rule",
             "card 1: 'Dr. Bryant Villeponteau, Ph.D.' with 'molecular biology and longevity "
             "science' beneath, portrait at 120 px (CLIENT TO SUPPLY)",
-            "card 2: 'TX100: six named botanicals, no hidden filler list'",
+            "card 2: 'TX100: five named plants plus genistein, nothing hidden'",
             "card 3: 'Made in the USA in a GMP facility, tested for purity and potency'",
             "bottle bottom-right at 25% height, no badge",
         ],
@@ -233,7 +237,7 @@ IMAGES = [
             "shouts louder than the others."
         ),
         overlay="SCIENCE YOU CAN CHECK.",
-        overlay_sub="Named botanicals, a named formulator, made in the USA in a GMP facility.",
+        overlay_sub="Named ingredients, a named formulator, made in the USA in a GMP facility.",
         props=["bottle + Life Code wordmark", "three-cell fact band"],
         lighting="Premium, even, navy and white. Calm and credible.",
         why_it_works=(
@@ -264,7 +268,7 @@ MODULES = [
         headline="WHY TELOMAX",
         body=(
             "Tile 1: <b>TELOMERE SUPPORT</b> Supports telomere health and cellular wellness.<br/>"
-            "Tile 2: <b>TX100 BLEND</b> Six named botanicals, nothing hidden.<br/>"
+            "Tile 2: <b>TX100 BLEND</b> Five named plants plus genistein, nothing hidden.<br/>"
             "Tile 3: <b>A NAMED FORMULATOR</b> Dr. Bryant Villeponteau, Ph.D.<br/>"
             "Tile 4: <b>MADE IN USA</b> GMP facility, tested for purity and potency.<br/>"
             "Tile 5: <b>60 CAPSULES</b> Two a day, a 30 day supply."
@@ -278,8 +282,8 @@ MODULES = [
         role="a+_banner",
         headline="THE CAPS ON YOUR CHROMOSOMES.",
         body=(
-            "Telomeres protect the ends of your chromosomes and shorten as cells divide. "
-            "TeloMax supports telomere health."
+            "Telomeres are the protective caps on the ends of your chromosomes, and they shorten "
+            "each time a cell divides. That happens to everyone. TeloMax supports telomere health."
         ),
         visual=("DESKTOP 1464x600, navy #14294D. LEFT 60%: one large clean chromosome, caps in "
                 "red #C8202F, leader line labelled 'telomere'. RIGHT 40%: three-step strip 'cell "
@@ -300,7 +304,7 @@ MODULES = [
         ),
         visual=("Five tiles, real botanical photography on white, latin name small beneath the "
                 "common name. MOBILE: one botanical per swipe."),
-        alt="Five A+ tiles naming the six botanicals in the TX100 blend.",
+        alt="Five A+ tiles naming the five plants and the isoflavone in the TX100 blend.",
     ),
     AIModule(
         name="Module 5 — Banner: TeloMax or Stem Cell 100",
