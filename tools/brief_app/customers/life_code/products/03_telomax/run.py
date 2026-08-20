@@ -30,209 +30,208 @@ from tools.brief_app.core.customers import load_customer
 from tools.brief_app.core.excel_parser import parse_excel
 from tools.brief_app.core.pdf_builder import BriefBuilder
 from tools.brief_app.core.ai import AIImagePlanItem, AIModule, AIQA
+from tools.brief_app.core.seo_loader import load_seo, as_bullets_html
 
 PLAN_NO = "03"
 ASIN = "B08BXBK77R"
 EXCEL = HERE / "listing.xlsx"
 
 
-TITLE = ('Life Code TeloMax — Telomere &amp; Cellular Function Support · Healthy Aging '
-         'Supplement · Ashwagandha, Gotu Kola, Milk Thistle, Scutellaria &amp; Genistein '
-         'Botanical Blend · 60 Capsules · Made in USA')
-
-BULLETS = [
-    "<b>TELOMERE &amp; CELLULAR FUNCTION SUPPORT</b> — TeloMax is designed to support "
-    "telomere maintenance and cellular function as part of a healthy-aging routine. A "
-    "telomere-focused daily formula for informed adults investing in longevity.",
-
-    "<b>MULTIPATH BOTANICAL BLEND</b> — A proprietary blend of standardized herbal "
-    "extracts including Ashwagandha, Gotu Kola, Silybum Marianum (Milk Thistle), "
-    "Scutellaria Baicalensis, Genistein and Uncaria Tomentosa — developed using Life "
-    "Code's Multipath Regeneration (MuR) approach.",
-
-    "<b>STANDARDIZED HERBAL EXTRACTS</b> — Made with standardized botanical extracts for "
-    "consistent quality, plus Lithium Orotate at a low supplemental amount (2 mg per "
-    "serving). A considered, transparent formula — no hidden proprietary fillers.",
-
-    "<b>60 CAPSULES · SIMPLE DAILY USE</b> — Suggested use is just 2 capsules daily, so "
-    "one bottle is about a 30-day supply. Designed for consistent, long-term daily use as "
-    "an easy addition to your longevity routine.",
-
-    "<b>MADE IN THE USA · cGMP FACILITY</b> — Manufactured in the USA in a cGMP-certified "
-    "facility for quality you can trust. Backed by Life Code's longevity-science approach "
-    "and a 90-day money-back guarantee.",
-]
+# Title and bullets are NOT defined here. They come from listing.xlsx, which is the SEO
+# axis for this plan and the only approved source for on-listing copy. They used to be
+# hand-written constants at this spot and had drifted from the sheet, which is how
+# unverified ingredients reached a live dietary-supplement listing. Deleted rather than
+# kept as a fallback: a fallback is just a slower way to ship the same error.
 
 
 IMAGES = [
     AIImagePlanItem(
         name="Image 1 — Main Hero (3 options for A/B testing)",
         role="hero",
-        background="Clean white with a soft navy-to-light-blue #EEF2F8 base. Identical across all 3 for a clean split test.",
-        purpose="Win the click in a crowded telomere/longevity grid — signal premium science + trust instantly.",
+        background="Clean white with a soft #EEF2F8 base. Identical across all 3 for a clean split test.",
+        purpose="Win the click against telomere products that all look and sound the same.",
+        layout="clean_hero",
+        graphics=[],
         visual=(
-            "Mock ALL 3 options. Product exactly as real: the TeloMax bottle, label "
-            "readable, crisp studio light. ONE callout each, bottle dominant ~70%. Navy "
-            "anchor, a single disciplined red accent. Amazon slot-1 main = pure white / "
-            "bottle only.\n\n"
-            "OPTION A — TELOMERE SUPPORT (owns the category): bottle centred, a clean "
-            "stylised telomere/chromosome motif behind it (abstract, elegant, non-medical). "
-            "Badge (navy): 'TELOMERE & CELL SUPPORT'.\n"
-            "OPTION B — BOTANICAL BLEND (owns 'real ingredients'): bottle with Ashwagandha "
-            "root, Gotu Kola and Milk Thistle arranged beside it. Badge: 'MULTIPATH "
-            "BOTANICAL BLEND'.\n"
-            "OPTION C — TRUST STACK (defuses 'is it legit?'): bottle + small badge row "
-            "(Made in USA · cGMP · Lab-Tested · 90-Day Guarantee). Badge: 'MADE IN USA · "
-            "cGMP'.\n\n"
-            "Across all 3: bottle ~70%, callout ~6%, same lighting + colour temperature."
+            "Mock ALL 3 options. Bottle exactly as real, label readable, dominant at ~70%. One "
+            "callout each, navy anchor with a single red accent. Amazon slot-1 stays pure white "
+            "and product only.\n\n"
+            "OPTION A — THE BLEND (owns real ingredients): bottle with ashwagandha root, gotu "
+            "kola leaf and milk thistle arranged beside it. Badge (navy): 'SIX BOTANICALS'.\n"
+            "OPTION B — THE FORMULATOR (owns credibility): bottle with a small portrait chip and "
+            "'Dr. Bryant Villeponteau, Ph.D.'. Badge: 'FORMULATED BY A SCIENTIST'.\n"
+            "OPTION C — THE CATEGORY (owns the search): bottle centred with a clean abstract "
+            "chromosome-cap motif behind it. Badge: 'TELOMERE SUPPORT'.\n\n"
+            "Across all 3: bottle ~70%, callout ~6%, identical lighting and colour temperature."
         ),
         overlay="(one callout per option)",
-        overlay_sub="3 hero options shipped — A/B test, keep the winner.",
-        props=["A: bottle + abstract telomere/chromosome motif", "B: bottle + Ashwagandha/Gotu Kola/Milk Thistle", "C: bottle + trust-badge row"],
-        lighting="Soft, premium studio light (5000K), gentle reflection under the bottle. Same across all 3.",
+        overlay_sub="Three hero options shipped. A/B test them and keep the winner.",
+        props=["A: bottle + botanicals", "B: bottle + founder chip", "C: bottle + telomere motif"],
+        lighting="Soft premium studio light 5000K, gentle reflection under the bottle. Same across all 3.",
         why_it_works=(
-            "Three triggers: category ownership (telomere support), real botanicals, and "
-            "trust — each compliant and readable at thumbnail size. No disease, reversal or "
-            "telomere-lengthening claims."
+            "Three different reasons to click: real named ingredients, a named formulator, and "
+            "plain category recognition for the shopper who searched 'telomere supplement'."
         ),
     ),
     AIImagePlanItem(
-        name="Image 2 — Hook: designed to support telomere maintenance & cellular function",
+        name="Image 2 — Hook: what a telomere actually is",
         role="hook",
-        background="Soft light-blue #EEF2F8 with navy headline (clean science look)",
-        purpose="State the compliant core promise in one frame — telomere & cellular support.",
+        background="Deep navy #14294D, one clean illustration, generous negative space.",
+        purpose="Teach the thing the shopper is buying. Most rivals assume it and lose them.",
+        layout="cutaway",
+        graphics=[
+            "one chromosome drawn large and clean across the upper two thirds, its two caps "
+            "picked out in red #C8202F",
+            "leader line to the cap with the label 'telomere: the protective cap'",
+            "beneath it a short three-step strip: 'cell divides' arrow 'cap shortens' arrow "
+            "'this happens to everyone'",
+            "bottle bottom-right at 20% height, small",
+        ],
         visual=(
-            "Centre: the bottle. Around it, four clean stylised icons on soft navy discs, "
-            "each a supported area (verbatim-safe from the listing): 'Telomere "
-            "maintenance', 'Cellular function', 'Healthy aging', 'Everyday vitality'. Thin "
-            "connecting lines from each to the bottle, like an elegant science infographic. "
-            "Small caption: 'Designed to support telomere maintenance & cellular "
-            "function.'"
+            "A single clean chromosome with its caps highlighted, one label, one three-step "
+            "strip beneath. Elegant science illustration, never a medical diagram."
         ),
-        overlay="TELOMERE & CELL SUPPORT.",
-        overlay_sub="Designed to support telomere maintenance & cellular function every day.",
-        props=["bottle", "4 support-area icons on navy discs", "thin connector lines"],
-        lighting="Even, clean, editorial. Clarity over drama.",
+        overlay="TELOMERES SHORTEN WITH AGE.",
+        overlay_sub="They are the caps on your chromosomes. TeloMax supports telomere health.",
+        props=["chromosome illustration", "three-step strip", "bottle"],
+        lighting="Flat vector illustration on navy. No photographic lighting in this tile.",
         why_it_works=(
-            "Telomere shoppers want to know what the product actually supports. Naming the "
-            "supported areas in the listing's own hedged language educates and "
-            "differentiates while staying fully compliant."
+            "Shoppers search 'telomere supplement' without being able to say what a telomere is, "
+            "and every rival skips the explanation. Teaching it in one frame earns the authority "
+            "that makes the rest of the page credible. The biology stated here is textbook and "
+            "carries no claim; the product line stays strictly at 'supports telomere health'."
         ),
-        cvr="Directly answers the 'what does this actually support?' hesitation.",
+        cvr="Answers the question the shopper is too unsure to ask.",
     ),
     AIImagePlanItem(
-        name="Image 3 — Inside the TeloMax blend",
+        name="Image 3 — Inside the TX100 blend",
         role="educate",
-        background="White with a navy footer band",
-        purpose="Defend the premium: show the standardized botanical blend and what it supports.",
+        background="White, generous margins, one soft #EEF2F8 field behind the bottle.",
+        purpose="Make the formula concrete and checkable against the label.",
+        layout="hub_and_spokes",
+        graphics=[
+            "bottle centred, occupying the middle third",
+            "six labelled nodes evenly spaced around it, hairline navy leader lines to the bottle",
+            "nodes: WITHANIA SOMNIFERA (ashwagandha), GOTU KOLA, SILYBUM MARIANUM (milk thistle), "
+            "SCUTELLARIA BAICALENSIS, GENISTEIN, UNCARIA TOMENTOSA (cat's claw)",
+            "small navy chip above the bottle reading 'TX100 proprietary blend'",
+        ],
         visual=(
-            "Clean ingredient grid. Real photos of the key botanicals with short, honest "
-            "labels:\n"
-            "  • ASHWAGANDHA — traditional adaptogen\n"
-            "  • GOTU KOLA — traditional longevity botanical\n"
-            "  • MILK THISTLE (SILYBUM MARIANUM) — traditional botanical\n"
-            "  • SCUTELLARIA BAICALENSIS — traditional botanical\n"
-            "  • GENISTEIN · UNCARIA TOMENTOSA — plant extracts\n\n"
-            "Footer band: 'Plus Lithium Orotate at a low supplemental amount (2 mg per "
-            "serving).' Keep claims to 'support' language only — no ingredient effect "
-            "claims."
+            "Six named botanicals ringed around the bottle with leader lines. Real botanical "
+            "photography in each node, common name large and latin name small."
         ),
-        overlay="MULTIPATH BOTANICAL BLEND.",
-        overlay_sub="Ashwagandha, Gotu Kola, Milk Thistle, Scutellaria & Genistein — standardized extracts.",
-        props=["botanical ingredient grid (real photos)", "Lithium Orotate 2 mg footer band"],
-        lighting="Bright, clean flat-lay light; ingredients appetising and premium.",
+        overlay="SIX BOTANICALS. ONE BLEND.",
+        overlay_sub="Ashwagandha, gotu kola, milk thistle, scutellaria, genistein, cat's claw.",
+        props=["bottle", "six botanical nodes", "TX100 chip"],
+        lighting="Bright, clean, flat-lay quality on the botanicals; bottle lit as studio product.",
         why_it_works=(
-            "Buyers value standardized, named ingredients. Making the blend transparent "
-            "justifies the price and separates this from vague telomere products with "
-            "hidden formulas."
+            "A named count is checkable against the label where 'botanical blend' is not, and "
+            "several of these are botanicals the shopper already recognises and trusts. "
+            "Specificity is the entire trust argument for a proprietary blend."
         ),
     ),
     AIImagePlanItem(
-        name="Image 4 — The Multipath (MuR) approach",
+        name="Image 4 — The daily routine",
         role="desire",
-        background="Soft light-blue #EEF2F8, clean science layout",
-        purpose="Explain the brand's development approach without over-claiming.",
+        background="Warm, bright kitchen counter in morning light. Real, never clinical.",
+        purpose="Set honest expectations and show how small the daily step is.",
+        layout="hand_in_frame",
+        graphics=[
+            "two capsules held in an open palm in the lower left third, at true scale beside a "
+            "water glass so capsule size reads honestly",
+            "navy routine strip across the top third: '2 capsules daily · 60 per bottle'",
+            "one grey honesty line beneath: 'A long term routine, not an overnight change.'",
+        ],
         visual=(
-            "Elegant, honest infographic: the bottle with several thin lines fanning out "
-            "to the botanical extracts in the blend, converging on two calm labels — "
-            "'Telomere maintenance' and 'Cellular function'. A small note: 'Developed "
-            "using Life Code's Multipath Regeneration (MuR) approach — a multi-botanical "
-            "formula designed to support healthy-aging pathways.' Abstract and premium — "
-            "NOT medical, no cell-division animation, no 'regenerates' language."
+            "A real adult at a bright counter taking the two capsules with breakfast. Active and "
+            "everyday, never medical."
         ),
-        overlay="MULTIPATH SUPPORT APPROACH.",
-        overlay_sub="A multi-botanical formula designed to support healthy-aging pathways.",
-        props=["bottle", "fan-out lines to botanicals", "two calm support-area labels"],
-        lighting="Even, clean; true label colours on the bottle.",
+        overlay="TWO CAPSULES A DAY.",
+        overlay_sub="60 vegetarian capsules. One easy step in a long term routine.",
+        props=["bottle", "two capsules in palm", "water glass", "routine strip"],
+        lighting="Warm natural morning light. Aspirational and real.",
         why_it_works=(
-            "Informed longevity buyers want to understand the thinking behind a formula. "
-            "Framing the MuR approach as a multi-botanical design — not an outcome — "
-            "educates and differentiates while staying compliant."
+            "Longevity buyers ask how long before anything happens. Saying plainly that it is a "
+            "long term routine protects the review average and lifts repeat purchase."
         ),
     ),
     AIImagePlanItem(
-        name="Image 5 — Trust: made in USA, cGMP, lab-tested",
+        name="Image 5 — Who formulated this",
         role="trust",
-        background="White with soft navy panels behind each badge",
-        purpose="Stack the quality signals that make a supplement buyer click 'add to cart'.",
+        background="Soft #EEF2F8, one white card stack, generous margins.",
+        purpose="Put a named scientist behind the bottle. The listing's biggest unused asset.",
+        layout="why_us",
+        graphics=[
+            "three white reason cards stacked with 24 px gaps, each with a navy #14294D left rule",
+            "card 1: 'Dr. Bryant Villeponteau, Ph.D.' with 'molecular biology and longevity "
+            "science' beneath, portrait at 120 px (CLIENT TO SUPPLY)",
+            "card 2: 'TX100: six named botanicals, no hidden filler list'",
+            "card 3: 'Made in the USA in a GMP facility, tested for purity and potency'",
+            "bottle bottom-right at 25% height, no badge",
+        ],
         visual=(
-            "Centre bottle, four trust badges in the corners:\n"
-            "  • MADE IN THE USA (small flag)\n"
-            "  • cGMP-CERTIFIED FACILITY (facility icon)\n"
-            "  • LABORATORY TESTED (flask/check icon)\n"
-            "  • 90-DAY GUARANTEE (seal icon)\n\n"
-            "Thin strip: 'Manufactured in the USA in a cGMP-certified facility · 90-day "
-            "money-back guarantee.'"
+            "Three proof cards, not a badge wall. Each carries one checkable fact rather than "
+            "an adjective."
         ),
-        overlay="MADE IN USA. cGMP.",
-        overlay_sub="cGMP-certified facility · laboratory tested · 90-day money-back guarantee.",
-        props=["bottle", "4 trust badges", "90-day guarantee strip"],
-        lighting="Studio-even; badges legible at thumbnail size.",
+        overlay="BUILT BY A SCIENTIST.",
+        overlay_sub="Dr. Bryant Villeponteau, Ph.D. Molecular biology and longevity science.",
+        props=["bottle", "three reason cards", "founder portrait (to be supplied)"],
+        lighting="Even, calm, premium. Portrait lit softly, never corporate stock.",
         why_it_works=(
-            "Supplement trust gaps are quality and legitimacy. Stacking USA + cGMP + "
-            "lab-tested + guarantee answers every doubt before purchase."
+            "Telomere supplements are a category thick with anonymous white-label bottles. A "
+            "named researcher is the fastest way to separate this one, and the credential is "
+            "already on the listing."
         ),
     ),
     AIImagePlanItem(
-        name="Image 6 — Simple daily routine",
+        name="Image 6 — TeloMax or Stem Cell 100?",
         role="desire",
-        background="Warm, bright lifestyle — an active, healthy mature adult's morning",
-        purpose="Set honest expectations (consistency) and show the easy daily habit.",
+        background="Soft #EEF2F8, two clean columns.",
+        purpose="Help the shopper choose inside the range instead of bouncing to compare.",
+        layout="comparison_columns",
+        graphics=[
+            "two equal columns, thin grey divider, a bottle standing at the top of each",
+            "LEFT header 'TELOMAX', RIGHT header 'STEM CELL 100'",
+            "three criterion rows down both: main focus, blend, take them together",
+            "row 3 spans both columns with a single navy line: 'Many customers take both.'",
+        ],
         visual=(
-            "Lifestyle: a vibrant, healthy adult in their 60s at a bright kitchen counter, "
-            "taking their 2 capsules with water alongside breakfast — active, happy, "
-            "everyday (NOT medical). Small routine panel: '2 capsules daily · 60 capsules "
-            "per bottle · designed for consistent use'. Honest note: 'A long-term routine, "
-            "not an overnight fix.'"
+            "Two columns, the same criteria down both sides, the difference carried by the row "
+            "labels rather than by extra copy."
         ),
-        overlay="2 CAPSULES A DAY.",
-        overlay_sub="60 capsules — an easy daily step in your longevity routine.",
-        props=["healthy 60s adult at kitchen counter", "bottle + 2 capsules + water", "routine panel"],
-        lighting="Warm natural morning light. Aspirational, real, vibrant — never clinical.",
+        overlay="TELOMAX OR STEM CELL 100?",
+        overlay_sub="TeloMax focuses on telomere health. SC100 works on the stem cell niche.",
+        props=["TeloMax bottle", "Stem Cell 100 bottle", "three-row criteria table"],
+        lighting="Even, clean; true label colours on both bottles.",
         why_it_works=(
-            "Reviewers note effects build over time and dislike vague expectations. "
-            "Framing it honestly as a consistent daily routine improves satisfaction and "
-            "repeat purchase — and shows the aspirational healthy-aging lifestyle."
+            "A shopper deciding between two products from the same brand usually leaves to "
+            "compare and does not come back. Answering it on the creative keeps the decision on "
+            "the listing, and the 'many take both' line raises basket size honestly."
         ),
     ),
     AIImagePlanItem(
-        name="Image 7 — Brand close: Life Code longevity science",
+        name="Image 7 — Brand close",
         role="close",
-        background="Clean navy brand panel with white space",
-        purpose="Close on credibility — a science-led longevity brand.",
+        background="Navy #14294D panel with generous white space.",
+        purpose="Close on the one thing this brand can say that rivals cannot.",
+        layout="brand_close",
+        graphics=[
+            "Life Code wordmark centred in the top third",
+            "bottle centred beneath it at 45% frame height",
+            "lower band split into three equal cells by hairline white rules: "
+            "'Named botanicals', 'A named formulator', 'Made in the USA'",
+        ],
         visual=(
-            "Bottle with the Life Code wordmark and a calm, premium science motif. Lower "
-            "band, three quiet trust points: 'Longevity-science formulas', 'Made in the "
-            "USA · cGMP · lab-tested', '90-day money-back guarantee'. Tone: credible, "
-            "disciplined, premium — no hype."
+            "Calm, premium, disciplined. The three closing facts sit in equal cells so none "
+            "shouts louder than the others."
         ),
-        overlay="LONGEVITY, BACKED BY SCIENCE.",
-        overlay_sub="Life Code — researched longevity formulas, made in the USA.",
-        props=["bottle + Life Code wordmark", "science motif", "3 trust points band"],
-        lighting="Premium, even, navy-and-white. Calm and credible.",
+        overlay="SCIENCE YOU CAN CHECK.",
+        overlay_sub="Named botanicals, a named formulator, made in the USA in a GMP facility.",
+        props=["bottle + Life Code wordmark", "three-cell fact band"],
+        lighting="Premium, even, navy and white. Calm and credible.",
         why_it_works=(
-            "Against unbranded telomere supplements, a disciplined science-led brand close "
-            "is the trust signal that converts an informed longevity buyer."
+            "'Backed by science' is the emptiest phrase in this category and every rival uses "
+            "it. Naming what can be checked is the opposite claim and the brand's real position."
         ),
     ),
 ]
@@ -242,128 +241,121 @@ MODULES = [
     AIModule(
         name="Module 1 — Brand banner",
         role="a+_banner",
-        headline="SUPPORT FOR HEALTHY AGING.",
+        headline="SUPPORT FOR TELOMERE HEALTH.",
         body=(
-            "Life Code TeloMax is designed to support telomere maintenance and cellular "
-            "function, with a proprietary blend of standardized botanical extracts. Made "
-            "in the USA in a cGMP-certified facility."
+            "TeloMax supports telomere health and cellular wellness. Made in the USA in a GMP "
+            "facility, tested for purity."
         ),
-        visual="Wide clean banner: bottle right, navy headline left on white, an elegant abstract telomere/chromosome motif. Life Code wordmark upper-left.",
-        alt="Life Code TeloMax banner: designed to support telomere maintenance and cellular function, made in the USA.",
+        visual=("DESKTOP 1464x600, white. LEFT 55%: navy headline, one support line, Life Code "
+                "wordmark above. RIGHT 45%: bottle on soft #EEF2F8 with an abstract chromosome-cap "
+                "motif behind. MOBILE 600x450: bottle top, headline beneath, inside the safe area."),
+        alt="Life Code TeloMax brand banner: support for telomere health and cellular wellness.",
     ),
     AIModule(
         name="Module 2 — Carousel (5 tiles): Why TeloMax",
         role="a+_carousel",
         headline="WHY TELOMAX",
         body=(
-            "Tile 1: <b>TELOMERE SUPPORT</b> — Designed to support telomere maintenance &amp; cellular function.<br/>"
-            "Tile 2: <b>MULTIPATH BLEND</b> — Ashwagandha, Gotu Kola, Milk Thistle &amp; more.<br/>"
-            "Tile 3: <b>STANDARDIZED EXTRACTS</b> — Standardized herbal extracts for consistent quality.<br/>"
-            "Tile 4: <b>2 CAPSULES A DAY</b> — 60 capsules, designed for consistent daily use.<br/>"
-            "Tile 5: <b>MADE IN USA</b> — cGMP-certified facility, laboratory tested."
+            "Tile 1: <b>TELOMERE SUPPORT</b> Supports telomere health and cellular wellness.<br/>"
+            "Tile 2: <b>TX100 BLEND</b> Six named botanicals, nothing hidden.<br/>"
+            "Tile 3: <b>A NAMED FORMULATOR</b> Dr. Bryant Villeponteau, Ph.D.<br/>"
+            "Tile 4: <b>MADE IN USA</b> GMP facility, tested for purity and potency.<br/>"
+            "Tile 5: <b>60 CAPSULES</b> Two a day, a 30 day supply."
         ),
-        visual="5 square tiles, navy accent corner each, one disciplined red highlight. Clean science icons.",
-        alt="Five A+ tiles: telomere support, multipath blend, standardized extracts, daily use, made in USA.",
+        visual=("Five square tiles, navy accent corner on each, one red highlight on tile 3. "
+                "Line icons only, no stock photography. MOBILE: one tile per swipe."),
+        alt="Five A+ tiles: telomere support, the TX100 blend, the formulator, made in USA, 60 capsules.",
     ),
     AIModule(
-        name="Module 3 — Banner: Inside the TeloMax blend",
+        name="Module 3 — Banner: what a telomere is",
         role="a+_banner",
-        headline="A MULTIPATH BOTANICAL BLEND.",
+        headline="THE CAPS ON YOUR CHROMOSOMES.",
         body=(
-            "The TeloMax blend brings together standardized extracts of Ashwagandha, Gotu "
-            "Kola, Milk Thistle, Scutellaria Baicalensis, Genistein and Uncaria Tomentosa "
-            "— plus Lithium Orotate (2 mg per serving). Developed using Life Code's "
-            "Multipath Regeneration (MuR) approach."
+            "Telomeres protect the ends of your chromosomes and shorten as cells divide. "
+            "TeloMax supports telomere health."
         ),
-        visual="Banner with a clean botanical ingredient row (real photos + labels) and the Lithium Orotate 2 mg note. Navy/white, one red accent.",
-        alt="A+ banner showing the TeloMax botanical blend plus Lithium Orotate at a low supplemental amount.",
+        visual=("DESKTOP 1464x600, navy #14294D. LEFT 60%: one large clean chromosome, caps in "
+                "red #C8202F, leader line labelled 'telomere'. RIGHT 40%: three-step strip 'cell "
+                "divides / cap shortens / happens to everyone', bottle small beneath. MOBILE "
+                "600x450: chromosome top, strip beneath, label inside the safe area."),
+        alt="A+ banner explaining that telomeres are the protective caps on chromosomes.",
     ),
     AIModule(
-        name="Module 4 — Banner: Quality & trust",
-        role="a+_banner",
-        headline="MADE IN THE USA. cGMP TESTED.",
-        body=(
-            "Manufactured in the USA in a cGMP-certified facility and laboratory tested for "
-            "quality. Backed by Life Code's longevity-science approach and a 90-day "
-            "money-back guarantee."
-        ),
-        visual="Banner with four trust badges (Made in USA · cGMP · Lab-Tested · 90-Day Guarantee) around the bottle. Navy/white.",
-        alt="A+ banner with Life Code quality badges: made in USA, cGMP, lab-tested, 90-day guarantee.",
-    ),
-    AIModule(
-        name="Module 5 — Carousel (5 tiles): The Life Code longevity range",
+        name="Module 4 — Carousel (5 tiles): Inside the TX100 blend",
         role="a+_carousel",
-        headline="THE LIFE CODE RANGE",
+        headline="INSIDE THE TX100 BLEND",
         body=(
-            "Tile 1: <b>TELOMAX</b> — Telomere-focused botanical support (this product).<br/>"
-            "Tile 2: <b>STEM CELL 100+</b> — Upgraded stem cell &amp; telomere pathway support.<br/>"
-            "Tile 3: <b>STEM CELL 100</b> — The original stem cell &amp; telomere support formula.<br/>"
-            "Tile 4: <b>LONGEVITY COMBO</b> — Stem Cell 100+ paired with TeloMax.<br/>"
-            "Tile 5: <b>90-DAY GUARANTEE</b> — Try the Life Code approach with confidence."
+            "Tile 1: <b>ASHWAGANDHA</b> Withania somnifera.<br/>"
+            "Tile 2: <b>GOTU KOLA</b> Centella asiatica.<br/>"
+            "Tile 3: <b>MILK THISTLE</b> Silybum marianum.<br/>"
+            "Tile 4: <b>SCUTELLARIA</b> Baicalensis, plus genistein.<br/>"
+            "Tile 5: <b>CAT'S CLAW</b> Uncaria tomentosa."
         ),
-        visual="5 tiles: bottles of the range in consistent navy/white styling. TeloMax gently highlighted.",
-        alt="Five A+ tiles of the Life Code longevity range: TeloMax, Stem Cell 100+, Stem Cell 100, Longevity Combo, guarantee.",
+        visual=("Five tiles, real botanical photography on white, latin name small beneath the "
+                "common name. MOBILE: one botanical per swipe."),
+        alt="Five A+ tiles naming the six botanicals in the TX100 blend.",
     ),
     AIModule(
-        name="Module 6 — Premium Q&A",
+        name="Module 5 — Banner: TeloMax or Stem Cell 100",
+        role="a+_banner",
+        headline="WHICH ONE IS FOR YOU?",
+        body=(
+            "TeloMax focuses on telomere health. Stem Cell 100 works on the stem cell niche. "
+            "Many customers take both."
+        ),
+        visual=("DESKTOP 1464x600, soft #EEF2F8. Two equal columns, thin grey divider, a bottle "
+                "at the top of each, headers 'TELOMAX' and 'STEM CELL 100', three criterion rows "
+                "beneath, the last spanning both. MOBILE 600x450: columns stack, divider becomes "
+                "a horizontal rule."),
+        alt="A+ banner comparing TeloMax and Stem Cell 100 so the shopper can choose.",
+    ),
+    AIModule(
+        name="Module 6 — Banner: who formulated this",
+        role="a+_banner",
+        headline="BUILT BY A SCIENTIST.",
+        body=(
+            "Life Code was co-founded by Dr. Bryant Villeponteau, Ph.D., whose background is in "
+            "molecular biology and longevity science."
+        ),
+        visual=("DESKTOP 1464x600, white. LEFT 40%: founder portrait in a soft #EEF2F8 card, name "
+                "and credential beneath (CLIENT TO SUPPLY). RIGHT 60%: two stacked proof cards "
+                "with navy left rules, 'six named botanicals' and 'USA, GMP, tested for purity', "
+                "bottle small bottom-right. MOBILE 600x450: portrait card top, cards beneath."),
+        alt="A+ banner introducing Life Code co-founder Dr. Bryant Villeponteau, Ph.D.",
+    ),
+    AIModule(
+        name="Module 7 — Premium Q&A",
         role="a+_qa",
         headline="QUESTIONS BEFORE YOU BUY",
-        body=(
-            "<b>Q.</b> What does TeloMax do?<br/>"
-            "<b>A.</b> It is designed to support telomere maintenance and cellular function "
-            "as part of a healthy-aging routine.<br/><br/>"
-            "<b>Q.</b> What's inside?<br/>"
-            "<b>A.</b> A proprietary blend of standardized herbal extracts — Ashwagandha, "
-            "Gotu Kola, Milk Thistle, Scutellaria Baicalensis, Genistein and Uncaria "
-            "Tomentosa — plus Lithium Orotate (2 mg per serving).<br/><br/>"
-            "<b>Q.</b> How do I take it?<br/>"
-            "<b>A.</b> 2 capsules daily. One bottle contains 60 capsules — about a 30-day "
-            "supply, designed for consistent daily use.<br/><br/>"
-            "<b>Q.</b> What is the Multipath Regeneration (MuR) approach?<br/>"
-            "<b>A.</b> Life Code's development approach — a multi-botanical formula designed "
-            "to support healthy-aging pathways.<br/><br/>"
-            "<b>Q.</b> Where is it made?<br/>"
-            "<b>A.</b> Made in the USA in a cGMP-certified facility and laboratory tested, "
-            "with a 90-day money-back guarantee."
-        ),
-        visual="Vertical Q/A table, navy divider lines, small navy Q. and red A. labels.",
+        body="",   # rendered from the QA list below
+        visual="Vertical Q and A table, navy divider lines, small navy Q. and red A. labels.",
         alt="Premium Q&A module for Life Code TeloMax.",
-    ),
-    AIModule(
-        name="Module 7 — Premium Comparison Chart",
-        role="a+_comparison",
-        headline="CHOOSE YOUR LONGEVITY SUPPORT",
-        body=(
-            "Four columns: <b>Life Code TeloMax</b> · Stem Cell 100+ · Single-herb "
-            "supplement · Basic multivitamin.<br/><br/>"
-            "Rows: Supports telomere maintenance &amp; cellular function · Multipath "
-            "botanical blend · Standardized herbal extracts · Lithium Orotate (2 mg) · "
-            "2 capsules daily · Made in USA / cGMP / lab-tested · 90-day guarantee.<br/><br/>"
-            "Highlight the TeloMax column with a soft navy tint and a 'TELOMERE-FOCUSED' "
-            "ribbon. Comparison columns use category descriptors only — no competitor "
-            "brands."
-        ),
-        visual="Standard Amazon Premium Comparison Chart, 4 columns, navy header, TeloMax column highlighted.",
-        alt="Premium comparison chart for Life Code TeloMax vs Stem Cell 100+, single-herb supplement and basic multivitamin.",
     ),
 ]
 
 
+# House standard: exactly 5 pairs, question <=80 chars, answer <=120.
+#
+# Cut from seven. Two answers described Lithium Orotate at 2 mg per serving. No source the
+# client has supplied confirms it for this product, and lithium is not an ingredient to name
+# on a listing from memory, so it is out of the copy and into the open questions in
+# SOURCE_NOTES.md until the client sends the label. The "Multipath Regeneration (MuR)"
+# answer is gone too: it explained an internal name rather than answering a buyer.
 QA = [
     AIQA(q="What is TeloMax designed to do?",
-         a="It is designed to support telomere maintenance and cellular function as part of a healthy-aging routine."),
+         a="It supports telomere health and cellular wellness as part of a healthy aging "
+           "routine."),
     AIQA(q="What are the main ingredients?",
-         a="A proprietary blend of standardized botanical extracts including Ashwagandha, Gotu Kola, Silybum Marianum (Milk Thistle), Scutellaria Baicalensis, Genistein and Uncaria Tomentosa, plus Lithium Orotate at a low supplemental amount (2 mg per serving)."),
+         a="The TX100 blend: ashwagandha, gotu kola, milk thistle, scutellaria, genistein and "
+           "cat's claw."),
+    AIQA(q="What is a telomere?",
+         a="The protective cap on the end of a chromosome. Telomeres shorten as your cells "
+           "divide."),
+    AIQA(q="How is TeloMax different from Stem Cell 100?",
+         a="TeloMax focuses on telomere health. Stem Cell 100 works on the stem cell "
+           "micro-environment."),
     AIQA(q="How do I take it, and how long does a bottle last?",
-         a="Suggested use is 2 capsules daily. Each bottle contains 60 capsules, about a 30-day supply. It is designed for consistent, long-term daily use."),
-    AIQA(q="What is the Multipath Regeneration (MuR) approach?",
-         a="It is Life Code's development approach for TeloMax — a multi-botanical formula designed to support healthy-aging pathways. It names the approach, not a promised outcome."),
-    AIQA(q="How much Lithium Orotate is in it?",
-         a="TeloMax includes Lithium Orotate at a low supplemental amount of 2 mg per serving, as one ingredient within the blend."),
-    AIQA(q="Where is it made and is it tested?",
-         a="It is manufactured in the USA in a cGMP-certified facility and laboratory tested for quality. Life Code also offers a 90-day money-back guarantee."),
-    AIQA(q="When will I notice a difference?",
-         a="TeloMax is a daily longevity-support routine rather than an overnight product. Results vary from person to person, and consistent long-term use is recommended."),
+         a="Two capsules daily. 60 capsules per bottle, about a 30 day supply."),
 ]
 
 
@@ -384,8 +376,10 @@ def main() -> None:
     print(f"  Produkt: {brief.product_name}  ASIN: {ASIN}  Marktplatz: {cust.marketplace}")
 
     builder = BriefBuilder(cust, brief, OUT, ai=None)
-    builder._ai_title = TITLE
-    builder._ai_bullets = BULLETS
+    # Title and bullets come 1:1 from the SEO sheet, which is the axis for this plan.
+    seo = load_seo(EXCEL)
+    builder._ai_title = seo.title
+    builder._ai_bullets = as_bullets_html(seo)
     builder._ai_images = IMAGES
     builder._ai_modules = MODULES
     builder._ai_qa = QA
