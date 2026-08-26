@@ -48,6 +48,28 @@ they are — those are names, not claims.
 
 The same applies to "eliminate": the certified figure is a 99.99% reduction, not elimination.
 
+### The verb is "reduces". Never "kills"
+
+A complete claim needs three parts: **how much · of what · what happens to it.** Drop any one
+and the sentence stops being a claim.
+
+- ❌ `99.99% UNDER 60 MINUTES` — how much, but of what?
+- ❌ `99.99% OF AIRBORNE PATHOGENS` — how much and of what, but what happens to them?
+- ✅ `REDUCES 99.99% OF PATHOGENS` — complete
+- ✅ `99.99% REDUCTION, CERTIFIED` — complete
+
+**"Kills" is not available to us, and not because it is too strong.** A device claiming to
+kill microorganisms is making a pesticidal claim under US law and needs an EPA registration
+to carry it. Amazon enforces this. The same applies to "eliminates", "destroys" and
+"sterilizes".
+
+It is also simply inaccurate here: the certified result is a **4-log reduction**. That is a
+reduction, not a kill.
+
+Where a UV-specific verb is wanted, **"inactivates"** is both permitted and technically
+correct — UV-C damages nucleic acid so the organism cannot replicate, which is inactivation
+rather than killing.
+
 ### The 99.99% does not cover everything
 
 The certificate covers **microbial** reduction: bacteria, viruses, mold, fungus.

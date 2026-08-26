@@ -42,10 +42,11 @@ TILES = [
     ),
     dict(
         n="02", role="WHAT IT REMOVES", arch="icon_halo", status="NEW",
-        overlay="99.99% OF AIRBORNE PATHOGENS.",
-        sub="Third-party certified, 4-log, under 60 minutes. Plus VOCs, gases, odors and dust.",
+        overlay="REDUCES 99.99% OF PATHOGENS.",
+        sub="Bacteria, viruses, mold, fungus. Third-party certified, 4-log, under 60 minutes.",
         layout=[
             "Unit centred, large. The 99.99% mark set against it.",
+            "The verb is REDUCES. Never kills, never eliminates. See WHY below.",
             "Ten icon badges ringed around the unit, in TWO ARCS:",
             "",
             "   UPPER ARC — accent blue, tied to the number",
@@ -56,10 +57,13 @@ TILES = [
             "   LOWER ARC — neutral grey, NO percentage anywhere near it",
             "   VOCs  ·  gases  ·  odors  ·  dust  ·  pollen  ·  smoke",
         ],
-        why=("The certificate covers microbial reduction only. It does NOT cover VOCs, odors "
-             "or dust. One ring with one percentage would claim 99.99% for all ten, which is "
-             "not what was tested. Two arcs keep the strongest number in the category and stay "
-             "exactly true."),
+        why=("Two rules hold this tile together. First the verb: it is REDUCES, never kills and "
+             "never eliminates. A device that claims to kill microorganisms is making a pesticidal "
+             "claim in the US and needs an EPA registration to carry it — and the certified result "
+             "is a 4-log reduction, which is a reduction, not a kill. Second the scope: the "
+             "certificate covers microbial reduction only, not VOCs, odors or dust. One ring with "
+             "one percentage would claim 99.99% for all ten, which is not what was tested. Two arcs "
+             "keep the strongest number in the category and stay exactly true."),
     ),
     dict(
         n="03", role="THE FILTER STACK", arch="exploded_kit", status="NEW",
@@ -77,20 +81,30 @@ TILES = [
              "a picture is a claim; a labelled diagram is proof."),
     ),
     dict(
-        n="04", role="THE PROOF", arch="stat_block", status="NEW",
-        overlay="99.99% UNDER 60 MINUTES.",
-        sub="4-log reduction, third-party certified. Filters down to 0.01 microns.",
+        n="04", role="THE PROOF", arch="stat_block", status="REVISED",
+        overlay="99.99% REDUCTION, CERTIFIED.",
+        sub="4-log against airborne pathogens, in under 60 minutes.",
         layout=[
             "99.99% set VERY large, in the top two thirds.",
-            "Directly beneath, one quiet line:",
+            "DIRECTLY BENEATH IT, black, large enough to read as part of the headline:",
+            "   REDUCTION, CERTIFIED.",
+            "The number never stands without a noun AND a verb. See WHY below.",
+            "",
+            "One quiet line under the headline:",
             "   4-log reduction  ·  under 60 minutes  ·  third-party certified",
-            "Small data strip along the foot:",
+            "",
+            "Data strip along the foot, right column:",
             "   0.01 microns  ·  CADR 320  ·  370 CFM",
-            "Unit small, bottom right. No badge on it.",
+            "Do NOT also write 0.01 microns in the subline. The strip carries it once.",
+            "",
+            "Unit large on the left. No badge on it.",
         ],
-        why=("Tile 2 opens with the number, this one substantiates it. Today it ships as a bare "
-             "badge with no time window and no certifier — the 60 minutes is what makes it "
-             "believable."),
+        why=("REVISED TWICE. The first version read '99.99% UNDER 60 MINUTES' and never said 99.99% "
+             "of WHAT — a percentage with no object is decoration, not a claim, and it invites the "
+             "wrong reading: 99.99% of the air, of all particles, of the whole room. The second "
+             "version named pathogens but had no verb. A complete claim needs all three: how much, "
+             "of what, and what happens to it. Tile 2 opens with the claim, this one proves it — "
+             "certifier, log value, time window, particle size."),
     ),
     dict(
         n="05", role="SENSORS", arch="split_icon_panel", status="MERGED",
