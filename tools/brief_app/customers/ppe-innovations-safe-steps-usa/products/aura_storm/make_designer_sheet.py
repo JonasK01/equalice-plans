@@ -28,17 +28,31 @@ M = 1.9 * cm
 
 TILES = [
     dict(
-        n="01", role="MAIN HERO", arch="clean_hero", status="KEEP",
+        n="01", role="MAIN HERO", arch="clean_hero", status="POLICY",
         overlay=None,
-        sub="No text on the image. Amazon main-image policy.",
+        sub="Nothing may be written on this image. Not a badge, not a word, not a leaf.",
         layout=[
-            "Unit on pure white, 85% or more of the frame.",
-            "Ship THREE variants for the A/B test, identical lighting:",
-            "   A — plain unit, nothing else",
-            "   B — badge: 2,775 SQ FT",
-            "   C — badge: 99.99% THIRD-PARTY CERTIFIED",
+            "Product only, on pure white RGB 255/255/255, filling 85% or more.",
+            "NO added text · NO badges · NO ribbons · NO leaves · NO airflow graphics",
+            "NO borders · NO inset images · NO props the buyer does not receive",
+            "",
+            "The ONLY branding allowed is the logo already printed on the unit itself.",
+            "The Safe Steps mark on the front panel is fine — it is part of the product.",
+            "",
+            "What you actually optimise here, since copy is not available:",
+            "   angle that reads as a floor unit at 100 x 100 px",
+            "   the Safe Steps mark legible at thumbnail size",
+            "   one soft contact shadow so it does not float",
+            "   size cues: keep the proportions honest, this is a 23 in floor unit",
+            "",
+            "The badged version already built (99.99% ribbon, 2,775 sq ft, leaves) is a",
+            "GALLERY image, not a main. Run it in a later slot where graphics are allowed.",
         ],
-        why="Let the test decide which promise wins the click. Keep the winner.",
+        why=("Amazon's main-image rule is text-free, graphic-free, pure white, product only. "
+             "The badged version breaks it on three counts at once and puts search visibility "
+             "at risk. Everything we want to shout belongs in slots 2 to 7, where text and "
+             "graphics are permitted — which is why the certified figure now sits in slot 2, "
+             "the first thing a shopper sees after the main."),
     ),
     dict(
         n="02", role="WHAT IT REMOVES", arch="icon_halo", status="NEW",
@@ -107,18 +121,30 @@ TILES = [
              "certifier, log value, time window, particle size."),
     ),
     dict(
-        n="05", role="SENSORS", arch="split_icon_panel", status="MERGED",
-        overlay="IT MEASURES. IT ADJUSTS.",
-        sub="Particulate and VOC sensors set the fan speed on their own.",
+        n="05", role="US VS THE USUAL", arch="us_vs_others", status="NEW",
+        overlay="MOST PURIFIERS ONLY FILTER.",
+        sub="Aura Storm filters, then reduces airborne pathogens by 99.99%. Certified.",
         layout=[
-            "LEFT HALF — the unit in a real room, in use.",
-            "RIGHT HALF — flat colour panel holding three icons with short labels:",
-            "   particulate sensor  ·  VOC sensor  ·  automatic fan speed",
-            "The panel gives the text a clean home instead of floating it over the photo.",
+            "Two columns, thin divider, a header on each:",
+            "   LEFT  — AURA STORM        (accent blue, blue ticks)",
+            "   RIGHT — TYPICAL AIR PURIFIER   (grey, grey dashes and crosses)",
+            "",
+            "Five criterion rows, same wording down both sides:",
+            "   Certified reduction rate    99.99%, 4-log, third-party   /   none stated",
+            "   UV-C                        one lamp on each side        /   none",
+            "   Filtration stages           8, dual-sided                /   typically 4",
+            "   Particulate + VOC sensors   yes, sets fan speed          /   rarely",
+            "   Coverage                    2,775 sq ft                  /   single room",
+            "",
+            "NEVER name or show a competitor brand, logo or product. Amazon prohibits it.",
+            "The right-hand column is a category description, not a company.",
         ],
-        why=("Replaces both 'YOUR AIR. REVEALED.' and 'SEE THE AIR. KNOW IT'S CLEAN.' — they "
-             "are the same idea twice. Merging them frees the slot that pays for the filter "
-             "diagram."),
+        why=("Replaces the sensor tile, whose content now lives as row 4 here and as an A+ "
+             "module — sensors are a spec, not a story, and did not earn a gallery slot of "
+             "their own. This tile does the job the whole plan is built on: not one competitor "
+             "states a certified reduction rate, so the first row is a comparison nobody on the "
+             "page can answer. Written as a category comparison, which is permitted, rather "
+             "than a brand comparison, which is not."),
     ),
     dict(
         n="06", role="QUIET", arch="comparison_columns", status="KEEP",
@@ -242,7 +268,7 @@ def tile_page(c, t):
 
     badge = t["status"]
     bw = c.stringWidth(badge, "Helvetica-Bold", 8.5) + 0.7 * cm
-    c.setFillColor(WIN if badge == "KEEP" else BLUE)
+    c.setFillColor(WIN if badge == "KEEP" else (WARN if badge == "POLICY" else BLUE))
     c.roundRect(W - M - bw, H - 2.55 * cm, bw, 0.62 * cm, 2, fill=1, stroke=0)
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8.5)
@@ -333,7 +359,7 @@ def closing(c):
         ("01", "BANNER", "Brand hero. Cleaner air, safer spaces."),
         ("02", "SLIDER", "Five strongest specs as scan tiles."),
         ("03", "BANNER", "The eight stages, dual-sided. The diagram, full width."),
-        ("04", "SLIDER", "Environments: clinic, school, gym, office, senior care."),
+        ("04", "SLIDER", "Sensors and environments: clinic, school, gym, office, care."),
         ("05", "BANNER", "The proof: 99.99%, 4-log, under 60 minutes, certified."),
         ("06", "BANNER", "Safe Steps close, handing the reader into the Q&A."),
         ("07", "Q&A", "Five pairs. Question max 80 characters, answer max 120."),
