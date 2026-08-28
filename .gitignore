@@ -38,3 +38,6 @@ tools/brief_app/app_settings.json
 
 # Team-contributed brand memory (lives on the data volume in production)
 tools/brief_app/knowledge/
+
+# Runtime AI-outage marker (lives on the data volume in production)
+tools/brief_app/ai_block.json

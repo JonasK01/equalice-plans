@@ -397,6 +397,36 @@ def _load_plan_meta(slug: str, pdf_name: str) -> dict:
     return {}
 
 
+_AI_BLOCK_FILE = BRIEFS_DIR.parent / "ai_block.json"
+
+
+def _read_ai_block() -> str:
+    """The last account-level refusal, shared by everyone using the tool.
+
+    Kept on the data volume rather than in session state so the whole team is warned by
+    the first person who hits it. Without this every colleague burns one build discovering
+    the same outage for themselves."""
+    try:
+        import json as _j
+        d = _j.loads(_AI_BLOCK_FILE.read_text(encoding="utf-8"))
+        return str(d.get("reason") or "")
+    except Exception:
+        return ""
+
+
+def _write_ai_block(reason: str) -> None:
+    try:
+        import json as _j
+        if reason:
+            _AI_BLOCK_FILE.write_text(
+                _j.dumps({"reason": reason, "at": datetime.now().isoformat(timespec="seconds")}),
+                encoding="utf-8")
+        elif _AI_BLOCK_FILE.exists():
+            _AI_BLOCK_FILE.unlink()          # a successful run clears it for everyone
+    except Exception:
+        pass
+
+
 def _ai_blocked_reason() -> str:
     """Why generating right now would produce template boilerplate, or "" if it is fine.
 
@@ -407,7 +437,7 @@ def _ai_blocked_reason() -> str:
         return "The Anthropic SDK is not installed in this container."
     if not has_api_key():
         return f"No API key is set. Add {ANTHROPIC_KEY_ENV} to the server's .env and restart."
-    return st.session_state.get("_ai_blocked", "")
+    return st.session_state.get("_ai_blocked", "") or _read_ai_block()
 
 
 def _ai_preflight() -> bool:
@@ -473,6 +503,10 @@ def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", sour
     _blocked = ai_instance.hard_failure() if ai_instance else ""
     if _blocked:
         st.session_state["_ai_blocked"] = _blocked      # warn before the next build, not after
+        _write_ai_block(_blocked)                        # ...and warn everyone else too
+    elif ai_instance and (_content.get("images") or []):
+        st.session_state.pop("_ai_blocked", None)        # it works again
+        _write_ai_block("")
 
     if _blocked:
         st.error(
