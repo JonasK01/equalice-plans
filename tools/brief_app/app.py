@@ -958,16 +958,17 @@ def page_generate() -> None:
         upload = st.file_uploader("SEO analysis sheet (.xlsx) *", type=["xlsx"], key=f"seo_up_{cust.slug}")
     with up_c2:
         prod_imgs = st.file_uploader(
-            "Product images (optional, several)",
+            "Product images (required, several) *",
             type=["png", "jpg", "jpeg", "webp"],
             accept_multiple_files=True,
             key=f"prod_imgs_{cust.slug}",
-            help="Packshots, existing listing images, lifestyle shots, the packaging. The plan "
-                 "references what actually exists instead of describing shots you cannot produce.",
+            help="Packshots, existing listing images, lifestyle shots, the packaging. The AI "
+                 "looks at these before it writes a word, so the plan describes your product "
+                 "instead of an imagined one.",
         )
     if not upload:
         st.caption("SEO title + bullets come from the sheet — the tool writes the creative Image + A+ plan. "
-                   "Product images are optional but make the plan far more concrete.")
+                   "Product images are required: the AI reads them before writing.")
         return
 
     # Save upload to a tmp working path so the parser (file-based) can read it
@@ -989,6 +990,19 @@ def page_generate() -> None:
             saved_imgs.append(safe)
         except Exception as exc:
             st.warning(f"Could not save {f.name}: {exc}")
+    # Product photos are mandatory. Without them the model writes shot directions for an
+    # object it has never seen, which is how "soft cream mood background" ended up on a grey
+    # steel enclosure. Everything else on this page can be judged by a human afterwards; this
+    # one silently poisons every tile, so it is a gate rather than a warning.
+    if not saved_imgs:
+        st.error(
+            "⛔ **Product images are required.** Attach at least one photo of the product "
+            "above.\n\nThe AI looks at them before it writes anything — form, colour, "
+            "material, what is printed on the pack, what is in the box. Without them it "
+            "describes an imagined product, and every shot direction in the plan is a guess."
+        )
+        return
+
     if saved_imgs:
         st.caption(f"🖼️ {len(saved_imgs)} product image(s) attached: " + ", ".join(saved_imgs))
         with st.expander("Preview attached images", expanded=False):
