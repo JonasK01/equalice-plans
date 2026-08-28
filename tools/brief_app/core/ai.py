@@ -865,6 +865,15 @@ class BriefAI:
             f"answer ≤{QA_A_MAX} chars, each defusing a specific review-driven friction.\n"
             "Module 6 must END by handing the reader over to the Q&A, in brand voice.\n"
             "There is NO comparison module. Do not add one, do not reorder, do not merge.\n\n"
+            "# A SLIDER IS ONE MODULE, NOT ONE MODULE PER TILE\n"
+            "Return EXACTLY 7 objects in the array. The two a+_carousel entries are sliders: "
+            "each is a SINGLE module whose body lists its own tiles. Do not return a separate "
+            "module per tile — that produced 14 modules where 7 were asked for.\n"
+            "A carousel body looks like this, one line per tile:\n"
+            "  Tile 1: <b>IP67 SEALED</b> Dust and water stay outside.<br/>\n"
+            "  Tile 2: <b>IK10 RATED</b> Takes a hit and keeps sealing.<br/>\n"
+            "  ...up to Tile 5.\n"
+            "The carousel's own headline names the slider, not one of its tiles.\n\n"
             "Each module must be SPECIFIC to this product. Headlines in "
             f"{LANGUAGE_NAMES.get(self.lang, 'English')}. Body in English.\n\n"
 
@@ -906,7 +915,53 @@ class BriefAI:
         result = self._structured_call(task, schema, max_tokens=6000)
         if not result:
             return None
-        return [AIModule(**m) for m in result["modules"]]
+        mods = [AIModule(**m) for m in result["modules"]]
+        return self._collapse_carousels(mods)
+
+    @staticmethod
+    def _collapse_carousels(mods: list["AIModule"]) -> list["AIModule"]:
+        """Fold a run of consecutive carousel modules back into one slider.
+
+        The model reliably understands the seven-module structure and then expresses a
+        five-tile slider as five separate a+_carousel modules, giving 14 where 7 were
+        asked for. The schema cannot express "one module with five tiles" — each module
+        has a single headline and body — so the prompt asks for it and this repairs the
+        case where it is ignored. Merging is safe: consecutive carousels are always the
+        tiles of one slider, never two sliders back to back, because the house structure
+        separates them with a banner."""
+        out: list[AIModule] = []
+        run: list[AIModule] = []
+
+        def _flush():
+            if not run:
+                return
+            if len(run) == 1:
+                out.append(run[0])
+            else:
+                tiles = []
+                for i, m in enumerate(run, 1):
+                    head = (m.headline or "").strip()
+                    body = " ".join((m.body or "").split())
+                    tiles.append(f"Tile {i}: <b>{head}</b> {body}".strip())
+                first = run[0]
+                out.append(AIModule(
+                    name=first.name or "Module — Slider",
+                    role="a+_carousel",
+                    headline=first.headline or "",
+                    body="<br/>".join(tiles),
+                    visual=first.visual or "",
+                    alt=first.alt or "",
+                ))
+            run.clear()
+
+        for m in mods:
+            if m.role == "a+_carousel":
+                run.append(m)
+            else:
+                _flush()
+                out.append(m)
+        _flush()
+        return out
 
     def generate_qa(self) -> Optional[list[AIQA]]:
         schema = {
