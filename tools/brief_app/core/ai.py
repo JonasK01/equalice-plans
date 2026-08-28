@@ -669,10 +669,16 @@ class BriefAI:
                 bad.append(f'subline is {len(sub)} chars (max {SUB_CHARS}): "{sub}"')
             return bad
 
-        problems = {i: _over(it) for i, it in enumerate(items)}
-        problems = {i: v for i, v in problems.items() if v}
-        if not problems:
-            return items
+        for _round in range(2):
+            problems = {i: _over(it) for i, it in enumerate(items)}
+            problems = {i: v for i, v in problems.items() if v}
+            if not problems:
+                return items
+            items = self._one_tightening_round(items, problems, OV_CHARS, OV_WORDS, SUB_CHARS)
+        return items
+
+    def _one_tightening_round(self, items, problems, OV_CHARS, OV_WORDS, SUB_CHARS):
+        """A single corrective call. Kept separate so the caller can run it twice."""
 
         lines = []
         for i, msgs in problems.items():
@@ -687,8 +693,8 @@ class BriefAI:
                         "type": "object",
                         "properties": {
                             "index": {"type": "integer", "description": "1-based image number"},
-                            "overlay": {"type": "string", "description": f"Rewritten headline, MAX {OV_CHARS} characters AND {OV_WORDS} words"},
-                            "overlay_sub": {"type": "string", "description": f"Rewritten subline, MAX {SUB_CHARS} characters"},
+                            "overlay": {"type": "string", "description": f"Rewritten headline. AIM FOR {OV_CHARS - 4} characters; {OV_CHARS} is the hard ceiling. Max {OV_WORDS} words."},
+                            "overlay_sub": {"type": "string", "description": f"Rewritten subline. AIM FOR {SUB_CHARS - 8} characters; {SUB_CHARS} is the hard ceiling."},
                         },
                         "required": ["index", "overlay", "overlay_sub"],
                         "additionalProperties": False,
@@ -701,7 +707,9 @@ class BriefAI:
             "These on-image lines from the plan you just wrote are over the hard limits:\n"
             + "\n".join(lines)
             + "\n\nRewrite ONLY these, keeping the same idea, the same language and the same "
-              "specifics. Count the characters before answering. Shorter is better than "
+              "specifics. Count the characters before answering, and AIM BELOW the ceiling "
+              f"rather than at it: target about {OV_CHARS - 4} characters for a headline and "
+              f"{SUB_CHARS - 8} for a subline, so a miscount still lands inside. Shorter beats "
               "cleverer: cut a word, drop an adjective, use a figure instead of a phrase. "
               "No em-dashes or en-dashes. Return every listed image, with both fields filled "
               "even if only one of them was too long. Return JSON."
