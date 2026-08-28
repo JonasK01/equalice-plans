@@ -818,6 +818,18 @@ class BriefAI:
             "Rewrite using the moment, the stake, or the buyer's own words from the review "
             "themes. Move the specification down into the subline, where it becomes the proof. "
             "Keep the same language and the same facts. Invent nothing.\n\n"
+            "# A REWRITE MUST BE MORE SPECIFIC THAN THE ORIGINAL, NEVER LESS\n"
+            "This is the rule that matters most here, because the usual failure of a critique "
+            "pass is trading a decent line for a shorter, emptier one:\n"
+            "  'Komplett geliefert.' -> 'Alles dabei.'  WRONG. Shorter and vaguer.\n"
+            "  'Komplett geliefert.' -> 'Nichts nachbestellen.'  RIGHT. Names the payoff.\n"
+            "  'Schutz, der nicht nachlaesst.' -> 'BOXEXPERT Qualitaet.'  WRONG, and the worst "
+            "line available: a brand name plus a quality word says nothing at all.\n"
+            "If you cannot make it MORE concrete, leave it exactly as it is.\n"
+            "NEVER rewrite an overlay to a brand name plus an abstract noun. NEVER introduce "
+            "the brand name into a headline that did not already carry it.\n"
+            "The closing tile is not exempt: its job is a reason to TRUST, stated concretely — "
+            "a number of years, a place, a guarantee, who makes it — never the word quality.\n\n"
             "Leave a line alone if it already names an outcome the buyer can picture. Return an "
             "empty array if they all pass. Do not rewrite a good line to prove you did something. "
             "Return JSON."
@@ -831,11 +843,35 @@ class BriefAI:
                 continue
             ov = (r.get("overlay") or "").strip()
             sub = (r.get("overlay_sub") or "").strip()
-            if ov:
+            if ov and self._rewrite_is_better(items[idx].overlay or "", ov):
                 items[idx].overlay = ov
             if sub:
                 items[idx].overlay_sub = sub
         return items
+
+    def _rewrite_is_better(self, old: str, new: str) -> bool:
+        """Refuse a rewrite that is emptier than what it replaces.
+
+        The critique pass is useful and over-eager: left alone it turned 'Komplett geliefert.'
+        into 'Alles dabei.' and 'Schutz, der nicht nachlaesst.' into 'BOXEXPERT Qualitaet.'
+        Both shorter, both worse. Two cheap structural checks catch the common degradations
+        without trying to judge prose."""
+        if not new:
+            return False
+        brand = (self.customer.name or "").strip().lower()
+        old_l, new_l = old.lower(), new.lower()
+        # introducing the brand name into a headline that did not have it is almost always
+        # the "BRAND + quality word" failure
+        if brand and brand not in old_l and brand.split()[0] in new_l:
+            return False
+        # a rewrite that is shorter AND has no concrete anchor the original lacked is a
+        # vaguer line wearing fewer characters
+        import re as _re
+        def anchors(t: str) -> int:
+            return len(_re.findall(r"\d", t)) + len(_re.findall(r"\b(kein|nicht|ohne|no|never|without)\b", t))
+        if len(new) < len(old) * 0.7 and anchors(new) <= anchors(old):
+            return False
+        return True
 
     def _tighten_overlays(self, items: list["AIImagePlanItem"]) -> list["AIImagePlanItem"]:
         """One corrective pass over on-image copy that came back too long.
