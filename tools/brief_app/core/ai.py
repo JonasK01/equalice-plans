@@ -644,7 +644,82 @@ class BriefAI:
         result = self._structured_call(task, schema, max_tokens=6000)
         if not result:
             return None
-        return [AIImagePlanItem(**img) for img in result["images"]]
+        items = [AIImagePlanItem(**img) for img in result["images"]]
+        return self._tighten_overlays(items)
+
+    def _tighten_overlays(self, items: list["AIImagePlanItem"]) -> list["AIImagePlanItem"]:
+        """One corrective pass over on-image copy that came back too long.
+
+        A model told "maximum 30 characters" lands on 34 often enough that every plan used
+        to reach the team with a handful of overruns for a human to fix by hand. Telling it
+        exactly which line is over and by how much fixes almost all of them in a single
+        cheap call. One retry only: if the second attempt is still long, the linter reports
+        it in the brief and a person decides, which is better than looping on the model."""
+        OV_CHARS, OV_WORDS, SUB_CHARS = 30, 5, 90
+
+        def _over(it) -> list[str]:
+            bad = []
+            ov = (it.overlay or "").strip()
+            if ov and not ov.startswith("("):
+                if len(ov) > OV_CHARS or len(ov.split()) > OV_WORDS:
+                    bad.append(f'overlay is {len(ov)} chars / {len(ov.split())} words '
+                               f'(max {OV_CHARS} / {OV_WORDS}): "{ov}"')
+            sub = (it.overlay_sub or "").strip()
+            if len(sub) > SUB_CHARS:
+                bad.append(f'subline is {len(sub)} chars (max {SUB_CHARS}): "{sub}"')
+            return bad
+
+        problems = {i: _over(it) for i, it in enumerate(items)}
+        problems = {i: v for i, v in problems.items() if v}
+        if not problems:
+            return items
+
+        lines = []
+        for i, msgs in problems.items():
+            for m in msgs:
+                lines.append(f"Image {i + 1}: {m}")
+        schema = {
+            "type": "object",
+            "properties": {
+                "fixes": {
+                    "type": "array", "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "index": {"type": "integer", "description": "1-based image number"},
+                            "overlay": {"type": "string", "description": f"Rewritten headline, MAX {OV_CHARS} characters AND {OV_WORDS} words"},
+                            "overlay_sub": {"type": "string", "description": f"Rewritten subline, MAX {SUB_CHARS} characters"},
+                        },
+                        "required": ["index", "overlay", "overlay_sub"],
+                        "additionalProperties": False,
+                    },
+                },
+            },
+            "required": ["fixes"], "additionalProperties": False,
+        }
+        task = (
+            "These on-image lines from the plan you just wrote are over the hard limits:\n"
+            + "\n".join(lines)
+            + "\n\nRewrite ONLY these, keeping the same idea, the same language and the same "
+              "specifics. Count the characters before answering. Shorter is better than "
+              "cleverer: cut a word, drop an adjective, use a figure instead of a phrase. "
+              "No em-dashes or en-dashes. Return every listed image, with both fields filled "
+              "even if only one of them was too long. Return JSON."
+        )
+        fixed = self._structured_call(task, schema, max_tokens=1500)
+        if not fixed:
+            return items
+        for f in fixed.get("fixes") or []:
+            idx = int(f.get("index", 0)) - 1
+            if not (0 <= idx < len(items)):
+                continue
+            ov, sub = (f.get("overlay") or "").strip(), (f.get("overlay_sub") or "").strip()
+            # only accept a replacement that is actually within the limit
+            if ov and len(ov) <= OV_CHARS and len(ov.split()) <= OV_WORDS:
+                items[idx].overlay = ov
+            if sub and len(sub) <= SUB_CHARS:
+                items[idx].overlay_sub = sub
+        return items
 
     def generate_aplus_modules(self) -> Optional[list[AIModule]]:
         schema = {
@@ -728,10 +803,12 @@ class BriefAI:
             "properties": {
                 "qa": {
                     "type": "array",
-                    # Exactly five: the A+ Q&A module is a scan-read block on the listing, and
-                    # the team found more than five turns it into a wall nobody finishes.
-                    "minItems": QA_PAIRS,
-                    "maxItems": QA_PAIRS,
+                    # The structured-output API rejects any minItems above 1 ("For 'array'
+                    # type, 'minItems' values other than 0 or 1 are not supported"), so the
+                    # count of five is asked for in the prompt and enforced in code below
+                    # rather than in the schema. Putting it here silently killed the whole
+                    # Q&A block on every plan.
+                    "minItems": 1,
                     "items": {
                         "type": "object",
                         "properties": {
@@ -767,7 +844,10 @@ class BriefAI:
         result = self._structured_call(task, schema, max_tokens=3000)
         if not result:
             return None
-        return [AIQA(**qa) for qa in result["qa"]]
+        pairs = [AIQA(**qa) for qa in (result.get("qa") or []) if qa.get("q") and qa.get("a")]
+        # Trim rather than reject: five is the house standard, and a model that returns six
+        # good pairs should not cost the plan its entire Q&A block.
+        return pairs[:QA_PAIRS] or None
 
     def elevate_copy(self, images, modules):
         """Second-pass ELITE copywriting refinement (quality over speed).
