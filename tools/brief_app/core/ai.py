@@ -723,6 +723,32 @@ class BriefAI:
             "usually a sentence a real customer already wrote, tightened.\n"
             "- No feature ever appears without its payoff somewhere on the same tile.\n\n"
 
+            "# HOW TO WRITE A BENEFIT THAT ACTUALLY SELLS\n"
+            "Naming the outcome is only half the job. 'Reliable protection' is a benefit and it "
+            "is still weak, because the reader cannot see it. Three techniques turn a benefit "
+            "into a line that converts. USE EACH AT LEAST ONCE across the seven overlays.\n\n"
+            "1. THE MOMENT — put the buyer somewhere specific.\n"
+            "   weak:   'Weather resistant.'\n"
+            "   strong: 'Minus 20 on the roof. Dry inside.'\n"
+            "   Take the moment from the target group and the reviews. Never invent one.\n\n"
+            "2. THE STAKE — name what failure costs, once, plainly.\n"
+            "   weak:   'Well sealed.'\n"
+            "   strong: 'One leak and the controller is gone.'\n"
+            "   State the cost, then show it does not happen. Never scaremonger, never twice.\n\n"
+            "3. THE BUYER'S OWN WORDS — the review themes above are the exact phrasing your "
+            "buyer already uses. Lift a real sentence and tighten it. Nothing you invent will "
+            "beat a line that is already in their vocabulary.\n\n"
+            "And four rules that separate a good line from a flat one:\n"
+            "- SPECIFICITY IS CREDIBILITY. 'Five winters outside' beats 'long lasting'. Name a "
+            "period, a place, a task, a person. Vague is the same as unproven.\n"
+            "- ONE PICTURE PER LINE. If the reader has to hold two images at once, the line is "
+            "doing two jobs and lands neither.\n"
+            "- GIVE TWO OR THREE LINES A TURN. Setup, then payoff: 'Mounted outside. Dry "
+            "inside.' The pivot is what makes a short line memorable. Not every line — a plan "
+            "where all seven have the same rhythm is as monotonous as one where none do.\n"
+            "- READ IT ALOUD. If you would not say it to a customer standing in front of you, "
+            "it is written for a slide, not for a sale. Rewrite it.\n\n"
+
             "# WRITING STYLE FOR ON-IMAGE TEXT\n"
             "- NO em-dashes or en-dashes (— –) in overlay or overlay_sub. Reviewers flagged dash overuse "
             "explicitly. Use a full stop, a comma, or restructure the line. A colon is fine, sparingly.\n"
@@ -739,7 +765,77 @@ class BriefAI:
         if not result:
             return None
         items = [AIImagePlanItem(**img) for img in result["images"]]
-        return self._tighten_overlays(items)
+        items = self._sharpen_overlays(items)      # benefits first...
+        return self._tighten_overlays(items)       # ...then make them fit
+
+    def _sharpen_overlays(self, items: list["AIImagePlanItem"]) -> list["AIImagePlanItem"]:
+        """Make the model grade its own headlines and rewrite the ones that are still specs.
+
+        The benefit rule in the prompt lands on maybe half the tiles. A plan comes back with
+        'Dicht. Wirklich dicht.' next to 'IK10. 70 Schraubdome.' — one is a benefit, the
+        other is a parts list. Asking for a critique in a separate call works far better than
+        another paragraph of instruction, because the model is judging finished lines instead
+        of writing and self-policing at the same time. One call, and only rewrites what fails."""
+        scored = [(i, it) for i, it in enumerate(items)
+                  if (it.overlay or "").strip() and not (it.overlay or "").startswith("(")]
+        if not scored:
+            return items
+
+        listing = "\n".join(
+            f'{i + 1}. overlay: "{it.overlay}"  |  subline: "{it.overlay_sub or ""}"'
+            for i, it in scored)
+        schema = {
+            "type": "object",
+            "properties": {
+                "rewrites": {
+                    "type": "array", "minItems": 0,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "index": {"type": "integer", "description": "1-based image number"},
+                            "verdict": {"type": "string",
+                                        "description": "Why the original failed: 'specification', 'list', 'abstract', or 'vague'"},
+                            "overlay": {"type": "string", "description": "The rewritten benefit headline, max 30 characters and 5 words"},
+                            "overlay_sub": {"type": "string", "description": "Subline carrying the proof that was in the old headline, max 90 characters"},
+                        },
+                        "required": ["index", "verdict", "overlay", "overlay_sub"],
+                        "additionalProperties": False,
+                    },
+                },
+            },
+            "required": ["rewrites"], "additionalProperties": False,
+        }
+        task = (
+            "Here are the on-image lines you just wrote for this product:\n\n" + listing +
+            "\n\nGrade each one with the so-what test: read the overlay, then ask 'so what?'. "
+            "If a sensible answer remains, the overlay is a FEATURE and the answer is the real "
+            "headline.\n\n"
+            "Return a rewrite for every line that is any of these:\n"
+            "- a SPECIFICATION ('IK10. 70 screw domes.', '360x270x160 mm.')\n"
+            "- a LIST of attributes with no outcome ('Tested. Certified. Installed.')\n"
+            "- an ABSTRACT quality word ('Protection that lasts.', 'Premium build.')\n"
+            "- VAGUE where the reviews give you something concrete\n\n"
+            "Rewrite using the moment, the stake, or the buyer's own words from the review "
+            "themes. Move the specification down into the subline, where it becomes the proof. "
+            "Keep the same language and the same facts. Invent nothing.\n\n"
+            "Leave a line alone if it already names an outcome the buyer can picture. Return an "
+            "empty array if they all pass. Do not rewrite a good line to prove you did something. "
+            "Return JSON."
+        )
+        fixed = self._structured_call(task, schema, max_tokens=2000)
+        if not fixed:
+            return items
+        for r in fixed.get("rewrites") or []:
+            idx = int(r.get("index", 0)) - 1
+            if not (0 <= idx < len(items)):
+                continue
+            ov = (r.get("overlay") or "").strip()
+            sub = (r.get("overlay_sub") or "").strip()
+            if ov:
+                items[idx].overlay = ov
+            if sub:
+                items[idx].overlay_sub = sub
+        return items
 
     def _tighten_overlays(self, items: list["AIImagePlanItem"]) -> list["AIImagePlanItem"]:
         """One corrective pass over on-image copy that came back too long.
