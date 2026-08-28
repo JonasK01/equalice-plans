@@ -427,6 +427,85 @@ def _write_ai_block(reason: str) -> None:
         pass
 
 
+# What the AI needs to know about a brand before it can write anything brand-specific.
+# Ranked, because they are not equally load-bearing: without a voice and photo rules every
+# plan comes out sounding like every other plan, which is what happened to the four brands
+# the team created with nothing but a name.
+BRAND_FIELDS = [
+    ("voice",        "Brand voice",        True,
+     "How the brand speaks. Without it the copy is generic by construction."),
+    ("photo_rules",  "Photo rules",        True,
+     "What the imagery must and must not look like. Drives every shot direction."),
+    ("tagline",      "Tagline",            False,
+     "Used on the closing tile and the A+ brand banner."),
+    ("no_gos",       "No-gos",             False,
+     "Words, claims and visuals this brand never uses."),
+    ("about_us",     "About Us text",      False,
+     "The real founding story. Without it the AI may not write one at all."),
+    ("website_url",  "Website",            False,
+     "Style and claim reference."),
+]
+
+
+def _brand_gaps(cust) -> tuple[list, list]:
+    """(blocking, optional) brand fields that are still empty."""
+    blocking, optional = [], []
+    for key, label, required, why in BRAND_FIELDS:
+        val = getattr(cust, key, "")
+        empty = not (str(val or "").strip())
+        if not empty:
+            continue
+        (blocking if required else optional).append((key, label, why))
+    if not (getattr(cust, "personality", None) or []):
+        optional.append(("personality", "Personality", "Three or four words that set the tone."))
+    return blocking, optional
+
+
+def _brand_completeness_gate(cust) -> bool:
+    """Ask for the missing brand information, right where the plan is about to be built.
+
+    Returns True when it is safe to generate. This exists because the quality problem is
+    not always in the model: a brand with no voice and no photo rules cannot produce a
+    brand-specific plan no matter how good the prompt is."""
+    blocking, optional = _brand_gaps(cust)
+    if not blocking and not optional:
+        return True
+
+    with st.container(border=True):
+        if blocking:
+            st.error(f"⛔ **{cust.name} is missing information the AI needs.** "
+                     "Fill these in and the plans stop sounding generic.")
+        else:
+            st.warning(f"⚠️ **{cust.name} could tell the AI more.** Optional, but each one "
+                       "makes the copy more specific.")
+
+        with st.form(f"brand_gap_{cust.slug}"):
+            vals = {}
+            for key, label, why in blocking + optional:
+                if key == "personality":
+                    vals[key] = st.multiselect(label, PERSONALITY_OPTIONS,
+                                               default=list(getattr(cust, "personality", []) or []),
+                                               help=why)
+                elif key in ("voice", "photo_rules", "no_gos", "about_us"):
+                    vals[key] = st.text_area(label, value=str(getattr(cust, key, "") or ""),
+                                             height=80, help=why)
+                else:
+                    vals[key] = st.text_input(label, value=str(getattr(cust, key, "") or ""),
+                                              help=why)
+            if st.form_submit_button("💾 Save brand info", type="primary"):
+                for k, v in vals.items():
+                    setattr(cust, k, v)
+                save_customer(cust)
+                st.success("Saved. It feeds into every plan for this brand from now on.")
+                st.rerun()
+
+        if blocking:
+            names = ", ".join(l for _, l, _ in blocking)
+            st.caption(f"Generation stays disabled until these are filled: **{names}**")
+            return False
+    return True
+
+
 def _ai_blocked_reason() -> str:
     """Why generating right now would produce template boilerplate, or "" if it is fine.
 
@@ -472,7 +551,23 @@ def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", sour
         except Exception:
             pass
 
-    ai_instance = BriefAI(cust, brief, feedback=feedback) if ai_ready else None
+    # Product photos live beside the sheet they were uploaded with. Deriving the folder
+    # from source_upload rather than from a page variable means variants and feedback
+    # regenerations see the same images as the original run.
+    _imgs: list[str] = []
+    try:
+        _up = Path(source_upload)
+        _idir = _up.parent / (_up.stem + "__images")
+        if _idir.is_dir():
+            _imgs = sorted(str(f) for f in _idir.iterdir()
+                           if f.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif"})
+    except Exception:
+        pass
+
+    ai_instance = BriefAI(cust, brief, feedback=feedback,
+                          product_images=_imgs) if ai_ready else None
+    if ai_instance and _imgs:
+        st.caption(f"👁️ Checking {len(_imgs)} product image(s) before writing…")
     if ai_instance and not ai_instance.enabled:
         st.error(f"AI init failed: {ai_instance.status_message}. Falling back to templates.")
         ai_instance = None
@@ -530,6 +625,9 @@ def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", sour
             st.warning("⚠️ " + _msg + " — TEMPLATE MODE")
         else:
             st.success("✅ " + _msg)
+        if getattr(ai_instance, "product_seen", ""):
+            with st.expander("👁️ What the AI saw in your product photos", expanded=False):
+                st.markdown(ai_instance.product_seen)
         if ai_instance.errors:
             _exp = bool(_blocked or _ai_wrote_nothing)
             with st.expander(f"⚠️ {len(ai_instance.errors)} AI call(s) failed", expanded=_exp):
@@ -984,7 +1082,7 @@ def page_generate() -> None:
                                help=T("variants.tab_help", tab=_t)):
                     _picked.append(_t)
             st.caption(T("variants.selected", n=len(_picked), total=len(_tabs)))
-            _ok = _ai_preflight()
+            _ok = _ai_preflight() and _brand_completeness_gate(cust)
             if st.button(T("variants.button", n=len(_picked)), key=f"build_variants_{cust.slug}",
                          type="primary", disabled=(not _picked) or (not _ok)):
                 out_dir = BRIEFS_DIR / cust.slug
@@ -1028,7 +1126,7 @@ def page_generate() -> None:
                                                    key=f"dl_var_{cust.slug}_{_b}")
         st.divider()
 
-    _gen_ok = _ai_preflight()
+    _gen_ok = _ai_preflight() and _brand_completeness_gate(cust)
     if st.button("Generate PDF", type="primary", disabled=not _gen_ok):
         out_dir = BRIEFS_DIR / cust.slug
         out_dir.mkdir(parents=True, exist_ok=True)

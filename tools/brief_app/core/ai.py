@@ -327,7 +327,8 @@ You will receive specific generation requests. Always return JSON matching the s
 # ---------- BriefAI class ----------
 
 class BriefAI:
-    def __init__(self, customer: Customer, brief: ParsedBrief, model: str = MODEL, feedback: str = ""):
+    def __init__(self, customer: Customer, brief: ParsedBrief, model: str = MODEL,
+                 feedback: str = "", product_images: Optional[list] = None):
         self.customer = customer
         self.brief = brief
         self.model = model
@@ -353,6 +354,77 @@ class BriefAI:
                 self.client = None
 
         self._system_prompt = build_system_prompt(customer, brief, self.feedback)
+
+        # LOOK AT THE PRODUCT before writing a word about it. The team has always been able
+        # to attach product photos and nothing ever read them, so the model was describing
+        # shots of an object it had never seen: "soft cream mood background" for a grey
+        # steel enclosure. One vision call up front, folded into the cached system prompt,
+        # so every later generation writes about the real thing at no extra cost.
+        self.product_seen: str = ""
+        if self.client and product_images:
+            self.product_seen = self._look_at_product(product_images)
+            if self.product_seen:
+                self._system_prompt += (
+                    "\n\n# WHAT THE PRODUCT ACTUALLY LOOKS LIKE\n"
+                    "Taken from the product photographs supplied with this brief. This is the "
+                    "real object: match it. Do not invent a colour, a material, a finish or a "
+                    "component that is not described here, and do not direct a shot the product "
+                    "cannot support.\n" + self.product_seen
+                )
+
+    def _look_at_product(self, paths: list) -> str:
+        """One vision call describing the product as it really is.
+
+        Deliberately factual, not promotional: colours, material, form, what is printed on
+        the pack, what is in the box, how it reads at a glance. The persuasion happens in
+        the later calls, which are better at it once they know what they are selling."""
+        import base64, mimetypes
+        blocks: list[dict] = []
+        for path in list(paths)[:6]:                      # six is plenty and keeps the call cheap
+            try:
+                pth = str(path)
+                mime = mimetypes.guess_type(pth)[0] or "image/jpeg"
+                if mime not in ("image/jpeg", "image/png", "image/gif", "image/webp"):
+                    continue
+                with open(pth, "rb") as fh:
+                    data = fh.read()
+                if len(data) > 4_500_000:                 # over the per-image API ceiling
+                    continue
+                blocks.append({"type": "image", "source": {
+                    "type": "base64", "media_type": mime,
+                    "data": base64.standard_b64encode(data).decode("ascii")}})
+            except Exception:
+                continue
+        if not blocks:
+            return ""
+        blocks.append({"type": "text", "text": (
+            "These are photographs of the product this brief is for. Describe what you can "
+            "actually see, for a designer who has never held it:\n"
+            "- form, size cues and proportions\n"
+            "- exact colours and finish (matte, gloss, brushed, transparent)\n"
+            "- materials\n"
+            "- what is printed on the product or its packaging, quoted exactly\n"
+            "- every component visible, and what appears to be included\n"
+            "- how it reads at a glance, and anything a photo would need to avoid\n\n"
+            "Facts only. No marketing language, no guessing at what is out of frame. If "
+            "something is unclear in the photos, say that it is unclear."
+        )})
+        try:
+            r = self.client.messages.create(
+                model=self.model, max_tokens=900,
+                messages=[{"role": "user", "content": blocks}],
+            )
+            u = r.usage
+            with self._usage_lock:
+                self.last_usage["input"] += u.input_tokens
+                self.last_usage["output"] += u.output_tokens
+            return next((b.text for b in r.content if b.type == "text"), "").strip()
+        except Exception as exc:
+            msg = f"Product image check failed: {exc}"
+            log.error(msg)
+            self.errors.append(msg)
+            self._note_block(exc)
+            return ""
 
     @property
     def enabled(self) -> bool:
@@ -629,6 +701,28 @@ class BriefAI:
             "their own words on the image confirms they are in the right place. Never keyword-stuff, and "
             "never let a keyword make a line clumsy — a natural line beats a keyword-shaped one.\n\n"
 
+            "# THE OVERLAY IS THE BENEFIT. THE SUBLINE IS THE PROOF.\n"
+            "This is the rule the review team keeps coming back to: the copy states features "
+            "and leaves the buyer to work out what they are for. Half of a recent plan read "
+            "'30% thicker walls. IK10.' and '360x270x160 mm. Ab Lager.' Those are specifications. "
+            "A shopper reading them can still ask 'so what?', and that question is the sale.\n"
+            "- The OVERLAY says what the buyer GETS. The SUBLINE says why it is true.\n"
+            "  WRONG  overlay: '30% thicker walls. IK10.'\n"
+            "  RIGHT  overlay: 'Takes a hit and keeps sealing.'\n"
+            "         subline: '30% thicker walls, IK10 impact rated.'\n"
+            "- RUN THE LADDER on every tile before you write it: the feature, then what it does, "
+            "then what that means for this buyer on their worst day. Write the last rung that is "
+            "still concrete. Stop before it turns into an adjective: 'premium quality' is one rung "
+            "too far, 'still sealed after five winters outside' is the right one.\n"
+            "- THE SO-WHAT TEST. Read your overlay, then ask 'so what?'. If there is a sensible "
+            "answer left, you wrote the feature and the answer is the real overlay.\n"
+            "- A spec may BE the overlay only when the number is itself the benefit, because the "
+            "buyer is shopping on that number: coverage in square feet, 29 dB, a 90-day guarantee. "
+            "Otherwise the number belongs in the subline, behind the outcome.\n"
+            "- Write to the ONE person in the reviews, not to a market. The best line in a plan is "
+            "usually a sentence a real customer already wrote, tightened.\n"
+            "- No feature ever appears without its payoff somewhere on the same tile.\n\n"
+
             "# WRITING STYLE FOR ON-IMAGE TEXT\n"
             "- NO em-dashes or en-dashes (— –) in overlay or overlay_sub. Reviewers flagged dash overuse "
             "explicitly. Use a full stop, a comma, or restructure the line. A colon is fine, sparingly.\n"
@@ -711,6 +805,8 @@ class BriefAI:
               f"rather than at it: target about {OV_CHARS - 4} characters for a headline and "
               f"{SUB_CHARS - 8} for a subline, so a miscount still lands inside. Shorter beats "
               "cleverer: cut a word, drop an adjective, use a figure instead of a phrase. "
+              "Keep it a BENEFIT: shortening must not turn 'Takes a hit and keeps sealing' back "
+              "into '30% thicker walls'. Cut the feature, keep the payoff. "
               "No em-dashes or en-dashes. Return every listed image, with both fields filled "
               "even if only one of them was too long. Return JSON."
         )
@@ -793,6 +889,13 @@ class BriefAI:
             "the same way. Give both sizes: desktop 1464x600, mobile 600x450, and say what stays "
             f"inside the mobile safe area. Write it as COMPACT SPEC LINES, max {MODULE_VISUAL_MAX} "
             "characters. Telegraphic is correct here; full prose sentences are not.\n\n"
+
+            "# THE HEADLINE IS THE BENEFIT, THE BODY IS THE PROOF\n"
+            "Same rule as the image tiles, and the same failure to avoid. A module headline "
+            "that names a feature makes the reader do the work: 'IK10 impact rated' is a "
+            "specification, 'Takes a hit and keeps sealing' is what they are buying. Put the "
+            "outcome in the headline and the evidence in the body. A specification earns the "
+            "headline only when the buyer is shopping on that exact number.\n\n"
 
             "# WRITING STYLE\n"
             "- NO em-dashes or en-dashes (— –) in any headline or body. Reviewers flagged dash "
