@@ -436,17 +436,44 @@ def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", sour
     progress.empty()
 
     kb = pdf_path.stat().st_size // 1024
+
+    # Did the AI actually write anything? A plan with no AI images is boilerplate wearing the
+    # brand's colours: the built-in template overlays are identical for every product, which
+    # is why a run of failed generations reads to the team as "the tool is mixing up brands".
+    # It has to be impossible to mistake that for a finished plan.
+    _content = _res.get("content") or {}
+    _ai_wrote_nothing = bool(ai_instance) and not (_content.get("images") or [])
+    _blocked = ai_instance.hard_failure() if ai_instance else ""
+
+    if _blocked:
+        st.error(
+            "⛔ **No AI copy was written. This plan is template boilerplate — do not send it.**\n\n"
+            + _blocked
+            + "\n\nEvery plan generated until this is fixed will have generic copy that looks "
+              "the same for every brand."
+        )
+    elif _ai_wrote_nothing:
+        st.error(
+            "⛔ **No AI copy was written. This plan is template boilerplate — do not send it.**\n\n"
+            "The AI calls failed for another reason. Open the detail below and send it on."
+        )
+
     if ai_instance:
         u = ai_instance.last_usage
         cost = (u["input"] / 1e6) * 3.0 + (u["cached"] / 1e6) * 0.30 + (u["output"] / 1e6) * 15.0
-        st.success(f"✅ Built `{pdf_path.name}` · {kb} KB · {elapsed:.0f}s · ${cost:.2f}"
-                   + (" · feedback applied" if feedback else ""))
+        _msg = f"Built `{pdf_path.name}` · {kb} KB · {elapsed:.0f}s · ${cost:.2f}" + (
+            " · feedback applied" if feedback else "")
+        if _blocked or _ai_wrote_nothing:
+            st.warning("⚠️ " + _msg + " — TEMPLATE MODE")
+        else:
+            st.success("✅ " + _msg)
         if ai_instance.errors:
-            with st.expander(f"⚠️ {len(ai_instance.errors)} AI call(s) used template fallback", expanded=False):
-                for e in ai_instance.errors:
+            _exp = bool(_blocked or _ai_wrote_nothing)
+            with st.expander(f"⚠️ {len(ai_instance.errors)} AI call(s) failed", expanded=_exp):
+                for e in ai_instance.errors[:12]:
                     st.code(e)
     else:
-        st.success(f"✅ Built `{pdf_path.name}` · {kb} KB · {elapsed:.0f}s (template mode)")
+        st.warning(f"⚠️ Built `{pdf_path.name}` · {kb} KB · {elapsed:.0f}s — TEMPLATE MODE, no API key set.")
 
     comp = _res.get("compliance") or []
     blocking = _res.get("compliance_blocking")
@@ -472,8 +499,13 @@ def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", sour
     _save_plan_meta(cust.slug, pdf_path.name, {"upload": str(source_upload), "product": brief.product_name or ""})
     # Sidecar with the editable plan content, so the team can correct a plan and re-render it
     # without paying for another AI generation.
-    if _res.get("content"):
-        _save_plan_content(cust.slug, pdf_path.name, _res["content"])
+    #
+    # Only save content the editor can actually work with. A run where the AI produced
+    # nothing writes a sidecar with empty images, modules and Q&A — which the editor then
+    # opens as a plan with nothing in it. That is what "we cannot edit it anymore" was:
+    # not a broken editor, an empty file it had been handed.
+    if _content.get("images"):
+        _save_plan_content(cust.slug, pdf_path.name, _content)
     return pdf_path
 
 
@@ -508,6 +540,17 @@ def _plan_editor_ui(slug: str, pdf_name: str, key_prefix: str) -> None:
     data = _load_plan_content(slug, pdf_name)
     if not data:
         st.caption("✏️ This plan was generated before in-app editing existed — regenerate it once to unlock editing.")
+        return
+    # A sidecar with no images means the plan was built while the AI was unavailable: the
+    # PDF is template boilerplate and there is nothing here worth editing. Say so, rather
+    # than opening an editor with three empty tabs — that silence is what the team read as
+    # "we cannot edit it anymore".
+    if not (data.get("images") or []):
+        st.error(
+            "⛔ **This plan has no AI content.** It was generated while the AI was "
+            "unavailable, so the PDF contains generic template copy and there is nothing to "
+            "edit. Generate it again once the AI is working."
+        )
         return
     meta = _load_plan_meta(slug, pdf_name)
     upload = meta.get("upload", "")
@@ -707,11 +750,11 @@ def page_generate() -> None:
         with tab_b:
             st.caption("Saved to this brand's memory — informs every future plan (new info, positioning, corrections, reference images).")
             existing = KN.get_team_info(cust.slug)
-            info = st.text_area("Extra product info / notes", value=existing, height=110, key="kn_info",
+            info = st.text_area("Extra product info / notes", value=existing, height=110, key=f"kn_info_{cust.slug}",
                                 placeholder="e.g. new 500 ml size; hero colour teal; certified organic since 2025; avoid 'detox'…")
             kn_imgs = st.file_uploader("Reference images (optional)", type=["png", "jpg", "jpeg", "webp"],
-                                       accept_multiple_files=True, key="kn_imgs")
-            if st.button("💾 Save to Brand Memory", key="kn_save"):
+                                       accept_multiple_files=True, key=f"kn_imgs_{cust.slug}")
+            if st.button("💾 Save to Brand Memory", key=f"kn_save_{cust.slug}"):
                 KN.save_team_info(cust.slug, info)
                 n = 0
                 for f in (kn_imgs or []):
@@ -730,12 +773,12 @@ def page_generate() -> None:
             st.caption(T("about.why"))
             _au = st.text_area(
                 T("about.field"),
-                height=120, key="about_quick",
+                height=120, key=f"about_quick_{cust.slug}",
                 placeholder=T("about.placeholder",
                               source=cust.website_url or T("about.website_fallback")),
             )
             _c1, _c2 = st.columns([1, 3])
-            if _c1.button(T("about.save"), key="about_quick_save", type="primary"):
+            if _c1.button(T("about.save"), key=f"about_quick_save_{cust.slug}", type="primary"):
                 if _au.strip():
                     cust.about_us = _au.strip()
                     save_customer(cust)
@@ -749,13 +792,13 @@ def page_generate() -> None:
     st.markdown("#### 1 · Upload the product inputs")
     up_c1, up_c2 = st.columns([1, 1])
     with up_c1:
-        upload = st.file_uploader("SEO analysis sheet (.xlsx) *", type=["xlsx"], key="seo_up")
+        upload = st.file_uploader("SEO analysis sheet (.xlsx) *", type=["xlsx"], key=f"seo_up_{cust.slug}")
     with up_c2:
         prod_imgs = st.file_uploader(
             "Product images (optional, several)",
             type=["png", "jpg", "jpeg", "webp"],
             accept_multiple_files=True,
-            key="prod_imgs",
+            key=f"prod_imgs_{cust.slug}",
             help="Packshots, existing listing images, lifestyle shots, the packaging. The plan "
                  "references what actually exists instead of describing shots you cannot produce.",
         )
@@ -872,11 +915,11 @@ def page_generate() -> None:
             _picked = []
             for _i, _t in enumerate(_tabs):
                 _label = SEOL.variation_label(_t) or _t
-                if st.checkbox(f"**{_label}**", value=True, key=f"var_{_i}",
+                if st.checkbox(f"**{_label}**", value=True, key=f"var_{cust.slug}_{_i}",
                                help=T("variants.tab_help", tab=_t)):
                     _picked.append(_t)
             st.caption(T("variants.selected", n=len(_picked), total=len(_tabs)))
-            if st.button(T("variants.button", n=len(_picked)), key="build_variants",
+            if st.button(T("variants.button", n=len(_picked)), key=f"build_variants_{cust.slug}",
                          type="primary", disabled=not _picked):
                 out_dir = BRIEFS_DIR / cust.slug
                 out_dir.mkdir(parents=True, exist_ok=True)
@@ -936,7 +979,7 @@ def page_generate() -> None:
                                    file_name=_download_name(last["slug"], last["name"]),
                                    mime="application/pdf", type="primary", key="dl_last")
             st.markdown("#### ✏️ Edit this plan")
-            _plan_editor_ui(last["slug"], last["name"], key_prefix="gen_edit")
+            _plan_editor_ui(last["slug"], last["name"], key_prefix=f"gen_edit_{last['slug']}_{last['name']}")
             st.markdown("#### 💬 Comments")
             _comment_thread_ui(last["slug"], last["name"], key_prefix="gen")
 

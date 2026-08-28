@@ -337,6 +337,11 @@ class BriefAI:
         self.client: Optional["anthropic.Anthropic"] = None
         self.last_usage: dict[str, int] = {"input": 0, "cached": 0, "output": 0}
         self.errors: list[str] = []
+        # Set when the account itself refuses work — a spend cap, an invalid key, a
+        # suspended org. Distinct from a single call failing, because the answer is
+        # different: one bad call is worth a footnote, a blocked account means every
+        # plan built from now on is template boilerplate and must not ship.
+        self.blocked_reason: str = ""
         import threading
         self._usage_lock = threading.Lock()
 
@@ -402,12 +407,49 @@ class BriefAI:
             msg = f"AI call failed ({task[:40]}): {exc.status_code} {exc.message}"
             log.error(msg)
             self.errors.append(msg)
+            self._note_block(exc)
             return None
         except Exception as exc:
             msg = f"AI call failed ({task[:40]}): {exc}"
             log.error(msg)
             self.errors.append(msg)
             return None
+
+    def _note_block(self, exc) -> None:
+        """Recognise the account-level refusals, so the app can stop instead of degrading.
+
+        These all return 400/401/403 and all mean the same thing operationally: no AI copy
+        will be produced for any plan until a person changes something in the Anthropic
+        console. The message is written for whoever is standing in front of the tool, not
+        for a log reader."""
+        if self.blocked_reason:
+            return
+        raw = f"{getattr(exc, 'message', '')} {exc}".lower()
+        code = getattr(exc, "status_code", None)
+        if "usage limit" in raw or "credit balance" in raw or "quota" in raw:
+            when = ""
+            import re as _re
+            m = _re.search(r"regain access on ([0-9]{4}-[0-9]{2}-[0-9]{2}[^.\"']*)", str(getattr(exc, "message", "")))
+            if m:
+                when = f" Access returns on {m.group(1).strip()}."
+            self.blocked_reason = (
+                "The Anthropic account has hit its spend limit, so no AI copy can be written."
+                + when
+                + " Raise or remove the limit under Settings, Limits in the Anthropic console."
+            )
+        elif code in (401, 403) or "authentication" in raw or "invalid x-api-key" in raw:
+            self.blocked_reason = (
+                "The Anthropic API key was rejected. Check ANTHROPIC_API_KEY in the server's "
+                ".env file, then restart the app."
+            )
+        elif code == 429:
+            self.blocked_reason = (
+                "The Anthropic account is being rate limited. Wait a few minutes and generate again."
+            )
+
+    def hard_failure(self) -> str:
+        """Non-empty when this run produced no usable AI output at all."""
+        return self.blocked_reason
 
     # ----- generation methods -----
 
