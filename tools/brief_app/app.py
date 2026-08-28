@@ -397,6 +397,33 @@ def _load_plan_meta(slug: str, pdf_name: str) -> dict:
     return {}
 
 
+def _ai_blocked_reason() -> str:
+    """Why generating right now would produce template boilerplate, or "" if it is fine.
+
+    Two sources: the obvious one (no key, no SDK) and the one that only shows up mid-build
+    (the account refused the work). The second is remembered for the rest of the session so
+    the next click is warned BEFORE spending four minutes on a plan nobody can use."""
+    if not sdk_available():
+        return "The Anthropic SDK is not installed in this container."
+    if not has_api_key():
+        return f"No API key is set. Add {ANTHROPIC_KEY_ENV} to the server's .env and restart."
+    return st.session_state.get("_ai_blocked", "")
+
+
+def _ai_preflight() -> bool:
+    """Show a blocking banner when AI is unavailable. Returns True when it is safe to build."""
+    reason = _ai_blocked_reason()
+    if not reason:
+        return True
+    st.error(
+        "⛔ **AI copywriting is unavailable — do not generate plans right now.**\n\n"
+        + reason
+        + "\n\nAnything generated in this state is generic template text that looks the same "
+          "for every brand and cannot be edited afterwards."
+    )
+    return False
+
+
 def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", source_upload: str = "") -> Path:
     """Build a plan (optionally applying reviewer feedback), show progress + QA, persist the
     source-sheet path so the plan can later be regenerated with feedback. Returns the PDF path."""
@@ -444,6 +471,8 @@ def _build_and_report(cust, brief, out_path: Path, seo, feedback: str = "", sour
     _content = _res.get("content") or {}
     _ai_wrote_nothing = bool(ai_instance) and not (_content.get("images") or [])
     _blocked = ai_instance.hard_failure() if ai_instance else ""
+    if _blocked:
+        st.session_state["_ai_blocked"] = _blocked      # warn before the next build, not after
 
     if _blocked:
         st.error(
@@ -685,7 +714,9 @@ def _comment_thread_ui(slug: str, pdf_name: str, key_prefix: str) -> None:
     if _cs and _up and Path(_up).exists():
         st.markdown("---")
         st.caption("Apply the comments above to a fresh version of this plan (~4–5 min).")
-        if st.button("🔄 New version applying the comments", key=f"{key_prefix}_regen", type="primary"):
+        _fb_ok = _ai_preflight()
+        if st.button("🔄 New version applying the comments", key=f"{key_prefix}_regen",
+                     type="primary", disabled=not _fb_ok):
             cust = load_customer(slug)
             brief = parse_excel(_up)
             seo_t = seo_b = seo_bk = None
@@ -919,8 +950,9 @@ def page_generate() -> None:
                                help=T("variants.tab_help", tab=_t)):
                     _picked.append(_t)
             st.caption(T("variants.selected", n=len(_picked), total=len(_tabs)))
+            _ok = _ai_preflight()
             if st.button(T("variants.button", n=len(_picked)), key=f"build_variants_{cust.slug}",
-                         type="primary", disabled=not _picked):
+                         type="primary", disabled=(not _picked) or (not _ok)):
                 out_dir = BRIEFS_DIR / cust.slug
                 out_dir.mkdir(parents=True, exist_ok=True)
                 built = []
@@ -943,12 +975,27 @@ def page_generate() -> None:
                     except Exception as exc:
                         st.error(T("variants.failed", label=_lab, error=exc))
                 if built:
+                    # Keep the whole set, not just the last one. Previously only built[-1]
+                    # was handed to the preview, so a five-variant run showed one plan and
+                    # the team reported the other four as "not generated".
                     st.session_state["last_plan"] = {"slug": cust.slug, "name": built[-1]}
+                    st.session_state["last_variants"] = {"slug": cust.slug, "names": built}
                     st.success(T("variants.done", n=len(built))
                                + T("variants.done_where", brand=cust.name))
+                    for _b in built:
+                        _bp = out_dir / _b
+                        if not _bp.exists():
+                            continue
+                        with st.expander(f"📄 {_b}  ·  {_bp.stat().st_size // 1024} KB", expanded=False):
+                            with _bp.open("rb") as _fh:
+                                st.download_button("⬇️ Download", data=_fh.read(),
+                                                   file_name=_download_name(cust.slug, _b),
+                                                   mime="application/pdf",
+                                                   key=f"dl_var_{cust.slug}_{_b}")
         st.divider()
 
-    if st.button("Generate PDF", type="primary"):
+    _gen_ok = _ai_preflight()
+    if st.button("Generate PDF", type="primary", disabled=not _gen_ok):
         out_dir = BRIEFS_DIR / cust.slug
         out_dir.mkdir(parents=True, exist_ok=True)
         slug_name = slugify(brief.product_name or upload.name.replace(".xlsx", ""))[:80]
