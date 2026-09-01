@@ -600,8 +600,13 @@ class BriefAI:
                             "background": {"type": "string", "description": "Specific background — for Image 1 MUST be 'Pure white #FFFFFF'"},
                             "purpose": {"type": "string", "description": "What this tile does for the buyer in 1 sentence"},
                             "visual": {"type": "string", "description": "Shot direction in AT MOST 2 short sentences: composition, angle, distance. No prose. The layout and graphics fields carry the design; do not repeat them here. For Image 1: pure white BG, ≥85% product, no overlay text (here alone, list the 2-3 A/B options)."},
-                            "overlay": {"type": "string", "description": f"On-image headline in {LANGUAGE_NAMES.get(self.lang, 'English')}. EMPTY STRING for Image 1 (Amazon policy bans overlay on main image)."},
-                            "overlay_sub": {"type": "string", "description": f"On-image subline in {LANGUAGE_NAMES.get(self.lang, 'English')}. EMPTY STRING for Image 1."},
+                            # The limits live HERE, not only in the prompt text. With structured
+                            # output the field description is what the model actually writes to,
+                            # and a plan came back with 47, 53 and 54-character overlays because
+                            # this description never mentioned a ceiling. Aim below it so a
+                            # miscount still lands inside.
+                            "overlay": {"type": "string", "description": f"On-image headline in {LANGUAGE_NAMES.get(self.lang, 'English')}. HARD LIMIT 30 characters AND 5 words — aim for about 24. This is typeset large on the image; anything longer does not fit the artboard. No em-dash or en-dash. EMPTY STRING for Image 1 (Amazon policy bans overlay on the main image)."},
+                            "overlay_sub": {"type": "string", "description": f"On-image subline in {LANGUAGE_NAMES.get(self.lang, 'English')}. HARD LIMIT 90 characters — aim for about 80. No em-dash or en-dash. EMPTY STRING for Image 1."},
                             "props": {"type": "array", "items": {"type": "string"}, "description": "Specific props on set (e.g. 'wooden brow brush, glass dropper, linen towel')"},
                             "lighting": {"type": "string", "description": "Specific lighting note (e.g. 'Warm side-light from camera-left, 45° rim, soft fill right')"},
                             "why_it_works": {"type": "string", "description": "1-2 sentence rationale tied to a specific USP, keyword, or review insight"},
