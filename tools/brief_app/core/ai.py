@@ -791,10 +791,21 @@ class BriefAI:
             "- Punchy is not choppy: each line must still read smoothly out loud.\n"
             "Return JSON."
         )
-        result = self._structured_call(task, schema, max_tokens=6000)
+        # 12000, not 6000. Seven tiles now carry a layout, a graphics list, props, lighting,
+        # a visual, two overlay lines and the CTR/CVR rationale. The old budget was set before
+        # layout and graphics existed and a full plan no longer fits inside it — a run came
+        # back with three tiles instead of seven and reported no error at all.
+        result = self._structured_call(task, schema, max_tokens=12000)
         if not result:
             return None
         items = [AIImagePlanItem(**img) for img in result["images"]]
+        if len(items) < 7:
+            # A short plan must never render as if it were complete. The PDF would simply
+            # have four tiles missing and nothing would say why.
+            msg = (f"Image plan came back with {len(items)} tiles instead of 7 — the plan is "
+                   "incomplete, generate it again.")
+            log.error(msg)
+            self.errors.append(msg)
         items = self._sharpen_overlays(items)      # benefits first...
         return self._tighten_overlays(items)       # ...then make them fit
 
