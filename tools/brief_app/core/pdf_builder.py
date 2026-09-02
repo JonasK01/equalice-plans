@@ -599,9 +599,16 @@ class BriefBuilder:
         except Exception:
             pass
 
-        self.progress_cb(75, "Scanning copy for compliance issues…")
-        scan_text = (self._ai_title or "") + "\n" + "\n".join(self._ai_bullets or [])
+        self.progress_cb(75, "Scanning copy for compliance and factual accuracy…")
+        # Scan EVERYTHING the customer will read, not just the title and bullets. This used
+        # to receive only those two, so image overlays, sublines, A+ modules and the Q&A were
+        # never checked at all — which is how "Mundgeblasen." reached a plan for glassware
+        # that is not mouth-blown. The claim is on an overlay, and overlays were outside the
+        # scan's field of view.
+        scan_text = "\n".join(self._gather_copy_texts())
         self._ai_compliance = self.ai.compliance_scan(scan_text) if scan_text.strip() else []
+        from . import qa as _qa_mod
+        self._compliance_blocking = _qa_mod.has_blocking(self._ai_compliance)
 
     def build(self) -> Path:
         self.progress_cb(5, f"Applying brand: {self.customer.name}…")
